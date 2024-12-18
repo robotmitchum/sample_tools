@@ -1,4 +1,4 @@
-<img src="tools/UI/icons/sample_tools_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![SampleTools](tools/UI/icons/sample_tools_64.png)
 
 # SampleTools
 
@@ -45,9 +45,10 @@ Execute sample_tools_UI.pyw
 
 FLAC format stores metadata using custom ID3 tags and is recommended to get the most features
 
+The simplest and most universally compatible way to incorporate an image into your GitHub Markdown (like README.md) is
+to use the standard Markdown syntax:
 
-
-<img src="tools/UI/icons/smp2ds_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![SMP2Ds](tools/UI/icons/smp2ds_64.png)
 
 ## SMP2Ds
 
@@ -86,8 +87,7 @@ This file is used to define custom instrument ranges used by this tool when pres
 
 The key name is the name of the instrument with min and max MIDI note number provided as a list
 
-
-<img src="tools/UI/icons/split_tool_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![SplitTool](tools/UI/icons/split_tool_64.png)
 
 ## Split Audio Tool
 
@@ -102,7 +102,7 @@ Input audio files are split into several samples and renamed according user defi
 
 - Automatic micro fade in/out to eliminate potential popping
 
-<img src="tools/UI/icons/rename_tool_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![RenameTool](tools/UI/icons/rename_tool_64.png)
 
 ## Rename Sample Tool
 
@@ -111,7 +111,7 @@ Renaming, conversion of audio files using pattern matching, pitch detection
 Update their 'smpl' chunk/metadata accordingly, so they are properly conformed by SMP2ds or Kontakt (wav only)
 wav and flac output
 
-<img src="tools/UI/icons/loop_tool_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![LoopTool](tools/UI/icons/loop_tool_64.png)
 
 ## Loop Tool
 
@@ -120,7 +120,7 @@ Detect loop points or modify audio files to make them loop
 - Batch auto-detection of loop points using zero crossing and auto correlation
 - FFT re-synthesis
 
-<img src="tools/UI/icons/st_tool_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![StereoTool](tools/UI/icons/st_tool_64.png)
 
 ## Stereo Tool
 
@@ -128,7 +128,7 @@ Apply pseudo-stereo/stereo imaging effect to mono audio file(s)
 
 - Haas, Velvet, Convolution, Side Convolution
 
-<img src="tools/UI/icons/upsample_tool_64.png" alt="Description" style="float: left; margin-right: 16px;">
+![UpsampleTool](tools/UI/icons/upsample_tool_64.png)
 
 ## Upsample Tool
 
