@@ -1,0 +1,46 @@
+{
+  "Piano": [21,108],
+  "Harpsichord":[29,89],
+  "Organ": [36,96],
+
+  "Acoustic Guitar":[40,88],
+  "Bass Guitar":[28,67],
+
+  "Violin":[55,97],
+  "Viola":[48,90],
+  "Cello":[36,82],
+  "Double Bass":[24,54],
+
+  "French Horn":[33,77],
+  "Trumpet":[52,86],
+  "Trombone":[31,74],
+  "Bass Trombone":[28,67],
+  "Tuba":[26,64],
+
+  "Flute":[59,98],
+  "Piccolo":[74,108],
+  "Oboe":[57,90],
+  "English Horn":[52,81],
+  "Clarinet":[50,88],
+  "Bass Clarinet":[38,76],
+  "Bassoon":[34,74],
+
+  "Soprano Recorder":[72,98],
+  "Alto Recorder":[65,91],
+  "Tenor Recorder":[60,86],
+  "Bass Recorder":[53,79],
+
+  "Baritone Sax":[36,69],
+  "Tenor Sax":[44,76],
+  "Alto Sax":[49,81],
+  "Soprano Sax":[56,88],
+
+  "Timpani":[48,74],
+  "Harp":[24,104],
+  "Marimba":[36,96],
+  "Celeste":[48,112],
+  "Xylophone":[65,108],
+  "Glockenspiel":[77,108],
+  "Tubular Bells":[81,79],
+  "Vibraphone":[53,89]
+}
