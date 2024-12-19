@@ -6,7 +6,7 @@ A collection of tools to assist in assembling sampled instruments with a more sp
 
 ## Installation
 
-This project was developed and tested with Python 3.12.7
+This project was developed and tested with Python 3.12.8
 
 Additional required packages all listed in provided requirements.txt
 
@@ -38,25 +38,24 @@ Execute sample_tools_UI.pyw
 - Drag and drop of files or directories (only the first level is scanned)
 - Context menus with right click on many widgets for examples or presets
 - Regular or looped Sample playback (Double click or Space Bar)
-- Keyboard shortcuts for file list (ctrl+A, ctrl+I, Delete)
-- Visualization of waveform and loop point (W, L)
+- Keyboard shortcuts for file list ( **Ctrl + A**, **Ctrl + I**, **Delete** )
+- Visualization of **Waveform** and **Loop Point** ( **W**, **L** )
 - Help is provided using tooltips for most widgets
 - Backup, increment to avoid overwriting
 
 FLAC format stores metadata using custom ID3 tags and is recommended to get the most features
-
-The simplest and most universally compatible way to incorporate an image into your GitHub Markdown (like README.md) is
-to use the standard Markdown syntax:
 
 ![SMP2Ds](tools/UI/icons/smp2ds_64.png)
 
 ## SMP2Ds
 
 Create Decent Sampler presets from samples in wav or flac format (limited support of aif)
+
 Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspreset file
 
 - Samples are added and set according to their 'smpl' chunk/metadata and file name pattern matching
-  respect for pitch, pitch fraction, loop points
+
+  Respect for pitch, pitch fraction, loop points
 - Fake release, fake legato and fake robin features
 - Automatic creation of a working UI with a customisable color theme
 - wav, flac and aif files are supported for the convolution reverb, they must be located in an IR subdirectory
@@ -75,31 +74,30 @@ This file found in this directory is required by this tool and should only be mo
 Sampler features
 
 - **Attribute names are case-sensitive!**
-
-- 'smp_attrib' key defines a list of basic attributes used by this tool
-- 'ds_smp_attrib' key defines a list of specific attributes recognized by Decent Sampler and described in its
+- **"smp_attrib"** key defines a list of basic attributes used by this tool
+- **"ds_smp_attrib"** key defines a list of specific attributes recognized by Decent Sampler and described in its
   documentation
-- 'num_attrib' key defines a list of attributes which should be considered as numeric values
+- **"num_attrib"** key defines a list of attributes which should be considered as numeric values
 
 ### instr_range.json
 
 This file is used to define custom instrument ranges used by this tool when pressing the **limit** button
 
-The key name is the name of the instrument with min and max MIDI note number provided as a list
+Use instrument names as keys with min and max MIDI note number provided as a list
 
 ![SplitTool](tools/UI/icons/split_tool_64.png)
 
 ## Split Audio Tool
 
 Split and trim audio file(s) by detecting silences
-typical usage : note by note instrument recordings, audio sample CDs tracks
+
+Typical use cases : note by note instrument recordings, audio sample CDs tracks
 
 Input audio files are split into several samples and renamed according user defined options
 
-- number increment
-- custom suffixes
-- note number or name using automatic pitch detection
-
+- Number increment
+- Custom suffixes
+- Note number or name using automatic pitch detection
 - Automatic micro fade in/out to eliminate potential popping
 
 ![RenameTool](tools/UI/icons/rename_tool_64.png)
@@ -124,7 +122,7 @@ Detect loop points or modify audio files to make them loop
 
 ## Stereo Tool
 
-Apply pseudo-stereo/stereo imaging effect to mono audio file(s)
+Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 
 - Haas, Velvet, Convolution, Side Convolution
 
