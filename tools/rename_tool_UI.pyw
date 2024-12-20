@@ -40,7 +40,7 @@ from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, add_insert_ctx, resource_path
 from file_utils import move_to_subdir
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
@@ -255,6 +255,8 @@ class InfoDialog(QtWidgets.QDialog):
 
         self.setWindowTitle('Process Info')
         self.accept_cmd = None
+
+        self.current_dir = Path(__file__).parent
 
         pos = QtGui.QCursor.pos()
         w, h = 800, 800
