@@ -43,7 +43,7 @@ Execute sample_tools_UI.pyw
 - Help is provided using tooltips for most widgets
 - Backup, increment to avoid overwriting
 
-FLAC format stores metadata using custom ID3 tags and is recommended to get the most features
+**These tools use custom ID3 tags to handle metadata for the FLAC format which is recommended to get the most features**
 
 ![SMP2Ds](tools/UI/icons/smp2ds_64.png)
 
@@ -53,12 +53,13 @@ Create Decent Sampler presets from samples in wav or flac format (limited suppor
 
 Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspreset file
 
-- Samples are added and set according to their 'smpl' chunk/metadata and file name pattern matching
+- wav, flac (recommended) and aif (limited support, not recommended) as input for samples
+- Samples are added and set according to their 'smpl' chunk/metadata (wav and flac only) and file name pattern matching
 
   Respect for pitch, pitch fraction, loop points
 - Fake release, fake legato and fake robin features
 - Automatic creation of a working UI with a customisable color theme
-- wav, flac and aif files are supported for the convolution reverb, they must be located in an IR subdirectory
+- wav, flac and aif IR files are supported for the convolution reverb, they must be located in an IR subdirectory
 - dslibrary file generation from a dspreset directory ready to use or distribute
 
 ### smp_attrib_cfg.json
@@ -95,10 +96,12 @@ Typical use cases : note by note instrument recordings, audio sample CDs tracks
 
 Input audio files are split into several samples and renamed according user defined options
 
+- wav, aif, flac as input
 - Number increment
 - Custom suffixes
 - Note number or name using automatic pitch detection
 - Automatic micro fade in/out to eliminate potential popping
+- wav, aif, flac as output
 
 ![RenameTool](tools/UI/icons/rename_tool_64.png)
 
@@ -106,8 +109,10 @@ Input audio files are split into several samples and renamed according user defi
 
 Renaming, conversion of audio files using pattern matching, pitch detection
 
-Update their 'smpl' chunk/metadata accordingly, so they are properly conformed by SMP2ds or Kontakt (wav only)
-wav and flac output
+Update their 'smpl' chunk/metadata accordingly, so they are properly conformed for SMP2ds or Kontakt (wav only)
+
+- wav, aif, flac as input
+- wav and flac output
 
 ![LoopTool](tools/UI/icons/loop_tool_64.png)
 
@@ -115,8 +120,10 @@ wav and flac output
 
 Detect loop points or modify audio files to make them loop
 
+- wav, aif, flac as input
 - Batch auto-detection of loop points using zero crossing and auto correlation
 - FFT re-synthesis
+- wav and flac output
 
 ![StereoTool](tools/UI/icons/st_tool_64.png)
 
@@ -124,13 +131,18 @@ Detect loop points or modify audio files to make them loop
 
 Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 
+- wav, aif, flac as input
 - Haas, Velvet, Convolution, Side Convolution
+- wav, flac output
 
 ![UpsampleTool](tools/UI/icons/upsample_tool_64.png)
 
 ## Upsample Tool
 
 Up-sample audio file(s) using spectral band replication and denoising to improve old 8 bits samples
+
+- wav, aif, flac as input
+- wav and flac output
 
 ## License
 
