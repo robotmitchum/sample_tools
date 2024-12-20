@@ -22,7 +22,7 @@ Additional required packages all listed in provided requirements.txt
 - PyQt5_sip
 - QDarkStyle
 - scipy
-- sounddevic
+- sounddevice
 - soundfile
 - webcolors
 - pyrubberband (only for upsample)
