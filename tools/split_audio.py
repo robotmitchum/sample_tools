@@ -65,7 +65,8 @@ def split_audio(input_file='', output_file='', bit_depth=None,
     else:
         mono_audio = audio
 
-    envelope = envelope_transform(mono_audio, w=1024, mode='max')
+    window_size = max(int(min_duration * sr / 2), 64)
+    envelope = envelope_transform(mono_audio, w=window_size, mode='max')
     region_data = find_regions(envelope, sr, db=split_db, min_duration=min_duration)
     region_data = trim_regions(md=region_data, data=mono_audio, db=split_db)
 
@@ -164,12 +165,9 @@ def split_audio(input_file='', output_file='', bit_depth=None,
 
         if fade_db is not None:
             _, fade_cues = trim_audio(data, db=fade_db)
-            # print('fade markers:', fade_cues)
 
             if dc_offset:
-                tail = data[fade_cues[1]: len(data)]
-                # dc_offset = (np.max(end) + np.min(end)) / 2
-                dc_offset = np.median(tail)
+                dc_offset = np.mean(data)
                 data -= dc_offset
 
             orig_data = np.array(data)

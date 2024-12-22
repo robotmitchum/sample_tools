@@ -72,8 +72,11 @@ Double-click to play</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -357,7 +360,7 @@ NOTE:	None is perfect so always double-check results in an audio editor such as 
        <widget class="QDoubleSpinBox" name="min_dur_dsb">
         <property name="minimumSize">
          <size>
-          <width>48</width>
+          <width>64</width>
           <height>0</height>
          </size>
         </property>
@@ -372,6 +375,9 @@ NOTE:	None is perfect so always double-check results in an audio editor such as 
         </property>
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::NoButtons</enum>
+        </property>
+        <property name="decimals">
+         <number>3</number>
         </property>
         <property name="minimum">
          <double>0.000000000000000</double>
@@ -579,8 +585,11 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -801,8 +810,11 @@ Use wav or aif for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -833,8 +845,11 @@ color: rgb(255, 255, 255);}</string>
         </property>
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">

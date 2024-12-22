@@ -236,10 +236,12 @@ class KeyPressHandler(QtCore.QObject):
     def eventFilter(self, obj, event):
         if event.type() == event.KeyPress:
             focus_wid = QtWidgets.QApplication.focusWidget()
-            allow_play = type(focus_wid) not in [QtWidgets.QLineEdit]
+            allow_play = not isinstance(focus_wid, QtWidgets.QLineEdit)
             if event.key() == Qt.Qt.Key_Space and allow_play:
                 self.parent().play_stop_toggle()
                 return True
+            else:
+                return False
         # Pass the event on to the base class
         return super().eventFilter(obj, event)
 

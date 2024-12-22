@@ -17,6 +17,7 @@
 
 import ctypes
 import os
+import platform
 import sys
 import threading
 from pathlib import Path
@@ -97,6 +98,8 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.files_lw.dragEnterEvent = self.drag_enter_event
         self.files_lw.dragMoveEvent = self.drag_move_event
         self.files_lw.dropEvent = self.lw_drop_event
+
+        self.disable_focus()
 
     def get_options(self):
         self.options.no_overwriting = self.no_overwriting_cb.isChecked()
@@ -302,9 +305,14 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.player.stop()
         event.accept()
 
+    def disable_focus(self):
+        for widget in self.findChildren(QtWidgets.QWidget):
+            if type(widget) in [QtWidgets.QPushButton, QtWidgets.QCheckBox, QtWidgets.QComboBox]:
+                widget.setFocusPolicy(Qt.Qt.NoFocus)
+
     def run(self):
         key_press_handler = KeyPressHandler(self)
-        self.installEventFilter(key_press_handler)
+        self.centralWidget().installEventFilter(key_press_handler)
 
         # Center on screen not on its parent
         parent = self.parent()
@@ -335,7 +343,8 @@ def launch(mw, app_id=''):
     :param str app_id: Unique app identifier
     :return:
     """
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+    if platform.system() == 'Windows':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))

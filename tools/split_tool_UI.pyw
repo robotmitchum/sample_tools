@@ -140,6 +140,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.options.split_db = self.split_db_dsb.value()
         self.options.fade_db = self.fade_db_dsb.value()
         self.options.write_cue = self.write_cue_cb.isChecked()
+        self.options.dc_offset = self.dc_offset_cb.isChecked()
         self.options.dither = self.dither_cb.isChecked()
         self.options.subdir = ('', self.subdir_le.text())[self.subdir_cb.isChecked()] or ''
         self.options.bd_cmb = self.bitdepth_cmb.currentText()
@@ -201,7 +202,8 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                                         use_pitch_fraction=options['use_pitch_fraction'],
                                         min_duration=options['min_duration'],
                                         split_db=options['split_db'], fade_db=options['fade_db'],
-                                        dither=options['dither'], write_cue_file=options['write_cue'],
+                                        dc_offset=options['dc_offset'], dither=options['dither'],
+                                        write_cue_file=options['write_cue'],
                                         progress_pb=self.progress_pb, dry_run=False)
                 print(result)
 
@@ -216,6 +218,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         if done < count:
             self.progress_pb.setValue(0)
             self.progress_pb.setFormat('Error while processing, Please check settings')
+            play_notification(audio_file=self.current_dir / 'process_error.flac')
         else:
             self.progress_pb.setValue(1)
             self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')

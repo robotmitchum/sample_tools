@@ -9,10 +9,10 @@
 import math
 import os
 import re
-import wave
 
 import mutagen
 import numpy as np
+import soundfile as sf
 
 
 # Set/Append Tags / Metadata functions
@@ -35,10 +35,8 @@ def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
     """
 
     # Get sample rate and RIFF size
-    wf = wave.open(input_file, 'rb')
-    sr = wf.getframerate()
-    # riff_size = wf.getnframes() * wf.getsampwidth() * wf.getnchannels() + 36
-    wf.close()
+    info = sf.info(input_file)
+    sr = info.samplerate
     riff_size = os.path.getsize(input_file) - 8  # File size minus header header chunks
     riff_size += 68  # Metadata Size
 
@@ -354,6 +352,5 @@ def as_chunk(value, length):
     :rtype: binary
     """
     return int(value).to_bytes(length, byteorder='little')
-
 
 # print(round(44100 * note_to_hz(68.5) / 440))

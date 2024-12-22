@@ -8,6 +8,7 @@
 
 import ctypes
 import importlib
+import platform
 import sys
 from functools import partial
 from pathlib import Path
@@ -187,7 +188,10 @@ class IconButton(QtWidgets.QPushButton):
 
 if __name__ == '__main__':
     app_id = f'mitch.sampleTools.{__version__}'
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
+    if platform.system() == 'Windows':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
 

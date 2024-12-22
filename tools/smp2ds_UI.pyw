@@ -16,6 +16,7 @@
 """
 
 import ctypes
+import platform
 import os
 import re
 import sys
@@ -349,7 +350,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def set_rootdir(self):
         startdir = self.root_dir or os.getcwd()
         flags = QFileDialog.DontResolveSymlinks | QFileDialog.ShowDirsOnly
-        path = QFileDialog.getExistingDirectory(self, "Choose output folder", startdir, flags)
+        path = QFileDialog.getExistingDirectory(self, "Select preset ROOT directory", startdir, flags)
         if path:
             self.root_dir = path
             self.path_l.setText(path)
@@ -508,7 +509,8 @@ def run(mw=Smp2dsUi, parent=None):
 
 if __name__ == "__main__":
     app_id = f'mitch.smp2Ds.{__version__}'
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+    if platform.system() == 'Windows':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
     font = app.font()
