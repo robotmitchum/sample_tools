@@ -36,6 +36,8 @@ from common_ui_utils import beautify_str, resource_path, resource_path_alt, shor
 from jsonFile import read_json
 from smp_to_dspreset import __version__
 
+from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
+
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def __init__(self, parent=None):
@@ -59,7 +61,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.override_cb.setChecked(False)
 
         self.instr_range_cfg = {}
-        self.set_instr_range_cfg()
+        self.instr_range_cfg_path = resource_path_alt(self.base_dir / 'instr_range_cfg.json', parent_dir='')
+        self.set_instr_range_cfg(cfg_file=self.instr_range_cfg_path)
 
         self.limit_le.setText('autox2')
         self.set_adsr('.001 .25 1.0 .375')
@@ -78,6 +81,11 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.palette_cfg = {}
         self.populate_palette_cmb()
 
+        self.default_settings = Node()
+        self.settings_ext = 'smp2ds'
+        self.settings_path = None
+        self.set_settings_path()
+
         self.setup_connections()
 
         self.crossfade_cmb.setCurrentText('linear')
@@ -89,6 +97,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.progress_pb.setTextVisible(True)
         self.progress_pb.setFormat('Create a Decent Sampler preset from samples')
+
+        # Init defaults settings
+        get_settings(self, self.default_settings)
 
     def setup_connections(self):
         self.setpath_tb.clicked.connect(self.set_rootdir)
@@ -180,6 +191,11 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.create_dsp_pb.clicked.connect(self.create_dspreset)
         self.create_dslib_pb.clicked.connect(self.create_dslibrary)
+
+        # Settings
+        self.load_settings_a.triggered.connect(self.load_settings)
+        self.save_settings_a.triggered.connect(self.save_settings)
+        self.restore_defaults_a.triggered.connect(self.restore_defaults)
 
     def create_dspreset(self):
         if not self.root_dir:
@@ -354,6 +370,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         if path:
             self.root_dir = path
             self.path_l.setText(path)
+        self.set_settings_path()
+
+    def set_settings_path(self):
+        if self.root_dir:
+            p = Path(self.root_dir)
+            self.settings_path = p / f'{p.stem}.{self.settings_ext}'
+        else:
+            self.settings_path = self.current_dir / f'settings.{self.settings_ext}'
 
     def limit_ctx(self):
         names = [f'{k}\t{v}' if k != v and not k.lower().startswith('auto') else f'{k}' for k, v in
@@ -480,6 +504,19 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             if Path(file_path).is_dir():
                 self.root_dir = file_path
                 self.path_l.setText(file_path)
+            self.set_settings_path()
+
+    def load_settings(self):
+        p = Path(self.settings_path)
+        if p.suffix == f'.{self.settings_ext}':
+            p = p.parent
+        read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+
+    def save_settings(self):
+        write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+
+    def restore_defaults(self):
+        set_settings(widget=self, node=self.default_settings)
 
     def closeEvent(self, event):
         print(f'{self.objectName()} closed')

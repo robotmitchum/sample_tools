@@ -274,6 +274,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         if done < count:
             self.progress_pb.setValue(0)
             self.progress_pb.setFormat('Error while processing, Please check settings')
+            play_notification(audio_file=self.current_dir / 'process_error.flac')
         elif mode == 'preview':
             if self.temp_audio is not None:
                 data = self.temp_audio.audio

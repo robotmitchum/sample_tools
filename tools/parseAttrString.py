@@ -83,13 +83,3 @@ def compose_string(info, pattern):
 
     result = ''.join(tokens)
     return result
-
-# # name = 'NylonHarm_36_v127'
-# name = 'STEEL F B2'
-# pattern = 'STEEL {vel} {note} '
-#
-# # # pattern = '{group}_{note}_{vel}_{foo}_{bar}'
-# # pattern = '{group}_{note}_{vel}'
-#
-# res = parse_string(name=name, pattern=pattern)
-# print(res)

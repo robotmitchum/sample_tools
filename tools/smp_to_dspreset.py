@@ -25,7 +25,7 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 
 __ds_version__ = '1.11.19'
-__version__ = '1.2.4'
+__version__ = '1.3.0'
 
 
 def create_dspreset(root_dir, smp_subdir='Samples',
