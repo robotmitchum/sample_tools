@@ -98,9 +98,6 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.progress_pb.setTextVisible(True)
         self.progress_pb.setFormat('Create a Decent Sampler preset from samples')
 
-        # Init defaults settings
-        get_settings(self, self.default_settings)
-
     def setup_connections(self):
         self.setpath_tb.clicked.connect(self.set_rootdir)
 
@@ -196,6 +193,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.load_settings_a.triggered.connect(self.load_settings)
         self.save_settings_a.triggered.connect(self.save_settings)
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
+        self.get_defaults()
 
     def create_dspreset(self):
         if not self.root_dir:
@@ -514,6 +512,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
     def save_settings(self):
         write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+
+    def get_defaults(self):
+        get_settings(self, self.default_settings)
 
     def restore_defaults(self):
         set_settings(widget=self, node=self.default_settings)

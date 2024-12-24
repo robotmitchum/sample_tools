@@ -33,6 +33,8 @@ from common_ui_utils import Worker, Node, KeyPressHandler, sample_to_name
 from sample_utils import Sample
 from waveform_widgets import WaveformDialog, LoopPointDialog
 
+from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
+
 
 class BaseToolUi(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -60,6 +62,12 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
         self.output_path_l.setText('')
         self.last_file = ''
+
+        self.setup_menu_bar()
+        self.default_settings = Node()
+        self.settings_ext = self.objectName().removesuffix('_mw').replace('_', '')
+        self.settings_path = None
+        self.set_settings_path()
 
         self.setup_connections()
 
@@ -98,6 +106,13 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.files_lw.dragEnterEvent = self.drag_enter_event
         self.files_lw.dragMoveEvent = self.drag_move_event
         self.files_lw.dropEvent = self.lw_drop_event
+
+        # Settings
+        self.set_settings_path()
+        self.load_settings_a.triggered.connect(self.load_settings)
+        self.save_settings_a.triggered.connect(self.save_settings)
+        self.restore_defaults_a.triggered.connect(self.restore_defaults)
+        # self.get_defaults()
 
         self.disable_focus()
 
@@ -328,6 +343,44 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
         self.show()
         return self
+
+    def setup_menu_bar(self):
+        self.menu_bar = QtWidgets.QMenuBar(self)
+
+        self.settings_menu = QtWidgets.QMenu(self.menu_bar)
+        self.settings_menu.setTitle('Settings')
+        self.setMenuBar(self.menu_bar)
+
+        self.save_settings_a = QtWidgets.QAction(self)
+        self.save_settings_a.setText('Save settings')
+        self.load_settings_a = QtWidgets.QAction(self)
+        self.load_settings_a.setText('Load settings')
+        self.restore_defaults_a = QtWidgets.QAction(self)
+        self.restore_defaults_a.setText('Restore defaults')
+
+        self.settings_menu.addAction(self.load_settings_a)
+        self.settings_menu.addAction(self.save_settings_a)
+        self.settings_menu.addSeparator()
+        self.settings_menu.addAction(self.restore_defaults_a)
+        self.menu_bar.addAction(self.settings_menu.menuAction())
+
+    def set_settings_path(self):
+        self.settings_path = self.current_dir / f'settings.{self.settings_ext}'
+
+    def load_settings(self):
+        p = Path(self.settings_path)
+        if p.suffix == f'.{self.settings_ext}':
+            p = p.parent
+        read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+
+    def save_settings(self):
+        write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+
+    def get_defaults(self):
+        get_settings(self, self.default_settings)
+
+    def restore_defaults(self):
+        set_settings(widget=self, node=self.default_settings)
 
 
 def launch(mw, app_id=''):

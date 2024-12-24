@@ -31,7 +31,7 @@ from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, resource_path
 from sample_utils import Sample
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 
 class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
@@ -51,6 +51,8 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
 
         self.fade_in_dsb.setValue(.05)
         self.fade_out_dsb.setValue(.05)
+
+        self.get_defaults()
 
         self.progress_pb.setFormat('Detect loop points or modify audio files to make them loop')
 

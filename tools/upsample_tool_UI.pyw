@@ -33,7 +33,7 @@ from utils import append_metadata, set_md_tags
 
 from subprocess_utils import DisableShellWindows
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
@@ -48,6 +48,8 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
         img_file = resource_path(self.current_dir / 'UI/icons/upsample_tool_64.png')
         app_icon.addFile(img_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
+
+        self.get_defaults()
 
         self.progress_pb.setFormat('Up-sample audio file(s) using spectral band replication')
 

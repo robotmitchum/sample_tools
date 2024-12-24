@@ -38,7 +38,7 @@ except Exception as e:
     has_crepe = False
     pass
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
@@ -54,6 +54,8 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.setup_pitch_mode_cmb(use_crepe=has_crepe)
 
         self.use_pitch_fraction_cb.setChecked(True)
+
+        self.get_defaults()
 
         self.progress_pb.setFormat('Split and trim audio file(s) by detecting silences')
 

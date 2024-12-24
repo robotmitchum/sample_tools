@@ -58,7 +58,7 @@ def resource_path(relative_path, as_str=True):
     :param str or WindowsPath relative_path:
     :param bool as_str: Return result as a string
     :return:
-    :rtype: str or WindowsPath
+    :rtype: str or Path
     """
     if hasattr(sys, '_MEIPASS'):
         base_path = Path(sys._MEIPASS)

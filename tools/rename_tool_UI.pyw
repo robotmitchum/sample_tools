@@ -40,7 +40,7 @@ from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, add_insert_ctx, resource_path
 from file_utils import move_to_subdir
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
@@ -56,6 +56,8 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         img_file = resource_path(self.current_dir / 'UI/icons/rename_tool_64.png')
         app_icon.addFile(img_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
+
+        self.get_defaults()
 
         self.progress_pb.setFormat("Rename audio files and update their 'smpl' chunk information")
 

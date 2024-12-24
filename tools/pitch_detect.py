@@ -15,6 +15,7 @@ except Exception as e:
     pass
 
 import librosa
+import soxr
 import matplotlib.pyplot as plt
 import numpy as np
 import soundfile as sf
@@ -52,7 +53,8 @@ def pitch_detect(audio, sr, mode='pyin', resample=None, note_range=(20, 109), st
         kwargs = dict(zip(['fmin', 'fmax'], frange))
 
     if resample is not None:
-        mono_audio = librosa.resample(mono_audio, orig_sr=sr, target_sr=resample)
+        # mono_audio = librosa.resample(mono_audio, orig_sr=sr, target_sr=resample)
+        mono_audio = soxr.resample(mono_audio, in_rate=sr, out_rate=resample)
         sr = resample
 
     # Use only a few periods

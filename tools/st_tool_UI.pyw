@@ -37,7 +37,7 @@ from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
@@ -64,6 +64,8 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         img_file = resource_path(self.current_dir / 'UI/icons/st_tool_64.png')
         app_icon.addFile(img_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
+
+        self.get_defaults()
 
         self.progress_pb.setFormat('Apply pseudo-stereo/stereo imaging effect to audio file(s)')
 
@@ -173,8 +175,6 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         if not files:
             return False
 
-        importlib.reload(ps)
-
         input_file = None
 
         if mode == 'preview':
@@ -186,6 +186,12 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.get_options()
         options = vars(self.options)
         subtypes = {16: 'PCM_16', 24: 'PCM_24'}
+
+        if options['mode'].startswith('conv') and not Path(options['ir_path']).is_file():
+            print('No IR specified')
+            return False
+
+        importlib.reload(ps)
 
         # Progress bar init
         self.progress_pb.setMaximum(count)
@@ -301,10 +307,10 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
     def get_ir_samples(self, ir_subdir='dh_ir'):
         self.ir_samples = []
-        if Path(ir_subdir).is_dir():
+        ir_path = resource_path(self.base_dir / ir_subdir, as_str=False)
+        if ir_path.is_dir():
             for ext in self.file_types:
-                p = Path.joinpath(Path(ir_subdir), f'*{ext}')
-                ir_smp = glob(str(p))
+                ir_smp = ir_path.glob(f'*{ext}')
                 self.ir_samples.extend(ir_smp)
         if self.ir_samples:
             self.ir_path_l.setFullPath(self.ir_samples[0])

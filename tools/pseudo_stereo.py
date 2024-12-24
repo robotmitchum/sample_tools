@@ -12,6 +12,8 @@ import librosa
 import numpy as np
 import soundfile as sf
 from scipy import signal
+import soxr
+from scipy.signal import resample
 
 from common_audio_utils import rms, peak, db_to_lin, st_to_ms, ms_to_st, convolve, compensate_ir, get_silence_threshold
 from common_math_utils import lerp
@@ -54,7 +56,11 @@ def pseudo_stereo(data, sr=44100, delay=6, mode='velvet', seed=0, balance=4,
         ir = compensate_ir(ir, mode='rms', sr=ir_sr)
         # Match IR to audio sampling rate
         if ir_sr != sr:
-            ir = librosa.resample(ir.T, orig_sr=ir_sr, target_sr=sr).T
+            # ir = librosa.resample(ir.T, orig_sr=ir_sr, target_sr=sr).T
+            ir = soxr.resample(ir, in_rate=ir_sr, out_rate=sr)
+            # target_len = np.round(len(ir) * sr / ir_sr).astype(np.int32)
+            # ir = resample(ir, target_len, domain='time')
+
         conv = convolve(audio=data, ir=ir, wet=wet, mx_len=mx_len)
         (mid, side) = st_to_ms(conv).T
         result = ms_to_st(np.column_stack((mid, side * width)))
@@ -171,7 +177,8 @@ def convolve_side(audio, sr, ir_audio, ir_sr, mx_len=False, width=1.0):
     (_, ir) = st_to_ms(ir_audio).T  # Use IR side channel
 
     if sr != ir_sr:
-        ir = librosa.resample(ir, orig_sr=ir_sr, target_sr=sr)
+        # ir = librosa.resample(ir, orig_sr=ir_sr, target_sr=sr)
+        ir = soxr.resample(ir, in_rate=ir_sr, out_rate=sr)
 
     au_l, ir_l = len(mid), len(ir)
 
