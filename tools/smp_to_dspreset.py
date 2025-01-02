@@ -507,7 +507,8 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     ds_group, fk_rls_group, fk_leg_group = None, None, None
     grp_pos = 0
-    active_keys = []
+
+    active_keys, active_key_groups = set(), set()
     note_idx = 0
 
     for gt_idx, (grp, trg) in enumerate(instr.group_trigger):
@@ -610,8 +611,8 @@ def create_dspreset(root_dir, smp_subdir='Samples',
             for a, v in zip(['attackCurve', 'decayCurve', 'releaseCurve'], fk_rls_adr_curve):
                 fk_rls_grp_attrib[a] = str(v)
 
-            # if fk_rls_mode == 'loop_end':
-            #     fk_rls_grp_attrib['sustain'] = '0'
+            if fk_rls_mode != 'start':
+                fk_rls_grp_attrib['sustain'] = '1'
 
             # for attr in ['silencingMode', 'silencedByTags']:
             #     fk_rls_grp_attrib.pop(attr, None)
@@ -624,8 +625,6 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                 fk_rls_fx = Et.SubElement(fk_rls_group, 'effects')
                 Et.SubElement(fk_rls_fx, 'effect',
                               attrib={'type': 'lowpass', 'resonance': f'{.7}', 'frequency': f'{fk_rls_cutoff}'})
-            else:
-                fk_rls_grp_attrib['sustain'] = '1'
 
         if len(grp_rro) > 1:
             comment = ' '.join([str(v) for v in grp_rro])
@@ -704,15 +703,14 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                                               'translationValue': value_name})
 
         # Per-group keyboard color
-        if note_spread != 'none':
+        if note_spread != 'none' and grp not in active_key_groups:
             plt_idx = instr.groups.index(grp) % len(active_keys_plt)
-
             lo, hi = note_limit
-            active_keys.extend(range(lo, hi + 1))
-
+            active_keys |= set(range(lo, hi + 1))
             Et.SubElement(keyboard, 'color',
                           attrib={'loNote': str(lo), 'hiNote': str(hi),
                                   'color': active_keys_plt[plt_idx]})
+            active_key_groups.add(grp)
 
         # Add Sample
         for i, o in enumerate(grp_rro):
@@ -736,12 +734,10 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                 sr = info.params.framerate
 
                 # Per-note keyboard color
-                if note_spread == 'none':
-                    active_keys.append(note)
-
+                if note_spread == 'none' and note not in active_keys:
+                    active_keys.add(note)
                     plt_idx = note_idx % len(active_keys_plt)
                     note_idx += 1
-
                     Et.SubElement(keyboard, 'color',
                                   attrib={'loNote': str(note), 'hiNote': str(note), 'color': active_keys_plt[plt_idx]})
 
@@ -850,20 +846,20 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                 # Most attributes are copied from source sample
                 if fake_release and trg == 'attack':
                     fk_rls_smp_attrib = smp_attrib.copy()
-                    fk_rls_smp_tuning = fk_rls_tuning
-
-                    if smp_tuning is not None:
-                        fk_rls_smp_tuning = smp_tuning + fk_rls_tuning
-                    if abs(fk_rls_smp_tuning) > .001:
-                        fk_rls_smp_attrib['tuning'] = f'{fk_rls_smp_tuning:.03f}'
+                    fk_rls_smp_tuning = (smp_tuning, 0)[smp_tuning is None]
 
                     match fk_rls_mode:
+                        case 'start':
+                            fk_rls_smp_tuning += fk_rls_tuning
                         case 'loop_end' | 'cue':
                             fk_rls_smp_attrib['loopEnabled'] = '0'
                             for attr in ['loopStart', 'loopEnd', 'loopCrossfadeMode', 'loopCrossfade']:
                                 fk_rls_smp_attrib.pop(attr, None)
                             smp_start = (loop_end, cues[0])[fk_rls_mode == 'cue']
                             fk_rls_smp_attrib['start'] = str(smp_start)
+
+                    if abs(fk_rls_smp_tuning) > .001:
+                        fk_rls_smp_attrib['tuning'] = f'{fk_rls_smp_tuning:.03f}'
 
                     Et.SubElement(fk_rls_group, 'sample', attrib=fk_rls_smp_attrib)
 
@@ -873,10 +869,11 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                     fk_leg_smp_attrib = smp_attrib.copy()
 
                     # Trim start of the sample
-                    smp_start = int(sr * fk_leg_start)
-                    # TODO : check if necessary
+                    smp_start = min(int(sr * fk_leg_start), smp_len - 1)
+
                     if fk_leg_smp_attrib['loopEnabled'] == '1':
                         smp_start = min(smp_start, loop_start)
+
                     fk_leg_smp_attrib['start'] = str(smp_start)
 
                     Et.SubElement(fk_leg_group, 'sample', attrib=fk_leg_smp_attrib)
@@ -886,7 +883,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     # Color inactive keys
     if len(keyboard_plt) > 1 and len(active_keys) < 128:
-        inactive_keys = np.delete(np.arange(128), np.array(active_keys))
+        inactive_keys = np.delete(np.arange(128), np.array(list(active_keys)))
         diff = np.diff(inactive_keys)
         idx = np.argwhere(diff > 1).reshape(-1)
         idx = np.append(np.append(idx, idx + 1), np.array([0, len(inactive_keys) - 1]))

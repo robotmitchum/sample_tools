@@ -142,6 +142,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         # Fake Release Widgets
         self.fake_rls_cb.stateChanged.connect(lambda state: self.fake_options_wid.setEnabled(state))
         self.fake_rls_cb.stateChanged.connect(lambda state: self.fk_adsr_wid.setEnabled(state))
+        self.fk_rls_mode_cmb.currentTextChanged.connect(
+            lambda state: self.fk_rls_tweaks_wid.setEnabled(state == 'start'))
 
         add_ctx(self.fk_volume_dsb, values=[0, -6, -12, -15, -18])
         add_ctx(self.fk_tuning_dsb, values=[-12, -6, 0, 6, 12])
