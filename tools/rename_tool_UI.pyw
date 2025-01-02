@@ -39,6 +39,9 @@ from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, add_insert_ctx, resource_path
 from file_utils import move_to_subdir
+# from simple_logger import SimpleLogger
+
+import os
 
 __version__ = '1.1.0'
 
@@ -47,6 +50,9 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle(f'Rename Sample Tool v{__version__}')
+
+        # log_path = self.base_dir / 'rename_tool_log.txt'
+        # self.logger = SimpleLogger(log_path)
 
         self.groupname_le.setText('')
         self.src_pattern_le.setText('{group}_{note}_{vel}')
@@ -92,11 +98,14 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         add_ctx(self.suffix_le, ['', '_v063', '_v127', '_attack', '_release', '_seq1'])
 
         # Note/Loop widgets
-        add_ctx(self.transpose_sb, [-12, 0, 12])
+
+        self.pitch_detect_cb.stateChanged.connect(lambda state: self.pitch_mode_cmb.setEnabled(state == 2))
 
         self.pitch_fraction_cmb.currentTextChanged.connect(
             lambda state: self.pitchfraction_dsb.setEnabled(state == 'override'))
         self.pitchfraction_dsb.setContextMenuPolicy(3)
+
+        add_ctx(self.transpose_sb, [-12, 0, 12])
 
         # Process buttons
         self.process_sel_pb.clicked.connect(partial(self.do_process, 'sel'))
@@ -118,7 +127,6 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         group_name = self.groupname_le.text()
 
-        # rep_str = list(filter(None, self.repstr_le.text().split(',')))
         rep_str = self.repstr_le.text()
         rep_str = [item.split(',') for item in rep_str.split()]
 
@@ -129,7 +137,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         suffix = self.suffix_le.text()
 
         # Note/Loop settings
-        pitch_detect = self.pitch_detect_cb.isChecked()
+        pitch_detect = (None, self.pitch_mode_cmb.currentText())[self.pitch_detect_cb.isChecked()]
         force_pitch_from_name = self.force_pitch_name_cb.isChecked()
         transpose = self.transpose_sb.value()
 
@@ -156,6 +164,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         self.progress_pb.setFormat('%p%')
 
         result = []
+        temp_files = None
 
         try:
             # Move original files to temp folder
@@ -190,12 +199,14 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
                 self.progress_pb.setValue(i + 1)
 
         except Exception as e:
+            # self.logger.log_exception(f'An error occurred: {e}')
             traceback.print_exc()
 
         done = len(result)
 
         if done < count:
             self.progress_pb.setFormat('Some file(s) could not be processed - Please check settings')
+            play_notification(audio_file=self.current_dir / 'process_error.flac')
         else:
             if test_run:
                 self.progress_pb.setFormat(f'{done} of {count} file(s)')

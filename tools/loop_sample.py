@@ -155,7 +155,8 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
         if resynth['freq_mode'] == 'note' and info.note is not None:
             freqs.append(note_to_hz(info.note))
         elif resynth['freq_mode'] == 'note_pf' and info.note is not None:
-            freqs.append(note_to_hz(info.note + info.pitchFraction / 100))
+            pf = (info.pitchFraction, 0)[info.pitchFraction is None]
+            freqs.append(note_to_hz(info.note + pf / 100))
         if resynth['freqs']:
             freqs.extend(resynth['freqs'])
 
@@ -293,12 +294,12 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
         # Get current bar progress
         pb_val = progress_pb.value()
         pb_mx = progress_pb.maximum()
-        pb_fmt = progress_pb.format()
+        # pb_fmt = progress_pb.format()
 
         # "Subdivide" progress bar according to sub-task count
         progress_pb.setMaximum(pb_mx * pb_steps)
         progress_pb.setValue(pb_val * pb_steps)
-        progress_pb.setFormat('Searching loop... %p%')
+        # progress_pb.setFormat('Searching loop... %p%')
         progress_pb.update()
 
     zc_cues = zero_crossing_idx(mono_audio, mode=1)
@@ -349,14 +350,21 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
 
     if not progress_pb:
         print('[', end='')
+
     min_error = -1
+    update_last = 0
+
     for i, end_idx in enumerate(end_idx_range):
         # Loop end search
         end_pos = zc_cues[end_idx]
 
-        if not progress_pb:
-            if i % max(count // 100, 1) == 0:
-                print('=', end='')
+        # Throttle progress updates
+        update_value = round(i / count * 10)
+        update_progress = update_value > update_last
+        update_last = update_value
+
+        if not progress_pb and update_progress:
+            print('=', end='')
 
         ref_window = mono_audio[end_pos - pre:end_pos + post]
         if len(ref_window) < window_size:
@@ -384,7 +392,7 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
                 loop_start, loop_end = start_pos, end_pos
 
         # Increment progress bar sub-task
-        if progress_pb is not None:
+        if progress_pb is not None and update_progress:
             pr = int((i + 1) / len(end_idx_range) * 100)
             progress_pb.setValue(pb_val * pb_steps + pr)
 
@@ -395,7 +403,7 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
     if progress_pb is not None:
         progress_pb.setMaximum(pb_mx)
         progress_pb.setValue(pb_val + 1)
-        progress_pb.setFormat(pb_fmt)
+        # progress_pb.setFormat(pb_fmt)
 
     return [int(loop_start), int(loop_end - 1)]
 

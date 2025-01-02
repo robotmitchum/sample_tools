@@ -16,8 +16,9 @@
 """
 
 import ctypes
-import platform
+import importlib
 import os
+import platform
 import re
 import sys
 import traceback
@@ -28,15 +29,14 @@ import qdarkstyle
 from PyQt5 import QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 
-from UI import smp_to_ds as gui
 import smp_to_dspreset as smp2ds
+from UI import smp_to_ds as gui
 from audio_player import play_notification
+from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import add_ctx, add_insert_ctx, popup_menu
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
 from jsonFile import read_json
 from smp_to_dspreset import __version__
-
-from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
 
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
@@ -301,7 +301,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         max_adsr_knobs = self.max_adsr_dsb.value()
 
         result = None
-        # importlib.reload(smp2ds)
+        importlib.reload(smp2ds)
         try:
             result = smp2ds.create_dspreset(root_dir=self.root_dir,
 
@@ -340,6 +340,13 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                                             add_suffix=add_suffix, auto_increment=auto_increment,
 
                                             progress=self.progress_pb)
+
+            if result:
+                # Write settings used to create the preset
+                p = Path(result)
+                settings_path = p.parent / f'{p.stem}.smp2ds'
+                write_settings(widget=self, filepath=settings_path)
+
         except Exception as e:
             print(e)
             traceback.print_exc()
@@ -369,6 +376,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             self.root_dir = path
             self.path_l.setText(path)
         self.set_settings_path()
+        self.load_settings_from_rootdir()
 
     def set_settings_path(self):
         if self.root_dir:
@@ -503,21 +511,36 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                 self.root_dir = file_path
                 self.path_l.setText(file_path)
             self.set_settings_path()
+            self.load_settings_from_rootdir()
 
     def load_settings(self):
         p = Path(self.settings_path)
         if p.suffix == f'.{self.settings_ext}':
             p = p.parent
-        read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+        result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+        if result:
+            self.progress_pb.setFormat(f'{result.name} loaded')
 
     def save_settings(self):
-        write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+        result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+        if result:
+            self.progress_pb.setFormat(f'{result.name} saved')
 
     def get_defaults(self):
         get_settings(self, self.default_settings)
 
     def restore_defaults(self):
         set_settings(widget=self, node=self.default_settings)
+        self.progress_pb.setFormat(f'Default settings restored')
+
+    def load_settings_from_rootdir(self):
+        settings_files = [f for f in Path(self.root_dir).glob('*.smp2ds')]
+        if settings_files:
+            settings_files = sorted(settings_files, key=lambda f: os.path.getmtime(f))
+            read_settings(widget=self, filepath=settings_files[-1], startdir=None, ext=None)
+            self.progress_pb.setFormat(f'{settings_files[-1].name} found and loaded')
+        else:
+            self.progress_pb.setFormat(f'No settings found')
 
     def closeEvent(self, event):
         print(f'{self.objectName()} closed')

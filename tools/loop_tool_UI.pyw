@@ -31,6 +31,8 @@ from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, resource_path
 from sample_utils import Sample
 
+# from simple_logger import SimpleLogger
+
 __version__ = '1.1.0'
 
 
@@ -38,6 +40,9 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle(f'Loop Tool v{__version__}')
+
+        # log_path = self.base_dir / 'loop_tool_log.txt'
+        # self.logger = SimpleLogger(log_path)
 
         self.suffix_le.setText('_looped')
 
@@ -213,6 +218,8 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         if mode == 'preview':
             files = files[0:1]
 
+        per_file_progress = (None, self.progress_pb)[mode == 'preview']
+
         count = len(files)
 
         importlib.reload(ls)
@@ -232,11 +239,10 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         self.progress_pb.setMaximum(count)
         self.progress_pb.setValue(0)
         self.progress_pb.setTextVisible(True)
-        self.progress_pb.setFormat('%p%')
+        self.progress_pb.setFormat('Searching loops... %p%')
 
         done = 0
         self.player.stop()
-        self.progress_pb.setFormat('%p%')
 
         try:
             for i, f in enumerate(files):
@@ -263,14 +269,19 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
                     filepath = None
                     bit_depth = None
 
+                # QUICK FIX : updating the progress bar during loop search makes the app unstable even with throttling
+                # Try to thread the progress bar in a future update
                 self.temp_audio = ls.loop_sample(input_file=f, output_file=filepath, bit_depth=bit_depth,
-                                                 progress_pb=self.progress_pb, **kwargs)
+                                                 progress_pb=per_file_progress, **kwargs)
+                # self.temp_audio = ls.loop_sample(input_file=f, output_file=filepath, bit_depth=bit_depth,
+                #                                  progress_pb=self.progress_pb, **kwargs)
                 done += 1
                 self.progress_pb.setMaximum(count)
                 self.progress_pb.setValue(i + 1)
+
         except Exception as e:
-            print(e)
             traceback.print_exc()
+            # self.logger.log_exception(f'An error occurred: {e}')
 
         self.progress_pb.setMaximum(1)
         if done < count:

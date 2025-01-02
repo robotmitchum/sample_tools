@@ -84,7 +84,7 @@ def write_settings(widget, filepath=None, startdir=None, ext='json'):
     :param QtWidgets.QWidget widget:
     :param str or Path or None filepath:
     :param str or Path or None startdir:
-    :param str ext: Customize extension
+    :param str or None ext: Customize extension, ignored when explicitly providing filepath
     :return:
     """
     try:
@@ -112,7 +112,7 @@ def read_settings(widget, filepath=None, startdir=None, ext='json'):
     :param QtWidgets.QWidget widget:
     :param str or Path or None filepath:
     :param str or Path or None startdir:
-    :param str ext: Customize extension
+    :param str or None ext: Customize extension, ignored when explicitly providing filepath
     :return:
     """
     try:

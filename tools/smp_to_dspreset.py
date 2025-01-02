@@ -210,6 +210,12 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     else:
         keyboard_plt = [rgba_to_hex(rgba=[1, .625, .875, 1])]
 
+    # Active keys color
+    if len(keyboard_plt) > 1:
+        active_keys_plt = keyboard_plt[1:]
+    else:
+        active_keys_plt = [keyboard_plt]
+
     if 'backgroundText' in plt_data:
         bg_text_plt = list(plt_data['backgroundText'].values())
     else:
@@ -269,6 +275,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                        attrib={'width': str(w), 'height': str(h), 'bgImage': str(bg_path.as_posix()),
                                'layoutMode': 'relative', 'bgColor': "00000000"})
     tab = Et.SubElement(ui, 'tab', attrib={'name': 'main'})
+    keyboard = Et.SubElement(ui, 'keyboard')
 
     # Information / Credits
     info_text, info_tooltip = 'Info', ''
@@ -303,11 +310,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     print(f'RR Offsets: {rr_offset}')
     print(f'Note limits: {instr.limit}')
 
-    # - Keyboard color -
-
-    keyboard = Et.SubElement(ui, 'keyboard')
-
-    # Add some headroom to avoid saturation
+    # - Add some headroom to avoid saturation -
     Et.SubElement(effects, 'effect', attrib={'type': 'gain', 'level': f'{attenuation}'})
 
     # - Default controls -
@@ -504,6 +507,8 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     ds_group, fk_rls_group, fk_leg_group = None, None, None
     grp_pos = 0
+    active_keys = []
+    note_idx = 0
 
     for gt_idx, (grp, trg) in enumerate(instr.group_trigger):
         if isinstance(instr.limit, list):
@@ -698,18 +703,16 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                                               'parameter': 'ENABLED', 'translation': 'fixed_value',
                                               'translationValue': value_name})
 
-        # Per-group Keyboard color
+        # Per-group keyboard color
         if note_spread != 'none':
+            plt_idx = instr.groups.index(grp) % len(active_keys_plt)
+
             lo, hi = note_limit
-            if len(keyboard_plt) > 1:
-                if lo > 0:
-                    Et.SubElement(keyboard, 'color',
-                                  attrib={'loNote': '0', 'hiNote': str(lo - 1), 'color': keyboard_plt[0]})
-                if hi < 127:
-                    Et.SubElement(keyboard, 'color',
-                                  attrib={'loNote': str(hi + 1), 'hiNote': '127', 'color': keyboard_plt[0]})
+            active_keys.extend(range(lo, hi + 1))
+
             Et.SubElement(keyboard, 'color',
-                          attrib={'loNote': str(lo), 'hiNote': str(hi), 'color': keyboard_plt[-1]})
+                          attrib={'loNote': str(lo), 'hiNote': str(hi),
+                                  'color': active_keys_plt[plt_idx]})
 
         # Add Sample
         for i, o in enumerate(grp_rro):
@@ -734,8 +737,13 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
                 # Per-note keyboard color
                 if note_spread == 'none':
+                    active_keys.append(note)
+
+                    plt_idx = note_idx % len(active_keys_plt)
+                    note_idx += 1
+
                     Et.SubElement(keyboard, 'color',
-                                  attrib={'loNote': str(note), 'hiNote': str(note), 'color': keyboard_plt})
+                                  attrib={'loNote': str(note), 'hiNote': str(note), 'color': active_keys_plt[plt_idx]})
 
                 # Note mapping
                 notes = instr.notes_per_group_trigger_vel[grp][trg][vel]
@@ -876,6 +884,18 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                 if progress is not None:
                     progress.setValue(done)
 
+    # Color inactive keys
+    if len(keyboard_plt) > 1 and len(active_keys) < 128:
+        inactive_keys = np.delete(np.arange(128), np.array(active_keys))
+        diff = np.diff(inactive_keys)
+        idx = np.argwhere(diff > 1).reshape(-1)
+        idx = np.append(np.append(idx, idx + 1), np.array([0, len(inactive_keys) - 1]))
+        inactive_ranges = inactive_keys[np.sort(idx)].reshape(-1, 2)
+        for r in inactive_ranges:
+            lo, hi = r.tolist()
+            Et.SubElement(keyboard, 'color',
+                          attrib={'loNote': str(lo), 'hiNote': str(hi), 'color': keyboard_plt[0]})
+
     # Write XML
     basename = Path(root_dir).stem
     if add_suffix:
@@ -889,7 +909,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     if progress is not None:
         progress.setValue(count)
-        progress.setFormat(f'{smp_count} sample(s) found.')
+    progress.setFormat(f'{smp_count} sample(s) found.')
 
     print('')
 

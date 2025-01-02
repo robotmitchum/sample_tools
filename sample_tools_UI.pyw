@@ -6,6 +6,7 @@
     :date: 2024.10
 """
 
+# import atexit
 import ctypes
 import importlib
 import platform
@@ -17,6 +18,8 @@ import qdarkstyle
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
 
 from __init__ import __version__  # noqa
+
+# from tools.simple_logger import SimpleLogger
 
 if getattr(sys, 'frozen', False):
     import pyi_splash  # noqa
@@ -114,7 +117,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             btn.setObjectName(name)
             btn.setToolTip(tool)
             btn.setStatusTip(self.status_tips[tool])
-            btn.clicked.connect(lambda _, name=tool: self.launch_tool(name))
+            btn.clicked.connect(partial(self.launch_tool, name=tool))
             lyt.addWidget(btn)
 
         img_file = resource_path(Path(self.icons_path).joinpath('quit_64.png'))
@@ -147,6 +150,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             print(f'{name} already running')
             try:
                 self.running[name].show()
+                self.running[name].showNormal()
                 self.running[name].raise_()
                 self.running[name].activateWindow()
             except Exception as e:
@@ -186,6 +190,14 @@ class IconButton(QtWidgets.QPushButton):
         self.setFlat(True)
 
 
+# def global_exception_handler(exctype, value, tb):
+#     logger.log_exception(value)
+
+
+# logger = SimpleLogger('sample_tools_log.txt')
+# sys.excepthook = global_exception_handler
+# atexit.register(lambda: logger.logger.info("Application is shutting down."))
+
 if __name__ == '__main__':
     app_id = f'mitch.sampleTools.{__version__}'
 
@@ -200,13 +212,16 @@ if __name__ == '__main__':
     app.setFont(font)
 
     screen_geo = app.primaryScreen().geometry()
-    window = SampleToolsUi()
 
-    # Move window up in the screen
-    x = screen_geo.x() + (screen_geo.width() - window.width()) // 2
-    y = screen_geo.y() + int(screen_geo.height() * .1 - window.height() / 2)
-    window.move(x, y)
+    try:
+        window = SampleToolsUi()
+        # Move window up in the screen
+        x = screen_geo.x() + (screen_geo.width() - window.width()) // 2
+        y = screen_geo.y() + int(screen_geo.height() * .1 - window.height() / 2)
+        window.move(x, y)
+        window.show()
+        sys.exit(app.exec_())
 
-    window.show()
-
-    sys.exit(app.exec_())
+    except Exception as e:
+        print(e)
+        # logger.log_exception(e)

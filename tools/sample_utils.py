@@ -233,7 +233,7 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
                   prefix='', suffix='',
                   extra_tags=None,
                   transpose=0, force_pitch_from_name=True,
-                  detect_pitch=False, pitch_fraction_mode='keep', pitch_fraction_override=None,
+                  detect_pitch=None, pitch_fraction_mode='keep', pitch_fraction_override=None,
                   use_loop=True, test_run=False):
     """
     Rename sample while updating its metadata accordingly
@@ -260,7 +260,7 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
     :param int transpose: Transpose notes in semitones
     :param bool force_pitch_from_name: Force note from the whole sample name
 
-    :param bool detect_pitch: Force pitch detection using pyin algorithm
+    :param str or None detect_pitch: Force pitch detection, 'corr' or 'pyin'
     :param str pitch_fraction_mode: 'keep', 'fine_tune' or 'fine_tune_lr'
     :param float or None pitch_fraction_override: Pitch fraction in semitone cents
 
@@ -300,7 +300,7 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
     # Detect pitch
     if detect_pitch:
         data, sr = sf.read(input_file)
-        freq = pitch_detect(audio=data, sr=sr, mode='pyin', resample=None, note_range=(20, 109), st_ed=.25)
+        freq = pitch_detect(audio=data, sr=sr, mode=detect_pitch, resample=None, note_range=(20, 109), st_ed=.25)
         if not np.isnan(freq):
             pitch = hz_to_note(freq)
             smp.set_note(int(round(pitch)))

@@ -424,6 +424,45 @@ Might work even when the name is badly formatted</string>
        </widget>
       </item>
       <item>
+       <widget class="QComboBox" name="pitch_mode_cmb">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Pitch detection algorithm
+
+'corr'	auto-correlation, fastest method by far but can be wrong about octave
+'pyin'	pyin algorithm, good results with average speed
+
+NOTE:	None is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis
+	Pitch detection does not work on bell-like sounds</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>corr</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>pyin</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="pitch_fraction_l">
         <property name="text">
          <string>Pitch Fraction</string>

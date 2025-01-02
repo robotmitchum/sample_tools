@@ -75,8 +75,11 @@ SPACE BAR to play/stop selected file LOOPED</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -366,7 +369,6 @@ Lower walue, tighter correction but may sound more distorted</string>
         </property>
         <property name="toolTip">
          <string>Overwrites any pre-existing loop data
-
 Using 'Detect-Loop' only does not alter audio data</string>
         </property>
         <property name="text">
@@ -685,6 +687,9 @@ Add some overhead dependent on the file size</string>
        </item>
        <item>
         <widget class="QCheckBox" name="range_limits_cb">
+         <property name="toolTip">
+          <string>Apply constraints to loop search scope</string>
+         </property>
          <property name="text">
           <string>Range Limits</string>
          </property>
@@ -865,7 +870,6 @@ Set to 0 to disable restriction</string>
         </property>
         <property name="toolTip">
          <string>Create a smoother transition by fading the sample over itself
-
 Does alter audio data</string>
         </property>
         <property name="text">
@@ -902,8 +906,8 @@ Does alter audio data</string>
            <property name="toolTip">
             <string>Enable cross-fade for preview only
 
-As cross-fade options exist in most sampler VSTi
-this option allows to preview the cross-faded result without baking it in the processed files</string>
+Cross-fade features exist in most sampler VSTi
+This option allows to preview the cross-faded result without baking it in the processed files</string>
            </property>
            <property name="text">
             <string>Preview Only</string>
@@ -1894,8 +1898,11 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2145,8 +2152,11 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2173,8 +2183,11 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2202,8 +2215,11 @@ and play the result without writing anything</string>
         </property>
         <property name="font">
          <font>
+          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
+          <strikeout>false</strikeout>
+          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">

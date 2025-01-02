@@ -553,7 +553,7 @@ def mean_pf(pf_values, mode='blend', x=1.0):
     else:
         result = mean
 
-    if mode == 'scl':
+    if mode == 'scl' and std > 0:
         x = 1 - (x / std)
 
     result = lerp(result, pf_values, x)

@@ -365,22 +365,40 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.menu_bar.addAction(self.settings_menu.menuAction())
 
     def set_settings_path(self):
-        self.settings_path = self.current_dir / f'settings.{self.settings_ext}'
+        p = self.current_dir
+        output_path = self.output_path_l.fullPath()
+        if output_path:
+            p = Path(output_path)
+        elif self.files_lw.count():
+            sel = self.get_sel_lw_items()
+            items = self.get_lw_items()
+            if sel:
+                p = Path(sel[0]).parent
+            elif items:
+                p = Path(items[0]).parent
+        self.settings_path = p / f'settings.{self.settings_ext}'
 
     def load_settings(self):
+        self.set_settings_path()
         p = Path(self.settings_path)
         if p.suffix == f'.{self.settings_ext}':
             p = p.parent
-        read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+        result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
+        if result:
+            self.progress_pb.setFormat(f'{result.name} loaded')
 
     def save_settings(self):
-        write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+        self.set_settings_path()
+        result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
+        if result:
+            self.progress_pb.setFormat(f'{result.name} saved')
 
     def get_defaults(self):
         get_settings(self, self.default_settings)
 
     def restore_defaults(self):
         set_settings(widget=self, node=self.default_settings)
+        self.progress_pb.setFormat(f'Default settings restored')
 
 
 def launch(mw, app_id=''):
