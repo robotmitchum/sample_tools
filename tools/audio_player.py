@@ -35,7 +35,10 @@ class AudioPlayer:
                     sd.sleep(100)
                 if msg:
                     if loop_start is None or loop_start is None:
-                        msg(f'■ Press space bar to play')
+                        try:
+                            msg(f'■ Press space bar to play')
+                        except RuntimeError as e:
+                            pass
 
     def stop(self, msg=None):
         if self.is_playing.is_set():

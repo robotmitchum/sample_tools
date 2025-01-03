@@ -33,7 +33,9 @@ from pathlib import Path
 
 from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 
-import UI.rename_tool as gui
+# import UI.rename_tool as gui
+from tools.UI import rename_tool as gui
+
 import sample_utils as st
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch

@@ -315,9 +315,9 @@ class BaseToolUi(QtWidgets.QMainWindow):
             event.ignore()
 
     def closeEvent(self, event):
-        print(f'{self.objectName()} closed')
+        self.player.stop(msg=None)
         self.removeEventFilter(self)
-        self.player.stop()
+        print(f'{self.objectName()} closed')
         event.accept()
 
     def disable_focus(self):

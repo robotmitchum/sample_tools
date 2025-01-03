@@ -24,12 +24,13 @@ from pathlib import Path
 
 from PyQt5 import QtGui, QtCore
 
-import UI.loop_tool as gui
 import loop_sample as ls
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, resource_path
 from sample_utils import Sample
+# import UI.loop_tool as gui
+from tools.UI import loop_tool as gui
 
 # from simple_logger import SimpleLogger
 
