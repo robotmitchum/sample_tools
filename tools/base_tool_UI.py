@@ -28,12 +28,11 @@ import soundfile as sf
 from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 
 from audio_player import AudioPlayer
+from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import FilePathLabel, replace_widget, resource_path
 from common_ui_utils import Worker, Node, KeyPressHandler, sample_to_name
 from sample_utils import Sample
 from waveform_widgets import WaveformDialog, LoopPointDialog
-
-from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
 
 
 class BaseToolUi(QtWidgets.QMainWindow):
@@ -56,6 +55,12 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
+
+        if getattr(sys, 'frozen', False):
+            self.app_dir = Path(sys.executable).parent
+        else:
+            self.app_dir = self.base_dir
+        os.chdir(self.app_dir)
 
         self.file_types = ['.wav', '.flac', '.aif']
         self.file_types.extend([ext.upper() for ext in self.file_types])  # Also add uppercase variant
@@ -365,7 +370,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.menu_bar.addAction(self.settings_menu.menuAction())
 
     def set_settings_path(self):
-        p = self.current_dir
+        p = Path(os.getcwd())
         output_path = self.output_path_l.fullPath()
         if output_path:
             p = Path(output_path)
@@ -385,12 +390,14 @@ class BaseToolUi(QtWidgets.QMainWindow):
             p = p.parent
         result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
         if result:
+            os.chdir(result.parent)
             self.progress_pb.setFormat(f'{result.name} loaded')
 
     def save_settings(self):
         self.set_settings_path()
         result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
         if result:
+            os.chdir(result.parent)
             self.progress_pb.setFormat(f'{result.name} saved')
 
     def get_defaults(self):

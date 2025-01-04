@@ -55,6 +55,12 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
 
+        if getattr(sys, 'frozen', False):
+            self.app_dir = Path(sys.executable).parent
+        else:
+            self.app_dir = self.base_dir
+        os.chdir(self.app_dir)
+
         self.smp_attrib_cfg = resource_path_alt(self.base_dir / 'smp_attrib_cfg.json', parent_dir='')
 
         self.pattern_le.setText('{group}_{note}_{vel}')
@@ -378,15 +384,17 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         if path:
             self.root_dir = path
             self.path_l.setText(path)
-        self.set_settings_path()
-        self.load_settings_from_rootdir()
+            os.chdir(path)
+            self.set_settings_path()
+            self.load_settings_from_rootdir()
 
     def set_settings_path(self):
         if self.root_dir:
             p = Path(self.root_dir)
             self.settings_path = p / f'{p.stem}.{self.settings_ext}'
         else:
-            self.settings_path = self.current_dir / f'settings.{self.settings_ext}'
+            p = Path(os.getcwd())
+            self.settings_path = p / f'settings.{self.settings_ext}'
 
     def limit_ctx(self):
         names = [f'{k}\t{v}' if k != v and not k.lower().startswith('auto') else f'{k}' for k, v in
@@ -513,8 +521,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             if Path(file_path).is_dir():
                 self.root_dir = file_path
                 self.path_l.setText(file_path)
-            self.set_settings_path()
-            self.load_settings_from_rootdir()
+                os.chdir(file_path)
+                self.set_settings_path()
+                self.load_settings_from_rootdir()
 
     def load_settings(self):
         p = Path(self.settings_path)
@@ -522,11 +531,13 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             p = p.parent
         result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
         if result:
+            os.chdir(result.parent)
             self.progress_pb.setFormat(f'{result.name} loaded')
 
     def save_settings(self):
         result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
         if result:
+            os.chdir(result.parent)
             self.progress_pb.setFormat(f'{result.name} saved')
 
     def get_defaults(self):
