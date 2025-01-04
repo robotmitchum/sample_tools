@@ -33,17 +33,14 @@ from pathlib import Path
 
 from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 
-# import UI.rename_tool as gui
-from tools.UI import rename_tool as gui
-
 import sample_utils as st
+from UI import rename_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, add_insert_ctx, resource_path
 from file_utils import move_to_subdir
-# from simple_logger import SimpleLogger
 
-import os
+# from simple_logger import SimpleLogger
 
 __version__ = '1.1.0'
 

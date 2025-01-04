@@ -19,6 +19,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from scipy import interpolate
 
 import noise_reduction as nr
+from UI import upsample_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import pad_audio
@@ -28,8 +29,6 @@ from loop_sample import db_to_lin
 from sample_utils import Sample
 from split_audio import envelope_transform
 from subprocess_utils import DisableShellWindows
-# import UI.upsample_tool as gui
-from tools.UI import upsample_tool as gui
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 

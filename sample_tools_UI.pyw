@@ -56,7 +56,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         self.current_dir = Path(__file__).parent
         self.tools_path = self.current_dir / 'tools'
-        sys.path.append(resource_path(self.tools_path, as_str=True))
+        sys.path.append(str(self.tools_path))
 
         self.tools = {
             'SMP2ds': 'smp2ds_UI.pyw',
@@ -96,7 +96,11 @@ class SampleToolsUi(QtWidgets.QMainWindow):
     def import_tools(self):
         for name in self.tools:
             module_name = self.tools[name].split('.')[0]
-            self.tool_modules[name] = importlib.import_module(module_name)
+            try:
+                self.tool_modules[name] = importlib.import_module(module_name)
+                print(f'{module_name}: loaded')
+            except Exception as e:
+                print(f'Failed to import {module_name}: {e}')
 
     def setupUi(self):
         centralwidget = QtWidgets.QWidget(self)

@@ -154,7 +154,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     # or using ID3 tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
 
     num_attrs, ds_smp_attrib = ['vel', 'note', 'seqPosition'], []
-    smp_attrib_data = read_json(smp_attrib_cfg, ordered=True) or {}
+    smp_attrib_data = read_json(smp_attrib_cfg) or {}
     if 'num_attrib' in smp_attrib_data:
         num_attrs = smp_attrib_data['num_attrib']
     if 'ds_smp_attrib' in smp_attrib_data:
@@ -189,7 +189,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                                       exclude=exclude, relpath=root_dir)
 
     # Color Palette Config
-    plt_data = read_json(color_plt_cfg, ordered=True) or {}
+    plt_data = read_json(color_plt_cfg) or {}
     if plt_adjust:
         plt_data = adjust_palette(plt_data=plt_data, adjust=plt_adjust)
 
@@ -229,7 +229,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     cx, cy = w // 2, ui_h // 2  # Center of "canvas"
 
     # Create background image
-    bg_dir = Path.joinpath(Path(root_dir), 'Resources')
+    bg_dir = Path(root_dir).joinpath('Resources')
     if not bg_dir.exists():
         os.makedirs(bg_dir, exist_ok=True)
     bg_path = Path.joinpath(bg_dir, 'bg.jpg')

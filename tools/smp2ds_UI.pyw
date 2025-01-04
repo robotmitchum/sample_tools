@@ -30,14 +30,13 @@ from PyQt5 import QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 
 import smp_to_dspreset as smp2ds
+from UI import smp_to_ds as gui
 from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import add_ctx, add_insert_ctx, popup_menu
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
 from jsonFile import read_json
 from smp_to_dspreset import __version__
-# import UI.smp_to_ds as gui
-from tools.UI import smp_to_ds as gui
 
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
@@ -61,14 +60,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             self.app_dir = self.base_dir
         os.chdir(self.app_dir)
 
-        self.smp_attrib_cfg = resource_path_alt(self.base_dir / 'smp_attrib_cfg.json', parent_dir='')
+        self.smp_attrib_cfg = resource_path_alt(self.base_dir / 'smp_attrib_cfg.json', parent_dir=self.app_dir)
 
         self.pattern_le.setText('{group}_{note}_{vel}')
         self.limit_le.setText('')
         self.override_cb.setChecked(False)
 
         self.instr_range_cfg = {}
-        self.instr_range_cfg_path = resource_path_alt(self.base_dir / 'instr_range_cfg.json', parent_dir='')
+        self.instr_range_cfg_path = resource_path_alt(self.base_dir / 'instr_range_cfg.json', parent_dir=self.app_dir)
         self.set_instr_range_cfg(cfg_file=self.instr_range_cfg_path)
 
         self.limit_le.setText('autox2')
@@ -79,7 +78,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.attenuation_dsb.setValue(-9)
         self.fk_volume_dsb.setValue(-15)
 
-        self.plt_cfg_dir = resource_path_alt(self.base_dir / 'plt_cfg', parent_dir='', as_str=False)
+        self.plt_cfg_dir = resource_path_alt(self.base_dir / 'plt_cfg', parent_dir=self.app_dir, as_str=False)
         text_font_path = resource_path(self.current_dir / 'HelveticaNeueThin.otf')
         self.text_font = (text_font_path, 24)
 

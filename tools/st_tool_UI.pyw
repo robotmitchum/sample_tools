@@ -27,14 +27,13 @@ import soundfile as sf
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import pseudo_stereo as ps
+from UI import st_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import rms
 from common_ui_utils import add_ctx, replace_widget, FilePathLabel, resource_path, resource_path_alt
 from file_utils import resolve_overwriting
 from sample_utils import Sample
-# import UI.st_tool as gui
-from tools.UI import st_tool as gui
 from utils import append_metadata, set_md_tags
 
 __version__ = '1.1.0'
@@ -307,7 +306,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
     def get_ir_samples(self, ir_subdir='dh_ir'):
         self.ir_samples = []
-        ir_path = resource_path_alt(self.base_dir / ir_subdir, parent_dir='', as_str=False)
+        ir_path = resource_path_alt(self.base_dir / ir_subdir, parent_dir=self.app_dir, as_str=False)
         if ir_path.is_dir():
             for ext in self.file_types:
                 ir_smp = ir_path.glob(f'*{ext}')
