@@ -30,6 +30,7 @@ from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_ui_utils import add_ctx, resource_path
 from sample_utils import Sample
+from utils import is_note_name, name_to_note, note_to_hz
 
 # from simple_logger import SimpleLogger
 
@@ -118,7 +119,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         add_ctx(self.resynth_fade_out_dsb, [.125, .25, .5, 1])
 
         add_ctx(self.atonal_mix_dsb, [0, .05, .1, .2, .5, 1])
-        add_ctx(self.freqs_le, ['', '110', '440', '110,440'])
+        add_ctx(self.freqs_le, ['', 'A3', '440', '110 440'])
         add_ctx(self.st_width_dsb, [0, .25, .5, .75, 1])
 
         # Output path widget
@@ -178,9 +179,18 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         atonal_mix = self.atonal_mix_dsb.value()
         freq_mode = self.resynth_freq_mode_cmb.currentText()
 
-        freqs = self.freqs_le.text() or None
-        if freqs:
-            freqs = [float(f) for f in freqs.replace(',', ' ').split(' ')]
+        freqs = []
+        freq_tokens = self.freqs_le.text()
+        if freq_tokens:
+            for item in freq_tokens.replace(',', ' ').split(' '):
+                if is_note_name(item):
+                    freqs.append(note_to_hz(name_to_note(item)))
+                else:
+                    try:
+                        freqs.append(float(item))
+                    except Exception as e:
+                        print(f'Freqs: failed to interpret {item}')
+
         resynth_mix = self.resynth_mix_cmb.currentText()
         fade_in = self.resynth_fade_in_dsb.value()
         fade_out = self.resynth_fade_out_dsb.value()

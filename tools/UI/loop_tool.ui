@@ -1488,7 +1488,7 @@ This is important when mixing synthesized part with original input so both are i
           </sizepolicy>
          </property>
          <property name="toolTip">
-          <string>List of frequencies separated by commas</string>
+          <string>List of note names or frequencies separated by spaces or commas</string>
          </property>
          <property name="frame">
           <bool>false</bool>

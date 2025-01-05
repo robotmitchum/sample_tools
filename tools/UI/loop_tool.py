@@ -951,7 +951,7 @@ class Ui_loop_tool_mw(object):
         self.resynth_freq_mode_cmb.setItemText(1, _translate("loop_tool_mw", "note_pf"))
         self.resynth_freq_mode_cmb.setItemText(2, _translate("loop_tool_mw", "custom"))
         self.freqs_l.setText(_translate("loop_tool_mw", "Freqs"))
-        self.freqs_le.setToolTip(_translate("loop_tool_mw", "List of frequencies separated by commas"))
+        self.freqs_le.setToolTip(_translate("loop_tool_mw", "List of note names or frequencies separated by spaces or commas"))
         self.atonal_mix_l.setText(_translate("loop_tool_mw", "Atonal Mix"))
         self.atonal_mix_dsb.setToolTip(_translate("loop_tool_mw", "Atonal part amplitude\n"
 "Balance \"Tonal\" (Fundamental frequency) VS \"Atonal\" (Noise) part of the sound\n"
