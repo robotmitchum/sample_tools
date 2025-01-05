@@ -560,19 +560,20 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         event.accept()
 
     def run(self):
+        # Center on screen not on its parent
         parent = self.parent()
         if parent:
             screen = self.parent().screen()
         else:
             screen = self.screen()
 
-        # Center on screen not on its parent
+        self.show()
+
         screen_geo = screen.geometry()
         x = screen_geo.x() + (screen_geo.width() - self.width()) // 2
         y = screen_geo.y() + (screen_geo.height() - self.height()) // 2
         self.move(x, y)
 
-        self.show()
         return self
 
 

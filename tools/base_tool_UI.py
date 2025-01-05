@@ -341,12 +341,13 @@ class BaseToolUi(QtWidgets.QMainWindow):
         else:
             screen = self.screen()
 
+        self.show()
+
         screen_geo = screen.geometry()
         x = screen_geo.x() + (screen_geo.width() - self.width()) // 2
         y = screen_geo.y() + (screen_geo.height() - self.height()) // 2
         self.move(x, y)
 
-        self.show()
         return self
 
     def setup_menu_bar(self):
