@@ -1,6 +1,8 @@
+# SampleTools
+
 ![SampleTools](tools/UI/icons/sample_tools_64.png)
 
-# SampleTools
+![SampleTools_UI](screencaps/sample_tools_ui.png)
 
 A collection of tools to assist in assembling sampled instruments with a more specific focus on Decent Sampler
 
@@ -45,9 +47,11 @@ Execute sample_tools_UI.pyw
 
 **These tools use custom ID3 tags to handle metadata for the FLAC format which is recommended to get the most features**
 
+## SMP2Ds
+
 ![SMP2Ds](tools/UI/icons/smp2ds_64.png)
 
-## SMP2Ds
+![SMP2Ds_UI](screencaps/smp2ds_ui.png)
 
 Create Decent Sampler presets from samples in wav or flac format (limited support of aif)
 
@@ -86,9 +90,11 @@ This file is used to define custom instrument ranges used by this tool when pres
 
 Use instrument names as keys with min and max MIDI note number provided as a list
 
+## Split Audio Tool
+
 ![SplitTool](tools/UI/icons/split_tool_64.png)
 
-## Split Audio Tool
+![SplitTool_UI](screencaps/split_tool_ui.png)
 
 Split and trim audio file(s) by detecting silences
 
@@ -103,9 +109,11 @@ Input audio files are split into several samples and renamed according user defi
 - Automatic micro fade in/out to eliminate potential popping
 - wav, aif, flac as output
 
+## Rename Sample Tool
+
 ![RenameTool](tools/UI/icons/rename_tool_64.png)
 
-## Rename Sample Tool
+![RenameTool_UI](screencaps/rename_tool_ui.png)
 
 Renaming, conversion of audio files using pattern matching, pitch detection
 
@@ -114,9 +122,11 @@ Update their 'smpl' chunk/metadata accordingly, so they are properly conformed f
 - wav, aif, flac as input
 - wav and flac output
 
+## Loop Tool
+
 ![LoopTool](tools/UI/icons/loop_tool_64.png)
 
-## Loop Tool
+![LoopTool_UI](screencaps/loop_tool_ui.png)
 
 Detect loop points or modify audio files to make them loop
 
@@ -125,9 +135,11 @@ Detect loop points or modify audio files to make them loop
 - FFT re-synthesis
 - wav and flac output
 
+## Stereo Tool
+
 ![StereoTool](tools/UI/icons/st_tool_64.png)
 
-## Stereo Tool
+![StereoTool_UI](screencaps/st_tool_ui.png)
 
 Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 
@@ -135,9 +147,11 @@ Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 - Haas, Velvet, Convolution, Side Convolution
 - wav, flac output
 
+## Upsample Tool
+
 ![UpsampleTool](tools/UI/icons/upsample_tool_64.png)
 
-## Upsample Tool
+![UpsampleTool_UI](screencaps/upsample_tool_ui.png)
 
 Up-sample audio file(s) using spectral band replication and denoising to improve old 8 bits samples
 
