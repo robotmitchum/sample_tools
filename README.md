@@ -74,9 +74,9 @@ Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspr
 - Samples are added and set according to their 'smpl' chunk/metadata (wav and flac only) and file name pattern matching
 
   Respect for pitch, pitch fraction, loop points
-- Fake release, fake legato and fake robin features
+- Fake release, fake legato and fake round-robin features
 - Automatic creation of a working UI with a customisable color theme
-- wav, flac and aif IR files are supported for the convolution reverb, they must be located in an IR subdirectory
+- wav, flac and aif IR files are supported for the convolution reverb, they must be located in an 'IR' subdirectory
 - dslibrary file generation from a dspreset directory ready to use or distribute
 
 ### smp_attrib_cfg.json
