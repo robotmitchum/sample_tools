@@ -8,6 +8,8 @@ Tools for creating and editing virtual sampled instruments, optimized for Decent
 
 ## Installation
 
+**For Windows users, an executable is available on this page, you don't need to install Python to use it**
+
 This project was developed and tested with Python 3.12.8
 
 Additional required packages all listed in provided requirements.txt
@@ -27,11 +29,24 @@ Additional required packages all listed in provided requirements.txt
 - sounddevice
 - soundfile
 - webcolors
-- pyrubberband (only for upsample, requires [rubberband executable](https://breakfastquay.com/rubberband/))
+- pyrubberband (only for upsample, requires [rubberband executable](https://breakfastquay.com/rubberband/) to be copied
+  in the program directory)
+
+Clone repository and install required packages
+
+```
+git clone https://github.com/robotmitchum/sample_tools.git
+cd sample_tools
+pip3 install -r requirements.txt
+```
 
 ## Usage
 
 Execute sample_tools_UI.pyw
+
+```
+python sample_tools_UI.pyw
+```
 
 ### Common features for most tools
 
