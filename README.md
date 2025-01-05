@@ -4,7 +4,7 @@
 
 ![SampleTools_UI](screencaps/sample_tools_ui.png)
 
-A collection of tools to assist in assembling sampled instruments with a more specific focus on Decent Sampler
+Tools for creating and editing virtual sampled instruments, optimized for DecentSampler
 
 ## Installation
 
@@ -27,9 +27,7 @@ Additional required packages all listed in provided requirements.txt
 - sounddevice
 - soundfile
 - webcolors
-- pyrubberband (only for upsample)
-
-  (required rubberband executable available here https://breakfastquay.com/rubberband/)
+- pyrubberband (only for upsample, requires [rubberband executable](https://breakfastquay.com/rubberband/))
 
 ## Usage
 
