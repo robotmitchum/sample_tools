@@ -607,7 +607,7 @@ class Ui_loop_tool_mw(object):
         self.resynth_fade_in_dsb.setMinimum(0.0)
         self.resynth_fade_in_dsb.setMaximum(1.0)
         self.resynth_fade_in_dsb.setSingleStep(0.1)
-        self.resynth_fade_in_dsb.setProperty("value", 0.5)
+        self.resynth_fade_in_dsb.setProperty("value", 0.25)
         self.resynth_fade_in_dsb.setObjectName("resynth_fade_in_dsb")
         self.horizontalLayout_10.addWidget(self.resynth_fade_in_dsb)
         self.resynth_fade_out_l = QtWidgets.QLabel(self.resynth_mix_wid)
@@ -625,7 +625,7 @@ class Ui_loop_tool_mw(object):
         self.resynth_fade_out_dsb.setMinimum(0.0)
         self.resynth_fade_out_dsb.setMaximum(1.0)
         self.resynth_fade_out_dsb.setSingleStep(0.1)
-        self.resynth_fade_out_dsb.setProperty("value", 0.5)
+        self.resynth_fade_out_dsb.setProperty("value", 0.25)
         self.resynth_fade_out_dsb.setObjectName("resynth_fade_out_dsb")
         self.horizontalLayout_10.addWidget(self.resynth_fade_out_dsb)
         self.st_width_l = QtWidgets.QLabel(self.resynth_mix_wid)
@@ -970,10 +970,10 @@ class Ui_loop_tool_mw(object):
         self.resynth_mix_cmb.setItemText(2, _translate("loop_tool_mw", "loop"))
         self.resynth_fade_in_l.setText(_translate("loop_tool_mw", "Fade In"))
         self.resynth_fade_in_dsb.setToolTip(_translate("loop_tool_mw", "Fading of the synthesized part before loop start\n"
-"Length in percent of loop length"))
+"Length in percent of audio length"))
         self.resynth_fade_out_l.setText(_translate("loop_tool_mw", "Fade Out"))
         self.resynth_fade_out_dsb.setToolTip(_translate("loop_tool_mw", "Fading of the synthesized part after loop end\n"
-"Length in percent of loop length"))
+"Length in percent of audio length"))
         self.st_width_l.setText(_translate("loop_tool_mw", "Stereo Width"))
         self.st_width_dsb.setToolTip(_translate("loop_tool_mw", "Stereo effect width when using Re-synth mix \'all\'\n"
 "With this mode left and right channels use a different random seed"))

@@ -1703,7 +1703,7 @@ Has no effect with no fundamental frequency set
          </property>
          <property name="toolTip">
           <string>Fading of the synthesized part before loop start
-Length in percent of loop length</string>
+Length in percent of audio length</string>
          </property>
          <property name="frame">
           <bool>false</bool>
@@ -1727,7 +1727,7 @@ Length in percent of loop length</string>
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>0.500000000000000</double>
+          <double>0.250000000000000</double>
          </property>
         </widget>
        </item>
@@ -1763,7 +1763,7 @@ Length in percent of loop length</string>
          </property>
          <property name="toolTip">
           <string>Fading of the synthesized part after loop end
-Length in percent of loop length</string>
+Length in percent of audio length</string>
          </property>
          <property name="frame">
           <bool>false</bool>
@@ -1787,7 +1787,7 @@ Length in percent of loop length</string>
           <double>0.100000000000000</double>
          </property>
          <property name="value">
-          <double>0.500000000000000</double>
+          <double>0.250000000000000</double>
          </property>
         </widget>
        </item>

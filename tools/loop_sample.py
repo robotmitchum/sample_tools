@@ -65,6 +65,18 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
     'fade_out': float (% of loop length),
     'mode': str (fade mode 'linear', 'smoothstep' or 'exp')}
 
+    :param dict or None or bool resynth: FFT Re-Synth settings
+    {'fft_range': str (fft analysis audio range mode 'custom' or 'from_loop'),
+    'start': float (fft custom start as % of audio length),
+    'fft_size': float (fft custom length % of audio length),
+    'duration': float length of synthesized audio in s,
+    'atonal_mix': float (mix between tonal and atonal content 0-1),
+    'freq_mode': str (fundamental frequency mode 'note', 'note_pf' or 'custom'),
+    'freqs': list(float) additional custom frequencies,
+    'resynth_mix': str (synthesis mix mode 'all', 'loop_tail', 'loop'),
+    'fade_in': float (fade-in length as % of audio length), 'fade_out': float (fade-out length as % of audio length),
+     'width': float stereo effect mix with resynth_mix=='all' (0-1)}
+
     :param bool trim_after: Trim file after loop end
 
     :param bool no_overwriting:
@@ -177,8 +189,10 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
                                         output_file=None)
         loop_len = len(resynth_data)
 
-        fade_in = int(resynth['fade_in'] * len(resynth_data))
-        fade_out = int(resynth['fade_out'] * len(resynth_data))
+        # fade_in = int(resynth['fade_in'] * len(resynth_data))
+        # fade_out = int(resynth['fade_out'] * len(resynth_data))
+        fade_in = int(resynth['fade_in'] * len(audio))
+        fade_out = int(resynth['fade_out'] * len(audio))
 
         # Mix re-synthesis with original audio
         if resynth['resynth_mix'] == 'loop_tail':
