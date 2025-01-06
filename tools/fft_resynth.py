@@ -17,7 +17,7 @@ from common_math_utils import lerp
 
 
 def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
-                start=0, fft_size=6000, freqs=None,
+                start=0, fft_size=2048, freqs=None,
                 make_stereo=False, seed=0, width=.25,
                 atonal_mix=1, duration=1, normalize=None,
                 output_file=None):
@@ -32,6 +32,7 @@ def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
 
     :param int start: Start of input audio used for FFT
     :param int fft_size: Length of input audio used for FFT
+
     :param list(float) float or None freqs: Frequencies used to determine harmonic series and generate "tonal" content
     These frequencies will keep their phase intact, other frequencies wil get random phases
 
@@ -101,7 +102,9 @@ def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
         tgt_idx = np.linspace(0, len(fft_in) - 1, len(fft_result))
         magnitudes = interp1d(src_idx, np.abs(fft_in), kind='cubic')(tgt_idx)
         phases = np.angle(fft_noise)
-        fft_result = magnitudes * np.exp(1j * phases) * atonal_mix
+
+        w = (1, atonal_mix)[bool(freqs)]
+        fft_result = magnitudes * np.exp(1j * phases) * w
 
         # Replace phases in resulting bins with fft_input according to harmonic series
         if freqs:

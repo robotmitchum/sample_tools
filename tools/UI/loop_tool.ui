@@ -1183,7 +1183,7 @@ Overrides loop points</string>
             </size>
            </property>
            <property name="text">
-            <string>Start</string>
+            <string>FFT Start</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -1228,7 +1228,7 @@ Overrides loop points</string>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="fft_size_l">
+          <widget class="QLabel" name="fft_end_l">
            <property name="minimumSize">
             <size>
              <width>80</width>
@@ -1242,7 +1242,7 @@ Overrides loop points</string>
             </size>
            </property>
            <property name="text">
-            <string>FFT Size</string>
+            <string>FFT End</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -1250,7 +1250,7 @@ Overrides loop points</string>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="fft_size_dsb">
+          <widget class="QDoubleSpinBox" name="fft_end_dsb">
            <property name="minimumSize">
             <size>
              <width>64</width>
@@ -1258,9 +1258,9 @@ Overrides loop points</string>
             </size>
            </property>
            <property name="toolTip">
-            <string>FFT analysis length in percent of of input audio length
+            <string>FFT analysis end in percent of of input audio length
 
-The shorter the coarser, more &quot;noise-like&quot; the result
+The shorter the FFT size the coarser, more &quot;noise-like&quot; the result
 The longer the smoother, more diluted the result, better for low frequencies</string>
            </property>
            <property name="frame">

@@ -34,7 +34,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
                 detect_loop={'n_cues': 90000, 'min_len': 100, 'window_size': 10, 'window_offset': .5,
                              'start_range': 1, 'end_range': 0, 'hash_search': False},
                 crossfade={'fade_in': .5, 'fade_out': .5, 'mode': 'linear'},
-                resynth={'fft_range': 'custom', 'start': 0.333, 'fft_size': 1.0, 'duration': 2.0,
+                resynth={'fft_range': 'custom', 'fft_start': 0.25, 'fft_end': 1.0, 'duration': 2.0,
                          'atonal_mix': 1, 'freq_mode': 'note_pf', 'freqs': None,
                          'resynth_mix': 'loop_tail', 'fade_in': .5, 'fade_out': .5, 'width': .5},
                 trim_after=False, no_overwriting=True, progress_pb=None):
@@ -67,8 +67,8 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
     :param dict or None or bool resynth: FFT Re-Synth settings
     {'fft_range': str (fft analysis audio range mode 'custom' or 'from_loop'),
-    'start': float (fft custom start as % of audio length),
-    'fft_size': float (fft custom length % of audio length),
+    'fft_start': float (fft custom start as % of audio length),
+    'fft_end': float (fft custom end as % of audio length),
     'duration': float length of synthesized audio in s,
     'atonal_mix': float (mix between tonal and atonal content 0-1),
     'freq_mode': str (fundamental frequency mode 'note', 'note_pf' or 'custom'),
@@ -156,12 +156,15 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
     # FFT re-synthesis
     if resynth:
+        audio_end = len(audio) - 1
         if resynth['fft_range'] == 'custom':
-            fft_start = int(resynth['fft_start'] * len(audio))
-            fft_size = min(int(resynth['fft_size'] * len(audio)), len(audio) - fft_start)
+            # fft_size = min(int(resynth['fft_size'] * len(audio)), len(audio) - fft_start)
+            fft_start = min(int(resynth['fft_start'] * audio_end), audio_end)
+            fft_end = max(int(resynth['fft_end'] * audio_end), fft_start)
+            fft_size = fft_end - fft_start + 1
         else:
             fft_start = info.loopStart
-            fft_size = info.loopEnd - info.loopStart
+            fft_size = info.loopEnd - info.loopStart + 1
 
         freqs = []
         if resynth['freq_mode'] == 'note' and info.note is not None:
@@ -196,7 +199,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
         # Mix re-synthesis with original audio
         if resynth['resynth_mix'] == 'loop_tail':
-            # Replace loop tail
+            # Replace loop and tail
             print('loop_tail')
             resynth_len = fade_in + loop_len
             reps = int(np.ceil(resynth_len / loop_len))

@@ -855,8 +855,13 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                             fk_rls_smp_attrib['loopEnabled'] = '0'
                             for attr in ['loopStart', 'loopEnd', 'loopCrossfadeMode', 'loopCrossfade']:
                                 fk_rls_smp_attrib.pop(attr, None)
-                            smp_start = (loop_end, cues[0])[fk_rls_mode == 'cue']
-                            fk_rls_smp_attrib['start'] = str(smp_start)
+                            smp_start = None
+                            if fk_rls_mode == 'cue' and cues:
+                                smp_start = cues[0]
+                            elif loop_end:
+                                smp_start = loop_end
+                            if smp_start:
+                                fk_rls_smp_attrib['start'] = str(smp_start)
 
                     if abs(fk_rls_smp_tuning) > .001:
                         fk_rls_smp_attrib['tuning'] = f'{fk_rls_smp_tuning:.03f}'

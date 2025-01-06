@@ -34,7 +34,7 @@ from utils import is_note_name, name_to_note, note_to_hz
 
 # from simple_logger import SimpleLogger
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 
 class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
@@ -112,7 +112,12 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         self.resynth_mix_cmb.currentTextChanged.emit(self.resynth_mix_cmb.currentText())
 
         add_ctx(self.fft_start_dsb, [0, .125, .25, .5, .75])
-        add_ctx(self.fft_size_dsb, [.125, .25, .5, 1])
+        add_ctx(self.fft_end_dsb, [.125, .25, .5, .75, 1])
+
+        min_fft_size = .001
+        self.fft_start_dsb.setMaximum(self.fft_start_dsb.maximum() - min_fft_size)
+        self.fft_start_dsb.valueChanged.connect(lambda value: self.fft_end_dsb.setMinimum(value + min_fft_size))
+
         add_ctx(self.resynth_duration_dsb, [.5, 1, 2, 4, 8])
 
         add_ctx(self.resynth_fade_in_dsb, [.125, .25, .5, 1])
@@ -174,7 +179,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         # Re-synthesis parameters
         fft_range = self.fft_range_cmb.currentText()
         fft_start = self.fft_start_dsb.value()
-        fft_size = self.fft_size_dsb.value()
+        fft_end = self.fft_end_dsb.value()
         duration = self.resynth_duration_dsb.value()
         atonal_mix = self.atonal_mix_dsb.value()
         freq_mode = self.resynth_freq_mode_cmb.currentText()
@@ -197,7 +202,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         width = self.st_width_dsb.value()
 
         self.options.resynth = \
-            (None, {'fft_range': fft_range, 'fft_start': fft_start, 'fft_size': fft_size, 'duration': duration,
+            (None, {'fft_range': fft_range, 'fft_start': fft_start, 'fft_end': fft_end, 'duration': duration,
                     'atonal_mix': atonal_mix, 'freq_mode': freq_mode, 'freqs': freqs,
                     'resynth_mix': resynth_mix, 'fade_in': fade_in, 'fade_out': fade_out, 'width': width})[
                 self.resynth_cb.isChecked()]
