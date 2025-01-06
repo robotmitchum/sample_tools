@@ -59,10 +59,14 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         if self.tools_path.exists():
             print(f'tools sub-directory successfully found: {str(self.tools_path)}')
-
-        sys.path.append(str(self.tools_path))
-        if str(self.tools_path) in sys.path:
-            print('tools sub-directory successfully added to sys.path')
+            sys.path.append(str(self.tools_path))
+            # Check append
+            if str(self.tools_path) in sys.path:
+                print('tools sub-directory successfully added to sys.path')
+            else:
+                print('tools sub-directory failed to be added to sys.path')
+        else:
+            print(f'tools sub-directory not found: {str(self.tools_path)}')
 
         self.tools = {
             'SMP2ds': 'smp2ds_UI.pyw',
