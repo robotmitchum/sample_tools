@@ -529,19 +529,22 @@ def get_pad_values(ra, rb):
 
 def mean_pf(pf_values, mode='blend', x=1.0):
     """
-    Compute the mean of the pitch fraction
-    if standard deviation is too high, a separate mean is computed for positive and negative values
+    Compute the mean of the pitch fractions
+    If the standard deviation is too high, a separate mean is computed for positive and negative values
 
     :param np.array pf_values: Array of pitch fraction values
     :param str mode: 'blend' blend mean with original values or 'scl' scale standard deviation to given value
     :param float x: Blend/scale factor
+
     :return:
     :rtype: np.array
     """
     result = pf_values.copy()
-
     mean = np.mean(pf_values)
     std = np.std(pf_values)
+    std_type = type(std)
+
+    tol = 1e-3
 
     if std > 25:
         idx = pf_values - mean < 0
@@ -553,8 +556,14 @@ def mean_pf(pf_values, mode='blend', x=1.0):
     else:
         result = mean
 
-    if mode == 'scl' and std > 0:
-        x = 1 - (x / std)
+    if mode == 'scl':
+        if isinstance(std, std_type):
+            if std > tol:
+                x = 1 - (x / std)
+        else:
+            x = np.zeros(len(std)) + x
+            std_idx = std > tol
+            x[std_idx] = 1 - (x[std_idx] / std[std_idx])
 
     result = lerp(result, pf_values, x)
     return result
