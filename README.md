@@ -42,7 +42,7 @@ pip3 install -r requirements.txt
 
 ## Usage
 
-Execute sample_tools_UI.pyw
+Execute sample_tools_UI.py
 
 ```
 python sample_tools_UI.py
