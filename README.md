@@ -45,7 +45,7 @@ pip3 install -r requirements.txt
 Execute sample_tools_UI.pyw
 
 ```
-python sample_tools_UI.pyw
+python sample_tools_UI.py
 ```
 
 ### Common features for most tools

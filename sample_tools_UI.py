@@ -69,12 +69,12 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             print(f'tools sub-directory not found: {str(self.tools_path)}')
 
         self.tools = {
-            'SMP2ds': 'smp2ds_UI.pyw',
-            'Split Audio Tool': 'split_tool_UI.pyw',
-            'Rename Sample Tool': 'rename_tool_UI.pyw',
-            'Loop Tool': 'loop_tool_UI.pyw',
-            'Stereo Tool': 'st_tool_UI.pyw',
-            'Upsample Tool': 'upsample_tool_UI.pyw',
+            'SMP2ds': 'smp2ds_UI.py',
+            'Split Audio Tool': 'split_tool_UI.py',
+            'Rename Sample Tool': 'rename_tool_UI.py',
+            'Loop Tool': 'loop_tool_UI.py',
+            'Stereo Tool': 'st_tool_UI.py',
+            'Upsample Tool': 'upsample_tool_UI.py',
         }
 
         # self.tool_modules = {k: eval(v.split('.')[0]) for k, v in self.tools.items()}
