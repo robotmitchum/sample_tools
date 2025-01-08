@@ -77,7 +77,6 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             'Upsample Tool': 'upsample_tool_UI.py',
         }
 
-        # self.tool_modules = {k: eval(v.split('.')[0]) for k, v in self.tools.items()}
         self.tool_modules = {}
         self.import_tools()
 
@@ -225,7 +224,13 @@ if __name__ == '__main__':
     font.setPointSize(11)
     app.setFont(font)
 
-    screen_geo = app.primaryScreen().geometry()
+    current_screen = app.primaryScreen()
+    for screen in QtWidgets.QApplication.screens():
+        if screen.geometry().contains(Qt.QCursor.pos()):
+            current_screen = screen
+            break
+
+    screen_geo = current_screen.geometry()
 
     try:
         window = SampleToolsUi()
