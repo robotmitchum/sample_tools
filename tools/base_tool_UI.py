@@ -121,6 +121,29 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
         self.disable_focus()
 
+    def setup_menu_bar(self):
+        self.menu_bar = QtWidgets.QMenuBar(self)
+
+        self.settings_menu = QtWidgets.QMenu(self.menu_bar)
+        self.settings_menu.setTitle('Settings')
+
+        # self.setMenuBar(self.menu_bar)
+        lyt = self.centralwidget.layout()
+        lyt.setMenuBar(self.menu_bar)
+
+        self.save_settings_a = QtWidgets.QAction(self)
+        self.save_settings_a.setText('Save settings')
+        self.load_settings_a = QtWidgets.QAction(self)
+        self.load_settings_a.setText('Load settings')
+        self.restore_defaults_a = QtWidgets.QAction(self)
+        self.restore_defaults_a.setText('Restore defaults')
+
+        self.settings_menu.addAction(self.load_settings_a)
+        self.settings_menu.addAction(self.save_settings_a)
+        self.settings_menu.addSeparator()
+        self.settings_menu.addAction(self.restore_defaults_a)
+        self.menu_bar.addAction(self.settings_menu.menuAction())
+
     def get_options(self):
         self.options.no_overwriting = self.no_overwriting_cb.isChecked()
 
@@ -349,26 +372,6 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.move(x, y)
 
         return self
-
-    def setup_menu_bar(self):
-        self.menu_bar = QtWidgets.QMenuBar(self)
-
-        self.settings_menu = QtWidgets.QMenu(self.menu_bar)
-        self.settings_menu.setTitle('Settings')
-        self.setMenuBar(self.menu_bar)
-
-        self.save_settings_a = QtWidgets.QAction(self)
-        self.save_settings_a.setText('Save settings')
-        self.load_settings_a = QtWidgets.QAction(self)
-        self.load_settings_a.setText('Load settings')
-        self.restore_defaults_a = QtWidgets.QAction(self)
-        self.restore_defaults_a.setText('Restore defaults')
-
-        self.settings_menu.addAction(self.load_settings_a)
-        self.settings_menu.addAction(self.save_settings_a)
-        self.settings_menu.addSeparator()
-        self.settings_menu.addAction(self.restore_defaults_a)
-        self.menu_bar.addAction(self.settings_menu.menuAction())
 
     def set_settings_path(self):
         p = Path(os.getcwd())

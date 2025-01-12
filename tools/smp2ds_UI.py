@@ -28,6 +28,7 @@ from pathlib import Path
 import qdarkstyle
 from PyQt5 import QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QMenu, QMenuBar, QAction
 
 import smp_to_dspreset as smp2ds
 from UI import smp_to_ds as gui
@@ -87,6 +88,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.palette_cfg = {}
         self.populate_palette_cmb()
 
+        self.setup_menu_bar()
         self.default_settings = Node()
         self.settings_ext = 'smp2ds'
         self.settings_path = None
@@ -202,6 +204,28 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.save_settings_a.triggered.connect(self.save_settings)
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
         self.get_defaults()
+
+    def setup_menu_bar(self):
+        self.menu_bar = QMenuBar(self)
+
+        self.settings_menu = QMenu(self.menu_bar)
+        self.settings_menu.setTitle('Settings')
+        # self.setMenuBar(self.menu_bar)
+        lyt = self.centralwidget.layout()
+        lyt.setMenuBar(self.menu_bar)
+
+        self.save_settings_a = QAction(self)
+        self.save_settings_a.setText('Save settings')
+        self.load_settings_a = QAction(self)
+        self.load_settings_a.setText('Load settings')
+        self.restore_defaults_a = QAction(self)
+        self.restore_defaults_a.setText('Restore defaults')
+
+        self.settings_menu.addAction(self.load_settings_a)
+        self.settings_menu.addAction(self.save_settings_a)
+        self.settings_menu.addSeparator()
+        self.settings_menu.addAction(self.restore_defaults_a)
+        self.menu_bar.addAction(self.settings_menu.menuAction())
 
     def create_dspreset(self):
         if not self.root_dir:

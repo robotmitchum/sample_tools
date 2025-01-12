@@ -17,7 +17,7 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="centralwidget_lyt">
     <item>
      <layout class="QHBoxLayout" name="directory_lyt">
       <property name="sizeConstraint">
@@ -3414,26 +3414,6 @@ At least one valid dspreset must exist in the directory</string>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menu_bar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="settings_menu">
-    <property name="title">
-     <string>Settings</string>
-    </property>
-    <addaction name="load_settings_a"/>
-    <addaction name="save_settings_a"/>
-    <addaction name="separator"/>
-    <addaction name="restore_defaults_a"/>
-   </widget>
-   <addaction name="settings_menu"/>
   </widget>
   <action name="actionSettings">
    <property name="text">
