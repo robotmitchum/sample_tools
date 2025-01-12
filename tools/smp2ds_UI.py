@@ -611,7 +611,20 @@ if __name__ == "__main__":
     if platform.system() == 'Windows':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QApplication(sys.argv)
+
     app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
+
+    if platform.system() == "Darwin":
+        macos_style = """
+                QComboBox::down-arrow {
+                    image: none;
+                }
+                QComboBox::drop-down {
+                    width: 0px;
+                }
+            """
+        app.setStyleSheet(app.styleSheet() + macos_style)
+
     font = app.font()
     font.setPointSize(11)
     app.setFont(font)
