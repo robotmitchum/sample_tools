@@ -1,7 +1,8 @@
 # coding:utf-8
 """
     :module: instrument_utils.py
-    :description:
+    :description: Class and functions to perform queries and statistics or establish settings at the instrument level
+    (taking full sample set in consideration instead of each individual samples)
     :author: Michel 'Mitch' Pecqueur
     :date: 2024.08
 """
@@ -18,6 +19,10 @@ from sample_utils import info_from_name
 
 
 class Instrument:
+    """
+    Instrument class
+    """
+
     def __init__(self, root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'),
                  pattern='{group}_{note}_{vel}', transpose=0, **kwargs):
 
@@ -125,7 +130,7 @@ class Instrument:
 
     def set_seqs_per_group_trigger_vel_note(self):
         """
-        set seqs_per_group_trigger_vel_note attribute
+        Set seqs_per_group_trigger_vel_note attribute
         Nested dict structure with group,trigger,vel,note as keys and list of sequence positions as values
         """
         result = dict()
@@ -250,24 +255,6 @@ class Instrument:
             case 'off':
                 result = [0] * len(result)
 
-        # if mode == 'mean_threshold':
-        #     mean = mean_pf(pfs, x=0)
-        #     idx = abs(pfs - mean) < value
-        #     result[idx] = mean
-        # elif mode == 'mean_blend':
-        #     result = mean_pf(pfs, x=value / 100)
-        # elif mode == 'mean_scale':
-        #     result = mean_pf(pfs, mode='scl', x=value)
-        # elif mode == 'on_threshold':
-        #     result[abs(pfs) < value] = 0
-        # elif mode == 'on_rand' or mode == 'on_threshold_rand':
-        #     pf_rand = (self.df['name'] + f'{seed}').apply(random_from_string)
-        #     result += pf_rand * value
-        #     if mode == 'on_threshold_rand':
-        #         result[abs(pfs) < value] = 0
-        # elif mode == 'off':
-        #     result = [0] * len(result)
-
         if apply:
             self.df['pitchFraction'] = result
             for smp, pf in zip(self.samples, result):
@@ -337,6 +324,7 @@ def samples_to_df(root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'),
 def sort_df(df, samples):
     """
     Sort and reindex values in a meaningful way
+
     :param df: pandas.core.frame.DataFrame
     :param samples: list(Sample)
     :return:
@@ -394,7 +382,7 @@ def extend_note_range(note, notes, mode='mid', limit=True):
 
     :param int note: Given sample note, MUST be in notes
     :param list notes: List of sample notes
-    :param str or None mode: Extension mode 'down', 'up', 'mid', 'none' or None
+    :param str or None mode: Extension mode 'down', 'up', 'mid', 'none'
     :param bool or list or tuple limit: if False extend bounds to full MIDI range (0-127)
     :return: "loNote", "hiNote", "lim_mn", "lim_mx"
     :rtype: list
@@ -445,16 +433,17 @@ def get_note_gap(notes, mode='median'):
     if not len(diff):
         return None
 
-    if mode == 'min':
-        return int(min(diff))
-    if mode == 'max':
-        return int(max(diff))
-    if mode == 'median':
-        return int(np.median(diff))
-    if mode == 'avg':
-        return int(np.ceil(np.mean(diff)))
-    if mode == 'bounds':
-        return [int(diff[0]), int(diff[-1])]
+    match mode:
+        case 'min':
+            return int(min(diff))
+        case 'max':
+            return int(max(diff))
+        case 'median':
+            return int(np.median(diff))
+        case 'avg':
+            return int(np.ceil(np.mean(diff)))
+        case 'bounds':
+            return [int(diff[0]), int(diff[-1])]
 
 
 def rr_ofs_from_count(count=3):
@@ -597,14 +586,3 @@ def offset_note_range(lo, hi, mn, mx, offset=0):
         return None
 
     return [clamp(lo, mn, mx), clamp(hi, mn, mx)]
-
-# rd = r"D:\APPS\AUDIO\VSTi\AKAI_CDROM\Synclavier Sampler Library - Strings\ViolasStac"
-# rd = r"D:\Instruments\Wurlitzer"
-# rd = r"D:\APPS\AUDIO\VSTi\AKAI_CDROM\Synclavier Sampler Library - Strings\CelloLong"
-# instr = Instrument(root_dir=rd, exclude=('backup_', 'ignore'))
-# instr.pad_vel()
-# instr.pitch_fraction(mode='mean_scale', value=5, apply=True)
-# print(instr.df['pitchFraction'].tolist())
-
-# print(instr.df.to_string())
-# print(instr.vels_per_group_trigger)
