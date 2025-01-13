@@ -81,7 +81,7 @@ def estimate_offset(audio, sr, amp=.5, factor=1.0, rtyp='ms'):
     # Find where the attack ends
     attack_end = np.argwhere(np.diff(envelope) <= 0).reshape(-1)
 
-    # Find where the audio reach the
+    # Find where the audio reach a given factor of the attack end volume
     start_amp = envelope[attack_end[0]] * amp
     offset = np.argwhere(envelope >= start_amp).reshape(-1)[0] * factor
 
