@@ -16,12 +16,14 @@ import soundfile as sf
 
 from split_audio import envelope_transform
 
+from scipy.signal import fftconvolve
 
-def sampleset_offset(input_path='', smp_fmt=('wav', 'flac', 'aif'), verbose=True, **kwargs):
+
+def sampleset_offset(input_path, smp_fmt=('wav', 'flac', 'aif'), verbose=True, **kwargs):
     """
     Estimate average sample offset for a given sample set
 
-    :param str input_path:
+    :param str or list input_path:
     :param tuple or list smp_fmt:
     :param bool verbose:
     :param dict kwargs:
@@ -29,22 +31,27 @@ def sampleset_offset(input_path='', smp_fmt=('wav', 'flac', 'aif'), verbose=True
     :return:
     :rtype: int or float
     """
-    samples = []
 
-    p = Path(input_path)
-    if p.is_dir():
-        samples = p.glob('*.flac')
-    elif p.is_file():
-        if p.suffix[1:] in smp_fmt:
-            samples = [p]
+    if isinstance(input_path, str):
+        input_path = [input_path]
 
     offsets = []
-    for smp in samples:
-        audio, sr = sf.read(smp)
-        o = estimate_offset(audio, sr, **kwargs)
-        if verbose:
-            print(f'{smp.stem} : {o:.3f}')
-        offsets.append(o)
+    for item in input_path:
+        samples = []
+
+        p = Path(item)
+        if p.is_dir():
+            samples = p.glob('*.flac')
+        elif p.is_file():
+            if p.suffix[1:] in smp_fmt:
+                samples = [p]
+
+        for smp in samples:
+            audio, sr = sf.read(smp)
+            o = estimate_offset(audio, sr, **kwargs)
+            if verbose:
+                print(f'{smp.stem} : {o:.3f}')
+            offsets.append(o)
 
     if offsets:
         mean = np.mean(offsets)
@@ -73,10 +80,10 @@ def estimate_offset(audio, sr, amp=.5, factor=1.0, rtyp='ms'):
     # Calculate envelope from audio
     envelope = envelope_transform(mono_audio, w=1024, mode='max', interp='linear')
 
-    # "Blur" envelope to smooth potential noise
+    # "Blur" envelope to smooth noise
     k_size = sr // 16
     kernel = np.ones(k_size)
-    envelope = np.convolve(envelope, kernel, mode='same') / k_size
+    envelope = fftconvolve(envelope, kernel, mode='same') / k_size
 
     # Find where the attack ends
     attack_end = np.argwhere(np.diff(envelope) <= 0).reshape(-1)
@@ -98,9 +105,8 @@ def main():
     if len(sys.argv) > 1:
         files = sys.argv[1:]
         try:
-            for f in files:
-                sampleset_offset(input_path=f, smp_fmt=('wav', 'flac', 'aif'),
-                                 verbose=True, amp=.5, factor=1, rtyp='ms')
+            sampleset_offset(input_path=files, smp_fmt=('wav', 'flac', 'aif'),
+                             verbose=True, amp=.5, factor=1, rtyp='ms')
         except Exception as e:
             traceback.print_exc()
             print(f'Encountered an error - {e}')
