@@ -48,10 +48,11 @@ def crossfade_clips(audio_a, audio_b, start, fade_len, fade_type='equal_power'):
 
     fd = [1 - fade, fade]
 
-    if fade_type == 'equal_power':
-        fd = [equal_power_sine(x) for x in fd]
-    if fade_type == 'smoothstep':
-        fd = [smoothstep(0, 1, x) for x in fd]
+    match fade_type:
+        case 'equal_power':
+            fd = [equal_power_sine(x) for x in fd]
+        case 'smoothstep':
+            fd = [smoothstep(0, 1, x) for x in fd]
 
     if nch > 1:
         fd = [np.repeat(x.reshape(len(x), 1), nch, axis=1) for x in fd]

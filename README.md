@@ -48,6 +48,12 @@ Execute sample_tools_UI.py
 python sample_tools_UI.py
 ```
 
+or on MacOs
+
+```
+python3 ir_tool_UI.py
+```
+
 ### Common features for most tools
 
 - Drag and drop of files or directories (only the first level is scanned)
