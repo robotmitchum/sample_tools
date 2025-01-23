@@ -223,7 +223,7 @@ if __name__ == '__main__':
     if platform.system() == "Darwin":
         macos_style = """
                 QComboBox{combobox-popup: 0;}
-                QComboBox QAbstractItemView {min-width: 36px;}
+                QComboBox QAbstractItemView {min-width: 64px;}
             """
         app.setStyleSheet(app.styleSheet() + macos_style)
 

@@ -207,12 +207,11 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
     def setup_menu_bar(self):
         self.menu_bar = QMenuBar(self)
+        self.menu_bar.setNativeMenuBar(False)
 
         self.settings_menu = QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
-        # self.setMenuBar(self.menu_bar)
-        lyt = self.centralwidget.layout()
-        lyt.setMenuBar(self.menu_bar)
+        self.setMenuBar(self.menu_bar)
 
         self.save_settings_a = QAction(self)
         self.save_settings_a.setText('Save settings')
@@ -617,7 +616,7 @@ if __name__ == "__main__":
     if platform.system() == "Darwin":
         macos_style = """
                 QComboBox{combobox-popup: 0;}
-                QComboBox QAbstractItemView {min-width: 36px;}
+                QComboBox QAbstractItemView {min-width: 64px;}
             """
         app.setStyleSheet(app.styleSheet() + macos_style)
 
