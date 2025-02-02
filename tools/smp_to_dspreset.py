@@ -65,7 +65,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
                     add_suffix='', auto_increment=True,
 
-                    progress=None):
+                    worker=None, progress_callback=None, message_callback=None):
     """
     Create a Decent Sampler Preset from audio samples
 
@@ -138,8 +138,6 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     :param str add_suffix: Add suffix to created file
     :param bool auto_increment: Increment file to avoid overwriting
-
-    :param QProgressBar or None progress: Optional progress bar widget
 
     :return: Created file
     :rtype: str
@@ -524,11 +522,9 @@ def create_dspreset(root_dir, smp_subdir='Samples',
         use_vel = not grp_vels[grp_vels != 127].empty
         use_seq = not grp_df['seqPosition'][grp_df['seqPosition'] > 1].empty
 
-        if progress is not None:
-            progress.setMaximum(count)
-            progress.setValue(0)
-            progress.setTextVisible(True)
-            progress.setFormat('%p%')
+        if progress_callback is not None:
+            progress_callback.emit(0)
+            message_callback.emit('%p%')
 
         # Disable Fake RR for group if sample number is too low
         grp_rro = ([0], rr_offset)[len(samples) > len(rr_offset)]
@@ -883,8 +879,9 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
                     Et.SubElement(fk_leg_group, 'sample', attrib=fk_leg_smp_attrib)
 
-                if progress is not None:
-                    progress.setValue(done)
+                if progress_callback is not None:
+                    percent = int(done / count * 100)
+                    progress_callback.emit(percent)
 
     # Color inactive keys
     if len(keyboard_plt) > 1 and len(active_keys) < 128:
@@ -909,9 +906,9 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     write_xml_to_file(decentsampler, str(filepath))
 
-    if progress is not None:
-        progress.setValue(count)
-    progress.setFormat(f'{smp_count} sample(s) found.')
+    if progress_callback is not None:
+        progress_callback.emit(100)
+        message_callback.emit(f'{smp_count} sample(s) found')
 
     print('')
 

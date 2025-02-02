@@ -29,15 +29,18 @@ def get_settings(widget, node):
         if not name or name.startswith('qt_'):
             continue
 
-        match type(child):
-            case QtWidgets.QCheckBox:
+        match child.__class__.__name__:
+            case 'QCheckBox':
                 value = child.isChecked()
-            case QtWidgets.QComboBox:
+            case 'QComboBox':
                 value = child.currentText()
-            case QtWidgets.QSpinBox | QtWidgets.QDoubleSpinBox:
+            case 'QSpinBox' | 'QDoubleSpinBox':
                 value = child.value()
-            case QtWidgets.QLineEdit:
+            case 'QLineEdit' | 'UrlPathLineEdit':
                 value = child.text()
+            case 'FilePathLabel':
+                p = child.fullPath()
+                value = Path(p).as_posix() if p else ''
             case _:
                 value = None
 
@@ -61,20 +64,24 @@ def set_settings(widget, node):
         name = child.objectName()
         if not name or name.startswith('qt_') or not hasattr(node, name):
             continue
+
         value = getattr(node, name)
-        match type(child):
-            case QtWidgets.QCheckBox:
+        match child.__class__.__name__:
+            case 'QCheckBox':
                 child.setChecked(value)
-            case QtWidgets.QComboBox:
+            case 'QComboBox':
                 values = [child.itemText(i) for i in range(child.count())]
                 if value in values:
                     child.setCurrentText(value)
                 else:
                     print(f'{name} QComboxBox skipped : {value} not found in items')
-            case QtWidgets.QSpinBox | QtWidgets.QDoubleSpinBox:
+            case 'QSpinBox' | 'QDoubleSpinBox':
                 child.setValue(value)
-            case QtWidgets.QLineEdit:
+            case 'QLineEdit' | 'UrlPathLineEdit':
                 child.setText(value)
+            case 'FilePathLabel':
+                child.setFullPath(value)
+
     return True
 
 

@@ -23,7 +23,7 @@ from UI import upsample_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import pad_audio
-from common_ui_utils import add_ctx, FilePathLabel, replace_widget, resource_path
+from common_ui_utils import add_ctx, FilePathLabel, replace_widget, resource_path, get_user_directory
 from file_utils import resolve_overwriting
 from loop_sample import db_to_lin
 from sample_utils import Sample
@@ -50,7 +50,7 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
 
         self.get_defaults()
 
-        self.progress_pb.setFormat('Up-sample audio file(s) using spectral band replication')
+        self.update_message('Up-sample audio file(s) using spectral band replication')
 
     def setup_connections(self):
         super().setup_connections()
@@ -67,9 +67,14 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
             lambda state: self.noise_path_wid.setEnabled(state == 'custom'))
 
         self.noise_path_l = replace_widget(self.noise_path_l, FilePathLabel(file_mode=True, parent=self))
+        add_ctx(self.noise_path_l, values=[''], names=['Clear'])
         self.set_noise_path_tb.clicked.connect(self.noise_path_l.browse_path)
 
-        # Output path widgets
+        # Output directory
+        default_dir = get_user_directory()
+        desktop_dir = get_user_directory('Desktop')
+        add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
+                names=['Clear', 'Default directory', 'Desktop'])
         self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
 
         # Upsample widgets
@@ -82,9 +87,9 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
         add_ctx(self.suffix_le, ['_up', '_result'])
 
         # Process buttons
-        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'batch')))
-        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'sel')))
-        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'preview')))
+        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
 
     def get_options(self):
         super().get_options()
@@ -107,7 +112,7 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
         self.options.target_sr = self.target_sr_sb.value()
         self.options.upsample_mix = self.upsample_mix_dsb.value()
 
-    def do_process(self, mode='batch'):
+    def do_process(self, worker, progress_callback, message_callback, mode='batch'):
         """
 
         :param int mode: 'batch' 'sel' or 'preview'
@@ -120,6 +125,8 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
 
         if not files:
             return False
+
+        self.player.stop()
 
         importlib.reload(nr)
 
@@ -135,13 +142,12 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
         options = vars(self.options)
         subtypes = {16: 'PCM_16', 24: 'PCM_24'}
 
+        done = 0
+
         # Progress bar init
         self.progress_pb.setMaximum(count)
-        self.progress_pb.setValue(0)
-
-        done = 0
-        self.player.stop()
-        self.progress_pb.setFormat('Work in progress %p%')
+        progress_callback.emit(0)
+        message_callback.emit('Work in progress %p%')
 
         try:
             for i, input_file in enumerate(files):
@@ -270,17 +276,16 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
                             set_md_tags(str(filepath), md=md)
 
                 done += 1
-                self.progress_pb.setValue(i + 1)
+                progress_callback.emit(i + 1)
 
         except Exception as e:
             traceback.print_exc()
 
-        self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')
+        message_callback.emit(f'{done} of {count} file(s) processed.')
 
         if done < count:
-            self.progress_pb.setMaximum(1)
-            self.progress_pb.setValue(0)
-            self.progress_pb.setFormat('Error while processing, Please check settings')
+            progress_callback.emit(0)
+            message_callback.emit('Error while processing, Please check settings')
         elif mode == 'preview':
             if self.temp_audio.audio is not None:
                 data = self.temp_audio.audio
@@ -291,13 +296,11 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
                 else:
                     sr = info.params.framerate
                 self.playback_thread = threading.Thread(target=self.player.play,
-                                                        args=(data, sr, info.loopStart, info.loopEnd,
-                                                              self.progress_pb.setFormat), daemon=True)
+                                                        args=(data, sr, info.loopStart, info.loopEnd), daemon=True)
                 self.playback_thread.start()
 
-            self.progress_pb.setMaximum(1)
-            self.progress_pb.setValue(1)
-            self.progress_pb.setFormat(f'Preview completed')
+            progress_callback.emit(count * 100)
+            message_callback.emit('Preview completed')
         else:
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 

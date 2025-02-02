@@ -27,7 +27,7 @@ import split_audio as sa
 from UI import split_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, get_documents_directory, resource_path
+from common_ui_utils import add_ctx, get_user_directory, resource_path
 from sample_utils import Sample
 
 try:
@@ -57,11 +57,18 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
 
         self.get_defaults()
 
-        self.progress_pb.setFormat('Split and trim audio file(s) by detecting silences')
+        self.update_message('Split and trim audio file(s) by detecting silences')
 
     def setup_connections(self):
         super().setup_connections()
-        self.output_path_l.setFullPath(get_documents_directory())
+
+        # Output directory
+        default_dir = get_user_directory()
+        desktop_dir = get_user_directory('Desktop')
+        self.output_path_l.setFullPath(default_dir)
+        add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
+                names=['Clear', 'Default directory', 'Desktop'])
+        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
 
         # Base name widget
         add_ctx(self.basename_le, ['', 'Split', 'Sample'])
@@ -90,13 +97,10 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.suffix_mode_cmb.currentTextChanged.connect(
             lambda state: self.pitch_mode_wid.setEnabled(state.startswith('note')))
 
-        # Output path widget
-        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
-
         # Preview / Process buttons
         # Execute "as worker" to prevent multiple execution
-        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'batch')))
-        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'sel')))
+        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
 
     def setup_pitch_mode_cmb(self, use_crepe=False):
         """
@@ -148,7 +152,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.options.bd_cmb = self.bitdepth_cmb.currentText()
         self.options.ext_cmb = self.format_cmb.currentText()
 
-    def do_process(self, mode='batch'):
+    def do_process(self, worker, progress_callback, message_callback, mode):
         if mode == 'batch':
             files = self.get_lw_items()
         else:
@@ -156,6 +160,8 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
 
         if not files:
             return False
+
+        range_callback = worker.signals.progress_range
 
         importlib.reload(sa)
 
@@ -166,14 +172,16 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         options = vars(self.options)
 
         # Progress bar init
-        self.progress_pb.setMaximum(count)
-        self.progress_pb.setValue(0)
-        self.progress_pb.setTextVisible(True)
-        self.progress_pb.setFormat('%p%')
+        range_callback.emit(0, count)
+        progress_callback.emit(0)
+        message_callback.emit('%p%')
 
         done = 0
         try:
             for i, f in enumerate(files):
+                if worker.is_stopped():
+                    return False
+
                 info = Sample(f)
                 prm = info.params
 
@@ -206,24 +214,26 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                                         split_db=options['split_db'], fade_db=options['fade_db'],
                                         dc_offset=options['dc_offset'], dither=options['dither'],
                                         write_cue_file=options['write_cue'],
-                                        progress_pb=self.progress_pb, dry_run=False)
+                                        dry_run=False, progress_bar=self.progress_pb,
+                                        worker=worker, progress_callback=progress_callback,
+                                        message_callback=message_callback,
+                                        range_callback=range_callback)
                 print(result)
 
                 done += 1
-                self.progress_pb.setValue(i + 1)
+                progress_callback.emit(i + 1)
 
         except Exception as e:
             traceback.print_exc()
 
-        self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')
-        self.progress_pb.setMaximum(1)
+        message_callback.emit(f'{done} of {count} file(s) processed.')
         if done < count:
-            self.progress_pb.setValue(0)
-            self.progress_pb.setFormat('Error while processing, Please check settings')
+            progress_callback.emit(0)
+            message_callback.emit('Error while processing, Please check settings')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
         else:
-            self.progress_pb.setValue(1)
-            self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')
+            progress_callback.emit(count)
+            message_callback.emit(f'{done} of {count} file(s) processed.')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
         return True

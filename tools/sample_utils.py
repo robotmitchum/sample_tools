@@ -348,17 +348,25 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
         if is_stereo(data, db=-48) == 0:
             data = data[:, 0]
 
-        if pitch_fraction_mode == 'fine_tune':
-            smp.pitchFraction, confidence = fine_tune(audio=data, sr=sr, note=smp.note, period_factor=3,
-                                                      t=int(len(data) * .25), d=50, os=16, graph=False)
-            print(f'Pitch fraction: {smp.pitchFraction}, Confidence: {confidence}')
-        elif pitch_fraction_mode == 'fine_tune_lr':
-            ft_lr = fine_tune_lr(audio=data, sr=sr, note=smp.note)
-            if ft_lr is not None:
-                smp.pitchFraction = ft_lr
-                print(f'Pitch fraction (librosa): {ft_lr}')
-            else:
-                print(f'Pitch fraction (librosa): failed, keeping former value')
+        match pitch_fraction_mode:
+            case 'fine_tune':
+                smp.pitchFraction, confidence = fine_tune(audio=data, sr=sr, note=smp.note, period_factor=3,
+                                                          t=int(len(data) * .25), d=50, os=16, graph=False)
+                print(f'Pitch fraction: {smp.pitchFraction}, Confidence: {confidence}')
+            case 'fine_tune_lr':
+                ft_lr = fine_tune_lr(audio=data, sr=sr, note=smp.note)
+                if ft_lr is not None:
+                    smp.pitchFraction = ft_lr
+                    print(f'Pitch fraction (librosa): {ft_lr}')
+                else:
+                    print(f'Pitch fraction (librosa): failed, keeping former value')
+            case 'keep' if smp.pitchFraction is not None:
+                if Path(input_file).suffix == '.wav' and output_ext == 'flac':
+                    print('Conformed pitch fraction for flac')
+                    if smp.pitchFraction > 50:
+                        smp.pitchFraction -= 100
+                        if '{note}' not in src_pattern and '{noteName}' not in src_pattern:
+                            smp.set_note(smp.note + 1)
 
         bit_depth = bit_depth or smp.params.sampwidth * 8
         if output_ext == 'flac':
@@ -447,25 +455,25 @@ def read_chunk(input_file, chunk_name='smpl', offset=0):
     :rtype: bytes
     """
     with open(input_file, 'rb') as f:
-        f.read(offset)
+        f.seek(offset)
         riff = f.read(12)
-        if riff[0:4] != b'RIFF' or riff[8:12] != b'WAVE':
+        if riff[:4] != b'RIFF' or riff[8:12] != b'WAVE':
             raise ValueError("Not a valid RIFF WAV file")
+
         while True:
             header = f.read(8)
             if len(header) < 8:
                 break
             chunk_id, chunk_size = struct.unpack('<4sI', header)
 
-            # Check if we need to "skip a padding byte"
-            # TODO: verify this with more files, this seems to work though...
+            # Read chunk data
+            chunk_data = f.read(chunk_size)
+
+            # If chunk_size is odd, read an extra padding byte (not included in chunk_data)
             # Source: https://www.daubnet.com/en/file-format-riff
             # "unused 1 byte present, if size is odd"
-
-            skip_byte = (0, 1)[chunk_size % 2]  # Check if size is odd
-            chunk_data = f.read(chunk_size - skip_byte)  # Read data minus padding
-            if skip_byte == 1:
-                f.read(skip_byte)  # Skip padding supposing it happens at the end of the chunk
+            if chunk_size % 2 == 1:
+                f.read(1)
 
             if chunk_id == chunk_name.encode():
                 return chunk_data
@@ -577,23 +585,18 @@ def get_cues(input_file):
     :rtype: list
     """
     cues = []
-    with (open(input_file, 'rb') as f):
-        chunk = Chunk(f, bigendian=False)
-        riff = chunk.getname()
-        wave_fmt = chunk.read(4)
-        while True:
-            try:
-                chunk = Chunk(f, bigendian=False)
-            except EOFError:
-                break
-            if chunk.getname() == b'cue ':
-                numcue = struct.unpack('<i', chunk.read(4))[0]
-                for i in range(numcue):
-                    chunkid, position, datachunkid, chunkstart, blockstart, sampleoffset = struct.unpack('<iiiiii',
-                                                                                                         chunk.read(24))
-                    cues.append(sampleoffset)
-            chunk.skip()
-    f.close()
+    data = read_chunk(input_file, 'cue ')
+    header = 0
+
+    if data:
+        st = header
+        ed = st + 4
+        numcue = struct.unpack('<i', data[st:ed])[0]
+        for i in range(numcue):
+            chunkid, position, datachunkid, chunkstart, blockstart, sampleoffset = (
+                struct.unpack('<iiiiii', data[ed + i * 24:ed + (i + 1) * 24]))
+            cues.append(sampleoffset)
+
     return cues
 
 
@@ -720,42 +723,3 @@ def read_metadata_generic(input_file, blocksize=1):
         pitch_fraction = uint32_to_pitch_fraction(pitch_fraction)
 
     return note, pitch_fraction, loop_start, loop_end, loops
-
-
-def read_metadata_old(input_file):
-    """
-    Basic riff metadata reader
-    :param str input_file:
-    :return: note, pitchFraction, loopStart, loopEnd, loops
-    :rtype: dict
-    """
-
-    tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops']  # Base tags
-    note, pitch_fraction, loop_start, loop_end, loops = None, None, None, None, []
-
-    with (open(input_file, 'rb') as f):
-        chunk = Chunk(f, bigendian=False)
-        riff = chunk.getname()
-        wave_fmt = chunk.read(4)
-        while True:
-            try:
-                chunk = Chunk(f, bigendian=False)
-            except EOFError:
-                break
-            if chunk.getname() == b'smpl':
-                manuf, prod, smp_period, note, pitch_fraction, smptefmt, smpteoffs, numloops, smpdata = struct.unpack(
-                    '<iiiiIiiii', chunk.read(36))
-                for i in range(numloops):
-                    cuepointid, cuetype, start, end, fraction, playcount = struct.unpack('<iiiiii', chunk.read(24))
-                    loops.append([start, end])
-            chunk.skip()
-    f.close()
-
-    if loops:
-        loop_start, loop_end = loops[0]
-
-    if pitch_fraction is not None:
-        pitch_fraction = uint32_to_pitch_fraction(pitch_fraction)
-
-    values = [note, pitch_fraction, loop_start, loop_end, loops]
-    return dict(zip(tags, values))

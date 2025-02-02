@@ -28,7 +28,7 @@ import loop_sample as ls
 from UI import loop_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, resource_path
+from common_ui_utils import add_ctx, resource_path, get_user_directory
 from sample_utils import Sample
 from utils import is_note_name, name_to_note, note_to_hz
 
@@ -60,7 +60,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
 
         self.get_defaults()
 
-        self.progress_pb.setFormat('Detect loop points or modify audio files to make them loop')
+        self.update_message('Detect loop points or modify audio files to make them loop')
 
     def setup_connections(self):
         super().setup_connections()
@@ -127,7 +127,12 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         add_ctx(self.freqs_le, ['', 'A3', '440', '110 440'])
         add_ctx(self.st_width_dsb, [0, .25, .5, .75, 1])
 
-        # Output path widget
+        # Output directory
+        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
+        default_dir = get_user_directory()
+        desktop_dir = get_user_directory('Desktop')
+        add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
+                names=['Clear', 'Default directory', 'Desktop'])
         self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
 
         # Add Suffix widget
@@ -135,9 +140,9 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
 
         # Preview / Process buttons
         # Execute "as worker" to prevent multiple execution
-        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'batch')))
-        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'sel')))
-        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'preview')))
+        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
 
         # Custom events
 
@@ -219,7 +224,9 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         else:
             self.options.suffix = ''
 
-    def do_process(self, mode='batch'):
+    def do_process(self, worker, progress_callback, message_callback, mode):
+        self.player.stop()
+
         if mode == 'batch':
             files = self.get_lw_items()
         else:
@@ -228,14 +235,16 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         if not files:
             return False
 
+        range_callback = worker.signals.progress_range
+
         input_file = None
 
         if mode == 'preview':
             files = files[0:1]
 
-        per_file_progress = (None, self.progress_pb)[mode == 'preview']
-
         count = len(files)
+        per_file_progress = (None, self.progress_pb)[count <= 10]
+        # per_file_progress = self.progress_pb
 
         importlib.reload(ls)
 
@@ -250,17 +259,20 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         kwargs = {k: v for k, v in options.items() if k in func_args}
         kwargs.pop('bit_depth')
 
-        # Progress bar init
-        self.progress_pb.setMaximum(count)
-        self.progress_pb.setValue(0)
-        self.progress_pb.setTextVisible(True)
-        self.progress_pb.setFormat('Searching loops... %p%')
-
         done = 0
-        self.player.stop()
+
+        # Progress bar init
+        self.update_range(0, count * 100)
+        if progress_callback is not None:
+            range_callback.emit(0, count * 100)
+            progress_callback.emit(0)
+            message_callback.emit('Searching loops... %p%')
 
         try:
             for i, f in enumerate(files):
+                if worker.is_stopped():
+                    return False
+
                 p = Path(f)
                 parent = self.output_path_l.fullPath() or p.parent
                 basename = p.stem
@@ -284,24 +296,26 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
                     filepath = None
                     bit_depth = None
 
-                # QUICK FIX : updating the progress bar during loop search makes the app unstable even with throttling
-                # Try to thread the progress bar in a future update
                 self.temp_audio = ls.loop_sample(input_file=f, output_file=filepath, bit_depth=bit_depth,
-                                                 progress_pb=per_file_progress, **kwargs)
-                # self.temp_audio = ls.loop_sample(input_file=f, output_file=filepath, bit_depth=bit_depth,
-                #                                  progress_pb=self.progress_pb, **kwargs)
+                                                 progress_bar=per_file_progress,
+                                                 worker=worker, progress_callback=progress_callback,
+                                                 message_callback=message_callback, **kwargs)
+
+                if self.temp_audio is None:
+                    return False
+
                 done += 1
-                self.progress_pb.setMaximum(count)
-                self.progress_pb.setValue(i + 1)
+                if progress_callback is not None:
+                    pb_value = (i + 1) * 100
+                    progress_callback.emit(pb_value)
 
         except Exception as e:
             traceback.print_exc()
             # self.logger.log_exception(f'An error occurred: {e}')
 
-        self.progress_pb.setMaximum(1)
         if done < count:
-            self.progress_pb.setValue(0)
-            self.progress_pb.setFormat('Error while processing, Please check settings')
+            progress_callback.emit(0)
+            message_callback.emit('Error while processing, Please check settings')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
         elif mode == 'preview':
             if self.temp_audio is not None:
@@ -310,15 +324,14 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
                 self.temp_audio.info.input_file = input_file
                 sr = info.params.framerate
                 self.playback_thread = threading.Thread(target=self.player.play,
-                                                        args=(data, sr, info.loopStart, info.loopEnd,
-                                                              self.progress_pb.setFormat), daemon=True)
+                                                        args=(data, sr, info.loopStart, info.loopEnd), daemon=True)
                 self.playback_thread.start()
 
-            self.progress_pb.setValue(1)
-            self.progress_pb.setFormat(f'Preview completed')
+            progress_callback.emit(count * 100)
+            message_callback.emit('Preview completed')
         else:
-            self.progress_pb.setValue(1)
-            self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')
+            progress_callback.emit(count * 100)
+            message_callback.emit(f'{done} of {count} file(s) processed.')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
         self.refresh_lw_items()

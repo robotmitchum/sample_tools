@@ -16,17 +16,38 @@ from PyQt5 import QtCore, Qt, QtWidgets, QtGui
 from sample_utils import Sample
 
 
-def get_documents_directory():
+def get_user_directory(subdir='Documents'):
     if sys.platform == 'win32':
         import winreg
+
+        folders = {
+            'Desktop': 'Desktop',
+            'Documents': 'Personal',
+            'Downloads': '{374DE290-123F-4565-9164-39C4925E467B}',
+            'Music': 'My Music',
+            'Pictures': 'My Pictures',
+            'Videos': 'My Video',
+        }
+        folders_lowercase = {k.lower(): v for k, v in folders.items()}
+
+        p = Path(subdir)
+        subdir_root = p.parts[0].lower()
+        key_name = folders_lowercase.get(subdir_root, 'desktop')
+
         # This works even if user profile has been moved to some other drive
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders') as key:
-            path, _ = winreg.QueryValueEx(key, 'Personal')
+            result, _ = winreg.QueryValueEx(key, key_name)
+            result = Path(result)
+
+        if subdir_root in folders_lowercase:
+            result = result / '/'.join(p.parts[1:])
+        else:
+            result = result.parent / subdir
     else:
-        homepath = Path.home()
-        path = homepath / 'Documents'
-    return path
+        result = Path.home() / subdir
+
+    return result
 
 
 def replace_widget(old_widget, new_widget):
@@ -91,22 +112,20 @@ class FilePathLabel(QtWidgets.QLabel):
     def __init__(self, text='', file_mode=False, parent=None):
         super().__init__(text, parent)
         self._full_path = ''
+        self._default_path = ''
+
         self._file_mode = file_mode
-
         self.display_length = 40
-
         self.start_dir = ''
-
         self.current_dir = os.path.dirname(sys.modules['__main__'].__file__)
-
         self.file_types = ['.wav', '.flac', '.aif']
 
-        self.setContextMenuPolicy(Qt.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.context_menu)
+        # self.setStyleSheet('QLabel{color: #808080}')
 
         self.setAcceptDrops(True)
-        self.dragEnterEvent = self.drag_enter_event
-        self.dragMoveEvent = self.drag_move_event
+
+    def fullPath(self):
+        return self._full_path
 
     def setFullPath(self, path):
         """
@@ -121,10 +140,12 @@ class FilePathLabel(QtWidgets.QLabel):
                 path = str(p.relative_to(self.current_dir))
             self.start_dir = (path, str(Path(path).parent))[self._file_mode]
         self._full_path = path
-        self.setText(shorten_path(path, self.display_length))
+        self.setText(self.shorten_path(path))
 
-    def fullPath(self):
-        return self._full_path
+    def shorten_path(self, path):
+        if len(path) > self.display_length:
+            return f"...{path[-self.display_length:]}"
+        return path
 
     def browse_path(self):
         if not self.start_dir or not Path(self.start_dir).is_dir():
@@ -144,18 +165,6 @@ class FilePathLabel(QtWidgets.QLabel):
                 path = str(p.relative_to(self.current_dir))
             self.setFullPath(path)
 
-    def context_menu(self):
-        menu = QtWidgets.QMenu(self)
-        names, paths = ['Clear path'], ['']
-        if not self._file_mode:
-            names.append('Set to home directory')
-            paths.append(get_documents_directory())
-        actions = [menu.addAction(name) for name in names]
-        action = menu.exec_(QtGui.QCursor.pos())
-        for a, path in zip(actions, paths):
-            if action == a:
-                self.setFullPath(path)
-
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             items = event.mimeData().urls()
@@ -173,51 +182,17 @@ class FilePathLabel(QtWidgets.QLabel):
         else:
             event.ignore()
 
-    @staticmethod
-    def drag_enter_event(event):
+    def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
         else:
             event.ignore()
 
-    @staticmethod
-    def drag_move_event(event):
+    def dragMoveEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
         else:
             event.ignore()
-
-
-class Worker(QtCore.QRunnable):
-    """
-    Worker thread
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-
-    :param callback callback: The function callback to run on this worker thread. Supplied args and
-                     kwargs will be passed through to the runner.
-    :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
-    """
-
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.running = True
-
-    # @Slot()
-    def run(self):
-        """"
-        Initialize the runner function with passed args, kwargs.
-        """
-        try:
-            self.fn(*self.args, **self.kwargs)
-            self.running = False
-        except InterruptedError as e:
-            print(e)
-            self.running = False
-            pass
 
 
 class Node:

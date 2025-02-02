@@ -37,7 +37,8 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
                 resynth={'fft_range': 'custom', 'fft_start': 0.25, 'fft_end': 1.0, 'duration': 2.0,
                          'atonal_mix': 1, 'freq_mode': 'note_pf', 'freqs': None,
                          'resynth_mix': 'loop_tail', 'fade_in': .5, 'fade_out': .5, 'width': .5},
-                trim_after=False, no_overwriting=True, progress_pb=None):
+                trim_after=False, no_overwriting=True, progress_bar=None,
+                worker=None, progress_callback=None, message_callback=None):
     """
     Loop an audio sample
 
@@ -81,7 +82,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
     :param bool no_overwriting:
 
-    :param object progress_pb: optional QProgressBar
+    :param object progress_bar: optional QProgressBar
 
     :return: output result, sample info, output file path
     :rtype: namedtuple
@@ -138,8 +139,10 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
         if loop is None:
             loop = search_loop(audio, n_cues=n_cues, min_len=min_len,
                                window_size=window_size, window_offset=window_offset,
-                               start_range=start_range, end_range=end_range,
-                               progress_pb=progress_pb)
+                               start_range=start_range, end_range=end_range, progress_bar=progress_bar,
+                               worker=worker, progress_callback=progress_callback)
+            if loop is None:
+                return None
 
         info.loopStart, info.loopEnd = loop
         info.loops = [loop]
@@ -192,8 +195,6 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
                                         output_file=None)
         loop_len = len(resynth_data)
 
-        # fade_in = int(resynth['fade_in'] * len(resynth_data))
-        # fade_out = int(resynth['fade_out'] * len(resynth_data))
         fade_in = int(resynth['fade_in'] * len(audio))
         fade_out = int(resynth['fade_out'] * len(audio))
 
@@ -286,9 +287,11 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
 
 def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=.5,
-                start_range=1, end_range=0, progress_pb=None):
+                start_range=1, end_range=0, progress_bar=None,
+                worker=None, progress_callback=None, message_callback=None):
     """
     Search Loop by auto-correlation, find both start and end points
+
     :param np.array audio: Input array
     :param float window_offset: search direction, 0 backward, .5 centered, 1 forward
     :param int n_cues: Nax number of cues to consider
@@ -297,7 +300,8 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
     :return: loop_start, loop_end
     :param float start_range:
     :param float end_range:
-    :param QProgressBar progress_pb: Optional progress bar
+    :param function progress_callback:
+
     :rtype: list
     """
     if audio.ndim > 1:
@@ -306,18 +310,12 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
         mono_audio = audio
 
     # Progress bar init
-    pb_val, pb_mx, pb_fmt, pb_steps = None, None, '', 100
-    if progress_pb:
-        # Get current bar progress
-        pb_val = progress_pb.value()
-        pb_mx = progress_pb.maximum()
-        # pb_fmt = progress_pb.format()
+    pb_val = None
+    pb_steps = 100
 
-        # "Subdivide" progress bar according to sub-task count
-        progress_pb.setMaximum(pb_mx * pb_steps)
-        progress_pb.setValue(pb_val * pb_steps)
-        # progress_pb.setFormat('Searching loop... %p%')
-        progress_pb.update()
+    if progress_bar is not None:
+        # Get current bar progress
+        pb_val = progress_bar.value()
 
     zc_cues = zero_crossing_idx(mono_audio, mode=1)
 
@@ -365,22 +363,27 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
 
     loop_start, loop_end = 0, len(audio) - 1
 
-    if not progress_pb:
+    if progress_callback is None:
         print('[', end='')
 
     min_error = -1
     update_last = 0
 
     for i, end_idx in enumerate(end_idx_range):
+        if worker.is_stopped():
+            return None
+
         # Loop end search
         end_pos = zc_cues[end_idx]
 
         # Throttle progress updates
-        update_value = round(i / count * 10)
+        pr = (i + 1) / len(end_idx_range)
+
+        update_value = int(pr * 10)
         update_progress = update_value > update_last
         update_last = update_value
 
-        if not progress_pb and update_progress:
+        if progress_callback is None and update_progress:
             print('=', end='')
 
         ref_window = mono_audio[end_pos - pre:end_pos + post]
@@ -409,18 +412,16 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
                 loop_start, loop_end = start_pos, end_pos
 
         # Increment progress bar sub-task
-        if progress_pb is not None and update_progress:
-            pr = int((i + 1) / len(end_idx_range) * 100)
-            progress_pb.setValue(pb_val * pb_steps + pr)
+        if progress_bar is not None and progress_callback is not None and update_progress:
+            pr = int(pr * pb_steps)
+            progress_callback.emit(pb_val + pr)
 
-    if not progress_pb:
+    if progress_callback is None:
         print(']')
 
     # Recall progress bar initial state and increment parent task
-    if progress_pb is not None:
-        progress_pb.setMaximum(pb_mx)
-        progress_pb.setValue(pb_val + 1)
-        # progress_pb.setFormat(pb_fmt)
+    if progress_bar is not None and progress_callback is not None:
+        progress_callback.emit(pb_val + pb_steps)
 
     return [int(loop_start), int(loop_end - 1)]
 

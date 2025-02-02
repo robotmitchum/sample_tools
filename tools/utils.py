@@ -31,7 +31,6 @@ def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
     :param str input_file:
     :param int or None loop_start:
     :param int or None loop_end:
-    :return:
     """
 
     # Get sample rate and RIFF size
@@ -56,13 +55,15 @@ def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
 def metadata_to_bin(sr, note, pitch_fraction, loop_start, loop_end):
     """
     Note / Loop metadata to riff bin chunk data
+
     :param int sr: Sampling Rate, necessary to set 'sample period' info correctly
     :param int or None note: MIDI note number in semitones, integer between 0 and 127
     For example, 60 is the default note (C4) 69 is A4
     :param float or None pitch_fraction: In semitone cents
     :param int or None loop_start: Use None to disable looping, only one forever loop is supported
     :param int or None loop_end:
-    :return:
+
+    :return: Binary data
     """
     if note is None:
         note = 60

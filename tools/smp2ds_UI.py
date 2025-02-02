@@ -24,6 +24,7 @@ import sys
 import traceback
 from functools import partial
 from pathlib import Path
+import inspect
 
 import qdarkstyle
 from PyQt5 import QtGui, QtCore, Qt
@@ -38,6 +39,7 @@ from common_ui_utils import add_ctx, add_insert_ctx, popup_menu
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
 from jsonFile import read_json
 from smp_to_dspreset import __version__
+from tools.worker import Worker
 
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
@@ -47,10 +49,18 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.setWindowTitle(f'SMP2ds v{__version__}')
         self.setAttribute(Qt.Qt.WA_DeleteOnClose)
 
+        self.options = Node()
+
         self.root_dir = None  # Instrument root directory
         self.ir_subdir = None
 
         self.setAcceptDrops(True)
+
+        self.threadpool = QtCore.QThreadPool(parent=self)
+        self.worker = None
+        self.active_workers = []
+        self.worker_result = None
+        self.event_loop = QtCore.QEventLoop()
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
@@ -104,7 +114,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.setWindowIcon(app_icon)
 
         self.progress_pb.setTextVisible(True)
-        self.progress_pb.setFormat('Create a Decent Sampler preset from samples')
+        self.update_message('Create a Decent Sampler preset from samples')
 
     def setup_connections(self):
         self.setpath_tb.clicked.connect(self.set_rootdir)
@@ -197,13 +207,30 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         add_ctx(self.suffix_le, values=['', '_release', '_legato'])
 
         self.create_dsp_pb.clicked.connect(self.create_dspreset)
-        self.create_dslib_pb.clicked.connect(self.create_dslibrary)
+        self.create_dslib_pb.clicked.connect(partial(self.as_worker, self.create_dslibrary))
 
         # Settings
         self.load_settings_a.triggered.connect(self.load_settings)
         self.save_settings_a.triggered.connect(self.save_settings)
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
         self.get_defaults()
+
+    def as_worker(self, cmd):
+        if not any(worker.running for worker in self.active_workers):
+            self.worker = Worker(cmd)
+
+            # Worker signals
+            self.worker.signals.progress.connect(self.update_progress)
+            self.worker.signals.progress_range.connect(self.update_range)
+            self.worker.signals.message.connect(self.update_message)
+            self.worker.signals.result.connect(self.handle_result)
+
+            self.worker.signals.finished.connect(lambda: self.cleanup_worker(self.worker))
+
+            self.active_workers.append(self.worker)
+            self.threadpool.start(self.worker)
+        else:
+            print('Task is already running!')
 
     def setup_menu_bar(self):
         self.menu_bar = QMenuBar(self)
@@ -226,6 +253,105 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.settings_menu.addAction(self.restore_defaults_a)
         self.menu_bar.addAction(self.settings_menu.menuAction())
 
+    def get_options(self):
+        self.options.root_dir = self.root_dir
+        self.options.smp_attrib_cfg = self.smp_attrib_cfg
+
+        self.options.add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+        self.options.auto_increment = self.auto_incr_cb.isChecked()
+
+        self.options.ir_subdir = (None, 'IR')[self.use_ir_cb.isChecked()]
+
+        self.options.pattern = self.pattern_le.text()
+        self.options.group_naming = self.groupnaming_cmb.currentText()
+
+        self.options.override = self.override_cb.isChecked()
+        self.options.loop = self.loop_cb.isChecked()
+
+        self.options.adsr = self.A_dsb.value(), self.D_dsb.value(), self.S_dsb.value(), self.R_dsb.value()
+        self.options.adr_curve = self.Ar_dsb.value(), self.Dr_dsb.value(), self.Rr_dsb.value()
+
+        self.options.fake_legato = self.fake_leg_cb.isChecked()
+        self.options.fk_leg_start = self.fk_leg_start_dsb.value()
+        self.options.fk_leg_a = self.fk_leg_a_dsb.value()
+        self.options.fk_leg_a_curve = self.fk_leg_a_curve_dsb.value()
+
+        self.options.fake_release = self.fake_rls_cb.isChecked()
+        self.options.fk_rls_mode = self.fk_rls_mode_cmb.currentText()
+        self.options.fk_rls_volume = self.fk_volume_dsb.value()
+        self.options.fk_rls_cutoff = self.fk_cutoff_dsb.value()
+        self.options.fk_rls_tuning = self.fk_tuning_dsb.value()
+        self.options.fk_rls_adsr = self.fk_A_dsb.value(), self.fk_D_dsb.value(), 0, self.fk_R_dsb.value()
+        self.options.fk_rls_adr_curve = self.fk_Ar_dsb.value(), self.fk_Dr_dsb.value(), self.fk_Rr_dsb.value()
+
+        self.options.transpose = self.transpose_sb.value()
+        self.options.pf_mode = self.pf_mode_cmb.currentText()
+        self.options.pf_th = self.pf_th_dsb.value()
+        self.options.tuning = self.tuning_dsb.value()
+
+        self.options.pad_vel = self.pad_vel_cb.isChecked()
+
+        self.options.seq_mode = self.seq_mode_cmb.currentText()
+
+        limit = self.limit_le.text()
+        if limit.lower().startswith('auto'):
+            limit = limit
+        elif '-' in limit or '+' in limit:
+            limit = [val for val in limit.split()]
+        else:
+            limit = [int(val) for val in limit.split()] or True
+        self.options.limit = limit
+
+        self.options.note_limit_mode = self.note_limit_cmb.currentText()
+
+        rr_ofs = self.rrofs_le.text()
+        if rr_ofs:
+            rr_ofs = rr_ofs.strip(' ').lower()
+            if rr_ofs[0] == 'x' and rr_ofs[1:].isdigit():
+                rr_offset = int(rr_ofs[1:])
+            else:
+                rr_offset = [int(val) for val in self.rrofs_le.text().split()] or [0]
+        else:
+            rr_offset = None
+        self.options.rr_offset = rr_offset
+
+        self.options.rr_bounds = self.rr_bounds_cb.isChecked()
+
+        self.options.crossfade_mode = self.crossfade_cmb.currentText()
+        self.options.crossfade = self.crossfade_dsb.value()
+
+        self.options.attenuation = self.attenuation_dsb.value()
+        self.options.vel_track = self.ampveltrk_dsb.value()
+        self.options.note_pan = self.notepan_dsb.value()
+
+        self.options.monophonic = self.monophonic_cb.isChecked()
+
+        self.options.note_spread = self.spread_cmb.currentText()
+
+        bg_text_mode = self.bg_text_cmb.currentText()
+        if bg_text_mode == 'root_dir':
+            bg_text = beautify_str(Path(self.root_dir).stem)
+        elif bg_text_mode == 'custom':
+            bg_text = self.bg_text_le.text()
+        else:
+            bg_text = None
+        self.options.bg_text = bg_text
+
+        self.options.color_plt_cfg = self.palette_cfg[self.palette_cmb.currentText()]
+        self.options.plt_adjust = [self.hue_dsb.value(), self.sat_dsb.value(), self.val_dsb.value()]
+
+        font = resource_path(self.current_dir / 'HelveticaNeueThin.otf')
+        self.options.text_font = (font, 24)
+
+        self.options.group_knobs_rows = self.grp_knob_rows_sb.value()
+        self.options.no_solo_grp_knob = self.no_solo_grp_knob_cb.isChecked()
+        self.options.adsr_knobs = self.adsr_knobs_cb.isChecked()
+
+        self.options.use_reverb = self.use_reverb_cb.isChecked()
+        self.options.reverb_wet = self.reverb_wet_dsb.value()
+
+        self.options.max_adsr_knobs = self.max_adsr_dsb.value()
+
     def create_dspreset(self):
         if not self.root_dir:
             return False
@@ -245,132 +371,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             if not confirm_dlg == Qt.QMessageBox.Yes:
                 return False
 
-        self.ir_subdir = (None, 'IR')[self.use_ir_cb.isChecked()]
-
-        pattern = self.pattern_le.text()
-        groupnaming = self.groupnaming_cmb.currentText()
-
-        override = self.override_cb.isChecked()
-        loop = self.loop_cb.isChecked()
-
-        ADSR = self.A_dsb.value(), self.D_dsb.value(), self.S_dsb.value(), self.R_dsb.value()
-        ADRr = self.Ar_dsb.value(), self.Dr_dsb.value(), self.Rr_dsb.value()
-
-        fake_legato = self.fake_leg_cb.isChecked()
-        fk_leg_start = self.fk_leg_start_dsb.value()
-        fk_leg_a = self.fk_leg_a_dsb.value()
-        fk_leg_a_curve = self.fk_leg_a_curve_dsb.value()
-
-        fake_release = self.fake_rls_cb.isChecked()
-        fk_rls_mode = self.fk_rls_mode_cmb.currentText()
-        fk_rls_volume = self.fk_volume_dsb.value()
-        fk_rls_cutoff = self.fk_cutoff_dsb.value()
-        fk_rls_tuning = self.fk_tuning_dsb.value()
-        fk_rls_ADSR = self.fk_A_dsb.value(), self.fk_D_dsb.value(), 0, self.fk_R_dsb.value()
-        fk_rls_ADRr = self.fk_Ar_dsb.value(), self.fk_Dr_dsb.value(), self.fk_Rr_dsb.value()
-
-        transpose = self.transpose_sb.value()
-        pf_mode = self.pf_mode_cmb.currentText()
-        pf_th = self.pf_th_dsb.value()
-        tuning = self.tuning_dsb.value()
-
-        pad_vel = self.pad_vel_cb.isChecked()
-
-        seq_mode = self.seq_mode_cmb.currentText()
-
-        limit = self.limit_le.text()
-        if limit.lower().startswith('auto'):
-            limit = limit
-        elif '-' in limit or '+' in limit:
-            limit = [val for val in limit.split()]
-        else:
-            limit = [int(val) for val in limit.split()] or True
-
-        note_limit_mode = self.note_limit_cmb.currentText()
-
-        rr_ofs = self.rrofs_le.text()
-        if rr_ofs:
-            rr_ofs = rr_ofs.strip(' ').lower()
-            if rr_ofs[0] == 'x' and rr_ofs[1:].isdigit():
-                rr_offset = int(rr_ofs[1:])
-            else:
-                rr_offset = [int(val) for val in self.rrofs_le.text().split()] or [0]
-        else:
-            rr_offset = None
-
-        rr_bounds = self.rr_bounds_cb.isChecked()
-
-        crossfade_mode = self.crossfade_cmb.currentText()
-        crossfade = self.crossfade_dsb.value()
-
-        attenuation = self.attenuation_dsb.value()
-        vel_track = self.ampveltrk_dsb.value()
-        note_pan = self.notepan_dsb.value()
-
-        monophonic = self.monophonic_cb.isChecked()
-
-        note_spread = self.spread_cmb.currentText()
-
-        bg_text_mode = self.bg_text_cmb.currentText()
-        if bg_text_mode == 'root_dir':
-            bg_text = beautify_str(Path(self.root_dir).stem)
-        elif bg_text_mode == 'custom':
-            bg_text = self.bg_text_le.text()
-        else:
-            bg_text = None
-
-        palette_cfg = self.palette_cfg[self.palette_cmb.currentText()]
-        hsv_adjust = [self.hue_dsb.value(), self.sat_dsb.value(), self.val_dsb.value()]
-
-        group_knobs_rows = self.grp_knob_rows_sb.value()
-        no_solo_grp_knob = self.no_solo_grp_knob_cb.isChecked()
-        adsr_knobs = self.adsr_knobs_cb.isChecked()
-
-        use_reverb = self.use_reverb_cb.isChecked()
-        reverb_wet = self.reverb_wet_dsb.value()
-
-        max_adsr_knobs = self.max_adsr_dsb.value()
-
         result = None
         importlib.reload(smp2ds)
+
         try:
-            result = smp2ds.create_dspreset(root_dir=self.root_dir,
-
-                                            smp_attrib_cfg=self.smp_attrib_cfg,
-
-                                            pattern=pattern, group_naming=groupnaming,
-                                            override=override, loop=loop,
-                                            adsr=ADSR, adr_curve=ADRr,
-
-                                            fake_legato=fake_legato,
-                                            fk_leg_start=fk_leg_start, fk_leg_a=fk_leg_a, fk_leg_a_curve=fk_leg_a_curve,
-
-                                            fake_release=fake_release, fk_rls_mode=fk_rls_mode,
-                                            fk_rls_volume=fk_rls_volume, fk_rls_tuning=fk_rls_tuning,
-                                            fk_rls_cutoff=fk_rls_cutoff,
-                                            fk_rls_adsr=fk_rls_ADSR, fk_rls_adr_curve=fk_rls_ADRr,
-
-                                            note_spread=note_spread, seq_mode=seq_mode,
-                                            limit=limit, note_limit_mode=note_limit_mode,
-                                            rr_offset=rr_offset, rr_bounds=rr_bounds,
-                                            transpose=transpose, pf_mode=pf_mode, pf_th=pf_th, tuning=tuning,
-                                            pad_vel=pad_vel,
-
-                                            crossfade_mode=crossfade_mode, crossfade=crossfade,
-
-                                            attenuation=attenuation, vel_track=vel_track, note_pan=note_pan,
-                                            monophonic=monophonic,
-
-                                            bg_text=bg_text, text_font=self.text_font,
-
-                                            color_plt_cfg=palette_cfg, plt_adjust=hsv_adjust,
-                                            group_knobs_rows=group_knobs_rows, no_solo_grp_knob=no_solo_grp_knob,
-                                            adsr_knobs=adsr_knobs, max_adsr_knobs=max_adsr_knobs,
-                                            use_reverb=use_reverb, reverb_wet=reverb_wet, ir_subdir=self.ir_subdir,
-
-                                            add_suffix=add_suffix, auto_increment=auto_increment,
-
-                                            progress=self.progress_pb)
+            self.as_worker(self.create_dspreset_process)
+            self.event_loop.exec_()  # Wait for result
+            result = self.worker_result
+            self.event_loop.quit()
 
             if result:
                 # Write settings used to create the preset
@@ -379,24 +387,39 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                 write_settings(widget=self, filepath=settings_path)
 
         except Exception as e:
-            print(e)
             traceback.print_exc()
-            self.progress_pb.setFormat('Error when processing. Please check settings.')
+            self.update_progress(0)
+            self.update_message(f'Error when processing: {e}')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
 
         if result:
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
-    def create_dslibrary(self):
+    def create_dspreset_process(self, worker, progress_callback, message_callback):
+        self.get_options()
+
+        options = vars(self.options)
+        func_args = inspect.getfullargspec(smp2ds.create_dspreset)[0]
+        option_kwargs = {k: v for k, v in options.items() if k in func_args}
+
+        result = smp2ds.create_dspreset(**option_kwargs,
+                                        worker=worker, progress_callback=progress_callback,
+                                        message_callback=message_callback)
+
+        return result
+
+    def create_dslibrary(self, worker, progress_callback, message_callback):
         if not self.root_dir:
             return False
 
         result = smp2ds.create_dslibrary(self.root_dir)
 
         if result is None:
-            self.progress_pb.setFormat('No dspreset file found')
+            progress_callback.emit(0)
+            message_callback.emit('No dspreset file found')
         else:
-            self.progress_pb.setFormat(f'{shorten_path(result, 30)} successfully created')
+            progress_callback.emit(100)
+            message_callback.emit(f'{shorten_path(result, 30)} successfully created')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
     def set_rootdir(self):
@@ -577,6 +600,24 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             self.progress_pb.setFormat(f'{settings_files[-1].name} found and loaded')
         else:
             self.progress_pb.setFormat(f'No settings found')
+
+    def update_progress(self, value):
+        self.progress_pb.setValue(value)
+
+    def update_message(self, message):
+        self.progress_pb.setFormat(message)
+
+    def update_range(self, mn, mx):
+        self.progress_pb.setRange(mn, mx)
+        self.progress_pb.update()
+
+    def handle_result(self, value):
+        self.worker_result = value
+        self.event_loop.quit()
+
+    def cleanup_worker(self, worker):
+        if worker in self.active_workers:
+            self.active_workers.remove(worker)
 
     def closeEvent(self, event):
         print(f'{self.objectName()} closed')

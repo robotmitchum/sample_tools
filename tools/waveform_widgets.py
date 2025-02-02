@@ -77,26 +77,33 @@ class WaveformDialog(QtWidgets.QDialog):
             loop_start = 700
             loop_end = 800
 
-        subplt.set_xlim(0, len(data))
-
         if data.ndim > 1:
             data = np.mean(data, axis=-1)
 
         if title:
             subplt.set_title(title)
 
+        length = len(data)
+
         # Custom formatter for y-axis ticks to display dB
         def db_formatter(x, pos):
             return f'{20 * np.log10(np.abs(x) + 1e-12):.1f} dB'
 
-        def percent_formatter(x, pos):
-            return f'{x / (len(data) - 1):.1f}'
+        def x_formatter(x, pos):
+            return f'{x / length:.1f}'
 
-        subplt.xaxis.set_major_formatter(FuncFormatter(percent_formatter))
+        subplt.set_xlim(0, length)
+        subplt.xaxis.set_major_formatter(FuncFormatter(x_formatter))
         subplt.yaxis.set_major_formatter(FuncFormatter(db_formatter))
 
         subplt.plot(data, label='Audio', color='#4080A0')
-        subplt.axhline(y=0, xmin=0, xmax=len(data) - 1, color='#606060')
+
+        for i in range(10):
+            subplt.axvline(x=int(i * length / 10), ymin=-1, ymax=1, label=f'{i + 1:02}', color='#404040',
+                           linestyle='--')
+
+        subplt.axhline(y=0, xmin=0, xmax=length, color='#606060')
+
         if loop_start is not None:
             subplt.axvline(x=loop_start, ymin=-1, ymax=1, label='Loop Start', color='#00FF80')
         if loop_start is not None:
@@ -104,6 +111,9 @@ class WaveformDialog(QtWidgets.QDialog):
         if cues is not None:
             for c, cue in enumerate(cues):
                 subplt.axvline(x=cue, ymin=-1, ymax=1, label=f'Cue {c}', color='#8080FF')
+
+        tick_positions = np.linspace(0, length, 11)
+        subplt.set_xticks(tick_positions)
 
         self.canvas.draw()
 

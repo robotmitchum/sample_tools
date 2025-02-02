@@ -37,7 +37,7 @@ import sample_utils as st
 from UI import rename_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, add_insert_ctx, resource_path
+from common_ui_utils import add_ctx, add_insert_ctx, get_user_directory, resource_path
 from file_utils import move_to_subdir
 
 # from simple_logger import SimpleLogger
@@ -64,12 +64,17 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         self.get_defaults()
 
-        self.progress_pb.setFormat("Rename audio files and update their 'smpl' chunk information")
+        self.update_message("Rename audio files and update their 'smpl' chunk information")
 
     def setup_connections(self):
         super().setup_connections()
 
         # Output path widgets
+        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
+        default_dir = get_user_directory()
+        desktop_dir = get_user_directory('Desktop')
+        add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
+                names=['Clear', 'Default directory', 'Desktop'])
         self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
 
         # Base name widgets
@@ -107,17 +112,23 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         add_ctx(self.transpose_sb, [-12, 0, 12])
 
         # Process buttons
-        self.process_sel_pb.clicked.connect(partial(self.do_process, 'sel'))
-        self.process_pb.clicked.connect(partial(self.do_process, 'batch'))
+        self.process_sel_pb.clicked.connect(partial(self.do_process, mode='sel'))
+        self.process_pb.clicked.connect(partial(self.do_process, mode='batch'))
 
         # Custom events
 
-    def batch_rename(self, files, test_run=True):
+    def batch_rename(self, worker, progress_callback, message_callback, files, test_run):
         """
         Batch process files given files
+
+        :param Worker or None worker:
+        :param function or None progress_callback:
+        :param function or None message_callback:
+
         :param list files: Files to process
         :param bool test_run: True (simulate process)
         :return: Resulting names
+
         :rtype: list
         """
         count = len(files)
@@ -158,9 +169,11 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         # Progress bar init
         self.progress_pb.setMaximum(len(files))
-        self.progress_pb.setValue(0)
         self.progress_pb.setTextVisible(True)
-        self.progress_pb.setFormat('%p%')
+
+        if progress_callback is not None:
+            progress_callback.emit(0)
+            message_callback.emit('%p%')
 
         result = []
         temp_files = None
@@ -170,6 +183,9 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
             temp_files = move_to_subdir(files, sub_dir=None, test_run=test_run)
 
             for i, (f, tmp_f) in enumerate(zip(files, temp_files)):
+                if worker.is_stopped():
+                    return result
+
                 if ext == 'same':
                     output_ext = Path(f).suffix[1:]
                 else:
@@ -195,7 +211,8 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
                                             use_loop=use_loop, test_run=test_run)
 
                 result.append(new_name)
-                self.progress_pb.setValue(i + 1)
+                if progress_callback is not None:
+                    progress_callback.emit(i + 1)
 
         except Exception as e:
             # self.logger.log_exception(f'An error occurred: {e}')
@@ -204,18 +221,20 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         done = len(result)
 
         if done < count:
-            self.progress_pb.setFormat('Some file(s) could not be processed - Please check settings')
+            if message_callback is not None:
+                message_callback.emit('Some file(s) could not be processed - Please check settings')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
         else:
             if test_run:
-                self.progress_pb.setFormat(f'{done} of {count} file(s)')
+                if message_callback is not None:
+                    message_callback.emit(f'{done} of {count} file(s)')
             else:
                 # Delete temp folder
                 temp_dirs = {Path(f).parent for f in temp_files}
                 for d in temp_dirs:
                     d.rmdir()
-
-                self.progress_pb.setFormat(f'{done} of {count} file(s) processed')
+                if message_callback is not None:
+                    message_callback.emit(f'{done} of {count} file(s) processed')
                 play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
         if not test_run:
@@ -230,7 +249,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         return result
 
-    def do_process(self, mode='batch'):
+    def do_process(self, mode):
         count = self.files_lw.count()
         if not count:
             return False
@@ -245,7 +264,15 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         importlib.reload(st)
 
-        result = self.batch_rename(files, test_run=True)
+        result = []
+        try:
+            self.as_worker(partial(self.batch_rename, files=files, test_run=True))
+            self.event_loop.exec_()  # Wait for result
+            result = self.worker_result
+            self.event_loop.quit()
+        except Exception as e:
+            print(f'Error: {e}')
+            traceback.print_exc()
 
         if len(result) < len(files):
             return False

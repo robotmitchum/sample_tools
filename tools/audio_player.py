@@ -14,41 +14,47 @@ import sounddevice as sd
 import soundfile as sf
 from common_ui_utils import resource_path
 
+from PyQt5.QtCore import QObject, pyqtSignal
+
+
+class AudioPlayerSignals(QObject):
+    message = pyqtSignal(str)
+
 
 class AudioPlayer:
     def __init__(self):
         self.is_playing = threading.Event()
         self.stream = None
+        self.signals = AudioPlayerSignals()
 
-    def play(self, data, sr, loop_start, loop_end, msg=None):
+    def play(self, data, sr, loop_start, loop_end):
         if not self.is_playing.is_set():
             callback = AudioCallback(data, loop_start, loop_end, player=self)
             self.stream = sd.OutputStream(samplerate=sr, channels=data.ndim, callback=callback)
             self.is_playing.set()
-            if msg:
-                if loop_start is None or loop_start is None:
-                    msg(f'▶ Press space bar to stop')
-                else:
-                    msg(f'▶ {loop_start}-{loop_end}    Press space bar to stop')
+
+            if loop_start is None or loop_start is None:
+                self.signals.message.emit(f'▶ Press space bar to stop')
+            else:
+                self.signals.message.emit(f'▶ {loop_start}-{loop_end}    Press space bar to stop')
+
             with self.stream:
                 while self.is_playing.is_set():
                     sd.sleep(100)
-                if msg:
-                    if loop_start is None or loop_start is None:
-                        try:
-                            msg(f'■ Press space bar to play')
-                        except RuntimeError as e:
-                            pass
+                if loop_start is None or loop_start is None:
+                    try:
+                        self.signals.message.emit(f'■ Press space bar to play')
+                    except RuntimeError as e:
+                        print(f'Error: {e}')
 
-    def stop(self, msg=None):
+    def stop(self):
         if self.is_playing.is_set():
             if self.stream is not None:
                 # self._stream.stop()
                 self.stream.close()
                 self.stream = None
             self.is_playing.clear()
-        if msg:
-            msg('■ Press space bar to play')
+        self.signals.message.emit('■ Press space bar to play')
 
 
 class AudioCallback:

@@ -31,7 +31,7 @@ from UI import st_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import rms
-from common_ui_utils import add_ctx, replace_widget, FilePathLabel, resource_path, resource_path_alt
+from common_ui_utils import add_ctx, replace_widget, FilePathLabel, resource_path, resource_path_alt, get_user_directory
 from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
@@ -66,20 +66,24 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
         self.get_defaults()
 
-        self.progress_pb.setFormat('Apply pseudo-stereo/stereo imaging effect to audio file(s)')
+        self.update_message('Apply pseudo-stereo/stereo imaging effect to audio file(s)')
 
     def setup_connections(self):
         super().setup_connections()
 
         # IR path widgets
         self.ir_path_l = replace_widget(self.ir_path_l, FilePathLabel(file_mode=True, parent=self))
-
         self.set_ir_path_tb.clicked.connect(self.ir_path_l.browse_path)
-        self.ir_path_l.customContextMenuRequested.disconnect()
+        self.ir_path_l.setContextMenuPolicy(3)
         self.ir_path_l.customContextMenuRequested.connect(self.ir_path_l_ctx)
         self.ir_path_l.setEnabled(False)
 
-        # Output path widget
+        # Output path widgets
+        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
+        default_dir = get_user_directory()
+        desktop_dir = get_user_directory('Desktop')
+        add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
+                names=['Clear', 'Default directory', 'Desktop'])
         self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
 
         # Delay widget
@@ -128,9 +132,9 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         add_ctx(self.suffix_le, ['_st', '_result'])
 
         # Process buttons
-        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'batch')))
-        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'sel')))
-        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, 'preview')))
+        self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
 
         # Custom events
 
@@ -160,8 +164,11 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         else:
             self.options.suffix = ''
 
-    def do_process(self, mode='batch'):
+    def do_process(self, worker, progress_callback, message_callback, mode='batch'):
         """
+        :param Worker or None worker:
+        :param function or None progress_callback:
+        :param function or None message_callback:
 
         :param int mode: 'batch' 'sel' or 'preview'
         :return:
@@ -192,15 +199,20 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
         importlib.reload(ps)
 
-        # Progress bar init
-        self.progress_pb.setMaximum(count)
-        self.progress_pb.setValue(0)
-
         done = 0
         self.player.stop()
-        self.progress_pb.setFormat('Work in progress %p%')
+
+        # Progress bar init
+        self.progress_pb.setMaximum(count)
+        if progress_callback is not None:
+            progress_callback.emit(0)
+            message_callback.emit('Work in progress %p%')
+
         try:
             for i, input_file in enumerate(files):
+                if worker.is_stopped():
+                    return False
+
                 info = Sample(input_file)
                 prm = info.params
 
@@ -272,17 +284,20 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                             set_md_tags(str(filepath), md=md)
 
                 done += 1
-                self.progress_pb.setValue(i + 1)
+                if progress_callback is not None:
+                    progress_callback.emit(i + 1)
 
         except Exception as e:
             traceback.print_exc()
 
-        self.progress_pb.setFormat(f'{done} of {count} file(s) processed.')
+        if progress_callback is not None:
+            message_callback.emit(f'{done} of {count} file(s) processed.')
 
         if done < count:
             self.progress_pb.setMaximum(1)
-            self.progress_pb.setValue(0)
-            self.progress_pb.setFormat('Error while processing, Please check settings')
+            if progress_callback is not None:
+                progress_callback.emit(0)
+                message_callback.emit('Error while processing, Please check settings')
         elif mode == 'preview':
             if self.temp_audio.audio is not None:
                 data = self.temp_audio.audio
@@ -290,13 +305,13 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                 self.temp_audio.info.input_file = input_file
                 sr = info.params.framerate
                 self.playback_thread = threading.Thread(target=self.player.play,
-                                                        args=(data, sr, info.loopStart, info.loopEnd,
-                                                              self.progress_pb.setFormat), daemon=True)
+                                                        args=(data, sr, info.loopStart, info.loopEnd), daemon=True)
                 self.playback_thread.start()
 
             self.progress_pb.setMaximum(1)
-            self.progress_pb.setValue(1)
-            self.progress_pb.setFormat(f'Preview completed')
+            if progress_callback is not None:
+                progress_callback.emit(1)
+                message_callback.emit('Preview completed')
         else:
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 

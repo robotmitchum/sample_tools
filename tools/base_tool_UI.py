@@ -30,7 +30,8 @@ from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 from audio_player import AudioPlayer
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import FilePathLabel, replace_widget, resource_path
-from common_ui_utils import Worker, Node, KeyPressHandler, sample_to_name
+from common_ui_utils import Node, KeyPressHandler, sample_to_name
+from tools.worker import Worker
 from sample_utils import Sample
 from waveform_widgets import WaveformDialog, LoopPointDialog
 
@@ -47,11 +48,16 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.options = Node()
 
         self.player = AudioPlayer()
+        self.player.signals.message.connect(self.update_message)
+
         self.temp_audio = Node()
         self.playback_thread = None
 
         self.threadpool = QtCore.QThreadPool(parent=self)
         self.worker = None
+        self.active_workers = []
+        self.worker_result = None
+        self.event_loop = QtCore.QEventLoop()
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
@@ -155,11 +161,21 @@ class BaseToolUi(QtWidgets.QMainWindow):
             self.options.suffix = ''
 
     def as_worker(self, cmd):
-        if self.worker:
-            if self.worker.running:
-                return False
-        self.worker = Worker(cmd)
-        self.threadpool.start(self.worker)
+        if not any(worker.running for worker in self.active_workers):
+            self.worker = Worker(cmd)
+
+            # Worker signals
+            self.worker.signals.progress.connect(self.update_progress)
+            self.worker.signals.progress_range.connect(self.update_range)
+            self.worker.signals.message.connect(self.update_message)
+            self.worker.signals.result.connect(self.handle_result)
+
+            self.worker.signals.finished.connect(lambda: self.cleanup_worker(self.worker))
+
+            self.active_workers.append(self.worker)
+            self.threadpool.start(self.worker)
+        else:
+            print('Task is already running!')
 
     def browse_files(self):
         self.refresh_lw_items()
@@ -254,9 +270,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         audio_file = args[0].data(Qt.Qt.UserRole)
         if os.path.isfile(audio_file):
             data, sr = sf.read(audio_file)
-            self.playback_thread = threading.Thread(target=self.player.play,
-                                                    args=(data, sr, None, None, self.progress_pb.setFormat),
-                                                    daemon=True)
+            self.playback_thread = threading.Thread(target=self.player.play, args=(data, sr, None, None), daemon=True)
             self.playback_thread.start()
 
     def key_lw_items_event(self, event):
@@ -295,7 +309,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
     def play_stop_toggle(self):
         if self.player.is_playing.is_set():
-            self.player.stop(msg=self.progress_pb.setFormat)
+            self.player.stop()
         else:
             items = self.files_lw.selectedItems()
             if items:
@@ -304,8 +318,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                     data, sr = sf.read(audio_file)
                     info = Sample(audio_file)
                     self.playback_thread = threading.Thread(target=self.player.play,
-                                                            args=(data, sr, info.loopStart, info.loopEnd,
-                                                                  self.progress_pb.setFormat), daemon=True)
+                                                            args=(data, sr, info.loopStart, info.loopEnd), daemon=True)
                     self.playback_thread.start()
 
     @staticmethod
@@ -341,7 +354,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
             event.ignore()
 
     def closeEvent(self, event):
-        self.player.stop(msg=None)
+        self.player.stop()
         self.removeEventFilter(self)
         print(f'{self.objectName()} closed')
         event.accept()
@@ -393,14 +406,14 @@ class BaseToolUi(QtWidgets.QMainWindow):
         result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
         if result:
             os.chdir(result.parent)
-            self.progress_pb.setFormat(f'{result.name} loaded')
+            self.update_message(f'{result.name} loaded')
 
     def save_settings(self):
         self.set_settings_path()
         result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
         if result:
             os.chdir(result.parent)
-            self.progress_pb.setFormat(f'{result.name} saved')
+            self.update_message(f'{result.name} saved')
 
     def get_defaults(self):
         get_settings(self, self.default_settings)
@@ -408,6 +421,24 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def restore_defaults(self):
         set_settings(widget=self, node=self.default_settings)
         self.progress_pb.setFormat(f'Default settings restored')
+
+    def update_progress(self, value):
+        self.progress_pb.setValue(value)
+
+    def update_message(self, message):
+        self.progress_pb.setFormat(message)
+
+    def update_range(self, mn, mx):
+        self.progress_pb.setRange(mn, mx)
+        self.progress_pb.update()
+
+    def handle_result(self, value):
+        self.worker_result = value
+        self.event_loop.quit()
+
+    def cleanup_worker(self, worker):
+        if worker in self.active_workers:
+            self.active_workers.remove(worker)
 
 
 def launch(mw, app_id=''):

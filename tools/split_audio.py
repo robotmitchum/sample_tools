@@ -30,7 +30,8 @@ def split_audio(input_file='', output_file='', bit_depth=None,
                 extra_suffix='',
                 split_db=-60, fade_db=-48, min_duration=.1,
                 dither=True, dc_offset=True,
-                write_cue_file=True, progress_pb=None, dry_run=True):
+                write_cue_file=True, dry_run=True, progress_bar=None,
+                worker=None, progress_callback=None, message_callback=None, range_callback=None):
     """
     :param str input_file:
     :param str output_file:
@@ -52,7 +53,7 @@ def split_audio(input_file='', output_file='', bit_depth=None,
     :param int use_note: 0 disabled, 1 MIDI note number, 2 note name
     :param bool use_pitch_fraction: Set pitch fraction to 'smpl'
 
-    :param QProgressBar or None progress_pb: Optional
+    :param QProgressBar or None progress_bar: Optional
 
     :param bool dry_run: Simulate process without writing anything, for debugging
     :return:
@@ -107,13 +108,13 @@ def split_audio(input_file='', output_file='', bit_depth=None,
 
     # Progress bar init
     pb_val, pb_mx, count = None, None, len(regions.tolist())
-    if progress_pb:
+    if progress_bar:
         # Get current bar progress
-        pb_val = progress_pb.value()
-        pb_mx = progress_pb.maximum()
+        pb_val = progress_bar.value()
+        pb_mx = progress_bar.maximum()
         # "Subdivide" progress bar according to found regions
-        progress_pb.setMaximum(pb_mx * count)
-        progress_pb.setValue(pb_val * count)
+        range_callback.emit(0, pb_mx * count)
+        progress_callback.emit(pb_val * count)
 
     for i, region in enumerate(regions.tolist()):
         filepath = ''
@@ -197,15 +198,15 @@ def split_audio(input_file='', output_file='', bit_depth=None,
                 set_md_tags(str(filepath), md=md)
 
         # Increment progress bar sub-task
-        if progress_pb is not None:
-            progress_pb.setValue(pb_val * count + i + 1)
+        if progress_bar is not None:
+            progress_callback.emit(pb_val * count + i + 1)
 
         split_files.append(filepath)
 
     # Restore progress bar maximum and increment parent task
-    if progress_pb is not None:
-        progress_pb.setMaximum(pb_mx)
-        progress_pb.setValue(pb_val + 1)
+    if progress_bar is not None:
+        range_callback.emit(0, pb_mx)
+        progress_callback.emit(pb_val + 1)
 
     return split_files
 
