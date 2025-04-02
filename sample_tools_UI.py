@@ -14,12 +14,13 @@ import sys
 from functools import partial
 from pathlib import Path
 
-import qdarkstyle
+from dark_fusion_style import apply_dark_theme
+
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
 
 from __init__ import __version__  # noqa
 
-# from tools.simple_logger import SimpleLogger
+from tools.simple_logger import SimpleLogger
 
 if getattr(sys, 'frozen', False):
     import pyi_splash  # noqa
@@ -70,6 +71,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         self.tools = {
             'SMP2ds': 'smp2ds_UI.py',
+            'DR-DS': 'drds_UI.py',
             'Split Audio Tool': 'split_tool_UI.py',
             'Rename Sample Tool': 'rename_tool_UI.py',
             'Loop Tool': 'loop_tool_UI.py',
@@ -84,6 +86,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         self.icons = {
             'SMP2ds': 'smp2ds_64.png',
+            'DR-DS': 'drds_64.png',
             'Split Audio Tool': 'split_tool_64.png',
             'Rename Sample Tool': 'rename_tool_64.png',
             'Loop Tool': 'loop_tool_64.png',
@@ -93,6 +96,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         self.status_tips = {
             'SMP2ds': 'Create Decent Sampler presets from samples',
+            'DR-DS': 'Create Decent Sampler drum presets from samples',
             'Split Audio Tool': 'Split and trim audio file(s) by detecting silences',
             'Rename Sample Tool': "Rename audio files and update their 'smpl' chunk/metadata",
             'Loop Tool': 'Detect loop points or modify audio files to make them loop',
@@ -112,15 +116,15 @@ class SampleToolsUi(QtWidgets.QMainWindow):
                 print(f'Failed to import {module_name}: {e}')
 
     def setupUi(self):
-        centralwidget = QtWidgets.QWidget(self)
-        centralwidget.setObjectName('centralwidget')
-        lyt = QtWidgets.QHBoxLayout(centralwidget)
-        lyt.setObjectName('tool_btn_lyt')
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.setCentralWidget(self.centralwidget)
+        self.lyt = QtWidgets.QHBoxLayout(self.centralwidget)
 
-        self.setCentralWidget(centralwidget)
-
-        status_bar = QtWidgets.QStatusBar()
-        self.setStatusBar(status_bar)
+        self.status_bar = QtWidgets.QStatusBar(parent=self)
+        plt = self.palette()
+        self.bgc = plt.base().color().getRgb()[:3]
+        self.setStyleSheet(f'QStatusBar{{background-color:rgb{self.bgc};}}')
+        self.setStatusBar(self.status_bar)
 
         for tool, cmd in self.tools.items():
             img_file = resource_path(Path(self.icons_path).joinpath(self.icons[tool]))
@@ -131,7 +135,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             btn.setToolTip(tool)
             btn.setStatusTip(self.status_tips[tool])
             btn.clicked.connect(partial(self.launch_tool, name=tool))
-            lyt.addWidget(btn)
+            self.lyt.addWidget(btn)
 
         img_file = resource_path(Path(self.icons_path).joinpath('quit_64.png'))
         close_btn = IconButton(image=img_file, parent=self)
@@ -140,9 +144,9 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         close_btn.setToolTip('Quit')
         close_btn.setStatusTip('Close all tools and quit')
 
-        lyt.addWidget(close_btn)
+        self.lyt.addWidget(close_btn)
 
-        self.setLayout(lyt)
+        self.centralwidget.setLayout(self.lyt)
 
         app_icon = QtGui.QIcon()
         img_file = resource_path(Path(self.icons_path).joinpath('sample_tools_64.png'))
@@ -157,8 +161,6 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         :param str name:
         :return:
         """
-        # QtWidgets.QMainWindow()
-
         if name in self.running:
             print(f'{name} already running')
             try:
@@ -203,12 +205,12 @@ class IconButton(QtWidgets.QPushButton):
         self.setFlat(True)
 
 
-# def global_exception_handler(exctype, value, tb):
-#     logger.log_exception(value)
+def global_exception_handler(exctype, value, tb):
+    logger.log_exception(value)
 
 
-# logger = SimpleLogger('sample_tools_log.txt')
-# sys.excepthook = global_exception_handler
+logger = SimpleLogger('sample_tools_log.txt')
+sys.excepthook = global_exception_handler
 # atexit.register(lambda: logger.logger.info("Application is shutting down."))
 
 if __name__ == '__main__':
@@ -218,14 +220,14 @@ if __name__ == '__main__':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QtWidgets.QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
+    apply_dark_theme(app)
 
-    if platform.system() == "Darwin":
-        macos_style = """
-                QComboBox{combobox-popup: 0;}
-                QComboBox QAbstractItemView {min-width: 64px;}
-            """
-        app.setStyleSheet(app.styleSheet() + macos_style)
+    # if platform.system() == "Darwin":
+    #     macos_style = """
+    #             QComboBox{combobox-popup: 0;}
+    #             QComboBox QAbstractItemView {min-width: 64px;}
+    #         """
+    #     app.setStyleSheet(app.styleSheet() + macos_style)
 
     font = app.font()
     font.setPointSize(11)

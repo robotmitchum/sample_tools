@@ -85,7 +85,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         add_ctx(self.src_pattern_le,
                 values=['', '{group}_{note}', '{group}_{note}_{trigger}', '{group}_{note}_{vel}',
                         '{group}_{note}_{seqPosition}', '{group}_{note}_{repstr}'], trigger=self.src_pattern_pb)
-        smp_attrib = ['group', 'note', 'pitchFraction', 'vel', 'trigger', 'seqPosition', 'repstr']
+        smp_attrib = ['group', 'note', 'pitchFraction', 'vel', 'trigger', 'seqPosition', 'repstr', '_']
         src_fields = [f'{{{at}}}' for at in smp_attrib]
         add_insert_ctx(self.src_pattern_le, values=src_fields)
 

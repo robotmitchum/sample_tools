@@ -18,18 +18,42 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="centralwidget_lyt">
+    <property name="spacing">
+     <number>4</number>
+    </property>
+    <property name="leftMargin">
+     <number>8</number>
+    </property>
+    <property name="topMargin">
+     <number>8</number>
+    </property>
+    <property name="rightMargin">
+     <number>8</number>
+    </property>
+    <property name="bottomMargin">
+     <number>8</number>
+    </property>
     <item>
      <layout class="QHBoxLayout" name="directory_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
        <widget class="QLabel" name="path_l">
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Preset ROOT directory path
 
-Samples must be located in a subdirectory called 'Samples'
-Samples are retrieved recursively so they may be located in subdirectoriesinside 'Samples'
+Samples must be located in a subdirectory called 'Samples' (case sensitive)
+Samples are retrieved recursively so they may be located in subdirectories inside 'Samples'
 
 IR samples must be located in a separate subdirectory called 'IR'</string>
         </property>
@@ -48,7 +72,6 @@ IR samples must be located in a separate subdirectory called 'IR'</string>
        <widget class="QToolButton" name="setpath_tb">
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
           <weight>75</weight>
           <bold>true</bold>
          </font>
@@ -101,6 +124,9 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="pattern_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="spacer_7">
         <property name="orientation">
@@ -346,10 +372,16 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="adsr_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="spacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -505,9 +537,12 @@ Click for context menu</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>0</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
@@ -640,6 +675,9 @@ Click for context menu</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -701,6 +739,9 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="fake_leg_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_23">
         <property name="orientation">
@@ -955,6 +996,9 @@ This is the fade-in length for the legato, you should also modify the release of
     </item>
     <item>
      <layout class="QHBoxLayout" name="fake_rls_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_17">
         <property name="orientation">
@@ -1033,6 +1077,18 @@ Great for keys, guitars...</string>
          </item>
          <item>
           <widget class="QComboBox" name="fk_rls_mode_cmb">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>64</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="toolTip">
             <string>Fake release mode
 
@@ -1082,12 +1138,6 @@ Great for keys, guitars...</string>
          </item>
          <item>
           <widget class="QDoubleSpinBox" name="fk_volume_dsb">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="minimumSize">
             <size>
              <width>64</width>
@@ -1162,12 +1212,6 @@ In many cases, the release sounds should be attenuated</string>
             </item>
             <item>
              <widget class="QDoubleSpinBox" name="fk_tuning_dsb">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
               <property name="minimumSize">
                <size>
                 <width>64</width>
@@ -1224,12 +1268,6 @@ Detune the release sounds from their original pitch</string>
             </item>
             <item>
              <widget class="QDoubleSpinBox" name="fk_cutoff_dsb">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
               <property name="minimumSize">
                <size>
                 <width>64</width>
@@ -1294,6 +1332,9 @@ In many case, release sounds sound &quot;muffled&quot;, this can be simulated he
        <bool>false</bool>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <property name="spacing">
+        <number>4</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -1310,6 +1351,9 @@ In many case, release sounds sound &quot;muffled&quot;, this can be simulated he
         <spacer name="spacer_18">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -1465,9 +1509,12 @@ Click for context menu</string>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
+           <width>40</width>
            <height>0</height>
           </size>
          </property>
@@ -1600,6 +1647,9 @@ Click for context menu</string>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>40</width>
@@ -1662,10 +1712,16 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="spread_seq_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -1677,6 +1733,12 @@ color: rgb(255, 255, 255);</string>
       </item>
       <item>
        <widget class="QLabel" name="notespread_l">
+        <property name="minimumSize">
+         <size>
+          <width>96</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Note Spread</string>
         </property>
@@ -1728,6 +1790,9 @@ color: rgb(255, 255, 255);</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -1755,6 +1820,9 @@ Typical usage: instruments with velocity layers having a very different number o
        <spacer name="horizontalSpacer_13">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -1812,6 +1880,9 @@ Typical usage: instruments with velocity layers having a very different number o
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -1824,10 +1895,16 @@ Typical usage: instruments with velocity layers having a very different number o
     </item>
     <item>
      <layout class="QHBoxLayout" name="mapping_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="spacer_9">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -1913,6 +1990,9 @@ Use - or + to offset from bounding notes
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -1991,6 +2071,9 @@ If bounding notes sound too unnatural/pitched, disable the option</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -2003,10 +2086,16 @@ If bounding notes sound too unnatural/pitched, disable the option</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="transpose_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="spacer_19">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -2018,11 +2107,11 @@ If bounding notes sound too unnatural/pitched, disable the option</string>
       </item>
       <item>
        <widget class="QLabel" name="transpose_l">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+        <property name="minimumSize">
+         <size>
+          <width>96</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>Transpose</string>
@@ -2081,6 +2170,9 @@ If bounding notes sound too unnatural/pitched, disable the option</string>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
         <item>
          <widget class="QLabel" name="pf_mode_l">
           <property name="text">
@@ -2255,6 +2347,9 @@ Keep pitch fraction &quot;in check&quot;
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -2316,10 +2411,16 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="options_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -2331,6 +2432,18 @@ color: rgb(255, 255, 255);</string>
       </item>
       <item>
        <widget class="QLabel" name="attenuation_l">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Attenuation</string>
         </property>
@@ -2525,6 +2638,9 @@ Right click for context menu</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -2537,10 +2653,16 @@ Right click for context menu</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="crossfade_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -2552,6 +2674,18 @@ Right click for context menu</string>
       </item>
       <item>
        <widget class="QLabel" name="crossfade_l">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Crossfade</string>
         </property>
@@ -2658,6 +2792,9 @@ When using legatos, the instrument will already be de facto monophonic</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -2719,6 +2856,9 @@ color: rgb(255, 255, 255);</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="bg_text_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_5">
         <property name="orientation">
@@ -2729,7 +2869,7 @@ color: rgb(255, 255, 255);</string>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>96</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -2737,6 +2877,12 @@ color: rgb(255, 255, 255);</string>
       </item>
       <item>
        <widget class="QLabel" name="bg_text_l">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Background Text</string>
         </property>
@@ -2744,12 +2890,6 @@ color: rgb(255, 255, 255);</string>
       </item>
       <item>
        <widget class="QComboBox" name="bg_text_cmb">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="toolTip">
          <string>Write text to the background image
 none: No text
@@ -2805,7 +2945,7 @@ custom: Type a custom text</string>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>96</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -2815,10 +2955,16 @@ custom: Type a custom text</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="palette_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -2830,6 +2976,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QLabel" name="palette_l">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Palette</string>
         </property>
@@ -2837,12 +2989,6 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QComboBox" name="palette_cmb">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="minimumSize">
          <size>
           <width>160</width>
@@ -2990,6 +3136,9 @@ custom: Type a custom text</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>40</width>
@@ -3002,6 +3151,9 @@ custom: Type a custom text</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="grp_ui_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="horizontalSpacer_8">
         <property name="orientation">
@@ -3012,7 +3164,7 @@ custom: Type a custom text</string>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>96</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -3020,6 +3172,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QLabel" name="grp_knob_rows_l">
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>Group Knob Rows</string>
         </property>
@@ -3027,12 +3185,6 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QSpinBox" name="grp_knob_rows_sb">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="minimumSize">
          <size>
           <width>64</width>
@@ -3152,7 +3304,7 @@ custom: Type a custom text</string>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>96</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -3162,6 +3314,9 @@ custom: Type a custom text</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="reverb_lyt">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <spacer name="spacer_20">
         <property name="orientation">
@@ -3172,7 +3327,7 @@ custom: Type a custom text</string>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>96</width>
+          <width>40</width>
           <height>20</height>
          </size>
         </property>
@@ -3180,6 +3335,18 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QCheckBox" name="use_reverb_cb">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>128</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="toolTip">
          <string>Create reverb knob</string>
         </property>
@@ -3282,8 +3449,30 @@ IR samples must be located in a separate subdirectory called 'IR'</string>
     </item>
     <item>
      <layout class="QHBoxLayout" name="create_button_lyt">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer_29">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
       <item>
        <layout class="QVBoxLayout" name="dsp_lyt">
+        <property name="spacing">
+         <number>4</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="suffix_lyt">
           <item>
@@ -3357,6 +3546,9 @@ background-color: rgb(128, 220, 213);}</string>
       </item>
       <item>
        <layout class="QVBoxLayout" name="dslib_lyt">
+        <property name="spacing">
+         <number>4</number>
+        </property>
         <item>
          <spacer name="verticalSpacer_13">
           <property name="orientation">
@@ -3394,6 +3586,22 @@ At least one valid dspreset must exist in the directory</string>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_30">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>

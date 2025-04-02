@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\loop_tool.ui'
+# Form implementation generated from reading ui file 'loop_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -15,10 +15,6 @@ class Ui_loop_tool_mw(object):
     def setupUi(self, loop_tool_mw):
         loop_tool_mw.setObjectName("loop_tool_mw")
         loop_tool_mw.resize(880, 800)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
-        loop_tool_mw.setFont(font)
         loop_tool_mw.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(loop_tool_mw)
         self.centralwidget.setObjectName("centralwidget")
@@ -45,10 +41,7 @@ class Ui_loop_tool_mw(object):
         self.files_lyt.addWidget(self.files_lw)
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.files_lyt.addWidget(self.set_files_tb)
@@ -671,10 +664,7 @@ class Ui_loop_tool_mw(object):
         self.output_path_lyt.addWidget(self.output_path_l)
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_path_lyt.addWidget(self.set_output_path_tb)
@@ -779,10 +769,7 @@ class Ui_loop_tool_mw(object):
         self.process_sel_pb.setSizePolicy(sizePolicy)
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 1, 1, 1)
@@ -794,10 +781,7 @@ class Ui_loop_tool_mw(object):
         self.preview_pb.setSizePolicy(sizePolicy)
         self.preview_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.preview_pb.setFont(font)
         self.preview_pb.setObjectName("preview_pb")
         self.buttons_lyt.addWidget(self.preview_pb, 0, 0, 1, 1)
@@ -809,10 +793,7 @@ class Ui_loop_tool_mw(object):
         self.process_pb.setSizePolicy(sizePolicy)
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(31, 159, 127);\n"
 "color: rgb(255, 255, 255);}")
@@ -890,7 +871,7 @@ class Ui_loop_tool_mw(object):
 "0.5    centered (Default) \n"
 "1    forward, allow loop start very close to start of sample"))
         self.hash_search_cb.setToolTip(_translate("loop_tool_mw", "Detect \"perfect\" binary repeat\n"
-"Useful to detect loop in preprocessed audio where perfect a loop is likely present\n"
+"Useful to detect loop in preprocessed audio where a perfect loop is likely present\n"
 "Add some overhead dependent on the file size"))
         self.hash_search_cb.setText(_translate("loop_tool_mw", "1st Pass Hash Search"))
         self.range_limits_cb.setToolTip(_translate("loop_tool_mw", "Apply constraints to loop search scope"))

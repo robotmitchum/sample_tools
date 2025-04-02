@@ -10,12 +10,6 @@
     <height>800</height>
    </rect>
   </property>
-  <property name="font">
-   <font>
-    <pointsize>10</pointsize>
-    <stylestrategy>PreferAntialias</stylestrategy>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Loop Tool</string>
   </property>
@@ -74,10 +68,7 @@ SPACE BAR to play/stop selected file LOOPED</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
-          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -659,7 +650,7 @@ For high notes or high frequency content, try to reduce value below 10ms</string
          </property>
          <property name="toolTip">
           <string>Detect &quot;perfect&quot; binary repeat
-Useful to detect loop in preprocessed audio where perfect a loop is likely present
+Useful to detect loop in preprocessed audio where a perfect loop is likely present
 Add some overhead dependent on the file size</string>
          </property>
          <property name="layoutDirection">
@@ -1896,10 +1887,7 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
-          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2149,10 +2137,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
-          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2179,10 +2164,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
-          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">
@@ -2210,10 +2192,7 @@ and play the result without writing anything</string>
         </property>
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
-          <stylestrategy>PreferAntialias</stylestrategy>
          </font>
         </property>
         <property name="toolTip">

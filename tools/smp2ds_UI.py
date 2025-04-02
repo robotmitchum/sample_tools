@@ -26,7 +26,6 @@ from functools import partial
 from pathlib import Path
 import inspect
 
-import qdarkstyle
 from PyQt5 import QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtWidgets import QMenu, QMenuBar, QAction
@@ -35,11 +34,12 @@ import smp_to_dspreset as smp2ds
 from UI import smp_to_ds as gui
 from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import add_ctx, add_insert_ctx, popup_menu
+from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
 from jsonFile import read_json
 from smp_to_dspreset import __version__
 from tools.worker import Worker
+from dark_fusion_style import apply_dark_theme
 
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
@@ -113,7 +113,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         app_icon.addFile(img_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
+        custom_font = get_custom_font(self.current_dir / 'RobotoMono-Medium.ttf')
+
+        self.progress_pb.setFont(custom_font)
+        self.progress_pb.setStyleSheet('QProgressBar{border: none;}')
+        self.progress_pb.setAlignment(QtCore.Qt.AlignCenter)
         self.progress_pb.setTextVisible(True)
+        self.progress_pb.setFont(custom_font)
+        self.progress_pb.setValue(0)
         self.update_message('Create a Decent Sampler preset from samples')
 
     def setup_connections(self):
@@ -194,9 +201,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         add_ctx(self.bg_text_le, values=[''], names=['Clear'])
 
         self.hsv_pb.clicked.connect(self.hsv_adjust_ctx)
-
         add_ctx(self.reverb_wet_dsb, values=[0, .2, .5, .8, 1])
-
         add_ctx(self.max_adsr_dsb, values=[0, 5, 10, 20])
 
         self.use_reverb_cb.stateChanged.connect(lambda state: self.reverb_wet_dsb.setEnabled(state))
@@ -235,6 +240,10 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def setup_menu_bar(self):
         self.menu_bar = QMenuBar(self)
         self.menu_bar.setNativeMenuBar(False)
+
+        plt = self.menu_bar.palette()
+        plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
+        self.menu_bar.setPalette(plt)
 
         self.settings_menu = QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
@@ -383,7 +392,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             if result:
                 # Write settings used to create the preset
                 p = Path(result)
-                settings_path = p.parent / f'{p.stem}.smp2ds'
+                settings_path = p.parent / f'{p.stem}.{self.settings_ext}'
                 write_settings(widget=self, filepath=settings_path)
 
         except Exception as e:
@@ -571,6 +580,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                 self.load_settings_from_rootdir()
 
     def load_settings(self):
+        self.update_progress(0)
         p = Path(self.settings_path)
         if p.suffix == f'.{self.settings_ext}':
             p = p.parent
@@ -580,6 +590,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             self.progress_pb.setFormat(f'{result.name} loaded')
 
     def save_settings(self):
+        self.update_progress(0)
         result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
         if result:
             os.chdir(result.parent)
@@ -589,11 +600,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         get_settings(self, self.default_settings)
 
     def restore_defaults(self):
+        self.update_progress(0)
         set_settings(widget=self, node=self.default_settings)
         self.progress_pb.setFormat(f'Default settings restored')
 
     def load_settings_from_rootdir(self):
-        settings_files = [f for f in Path(self.root_dir).glob('*.smp2ds')]
+        self.update_progress(0)
+        self.set_settings_path()
+        settings_files = [f for f in Path(self.root_dir).glob(f'*.{self.settings_ext}')]
         if settings_files:
             settings_files = sorted(settings_files, key=lambda f: os.path.getmtime(f))
             read_settings(widget=self, filepath=settings_files[-1], startdir=None, ext=None)
@@ -652,14 +666,16 @@ if __name__ == "__main__":
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     app = QApplication(sys.argv)
 
-    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
+    apply_dark_theme(app)
 
-    if platform.system() == "Darwin":
-        macos_style = """
-                QComboBox{combobox-popup: 0;}
-                QComboBox QAbstractItemView {min-width: 64px;}
-            """
-        app.setStyleSheet(app.styleSheet() + macos_style)
+    # app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
+
+    # if platform.system() == "Darwin":
+    #     macos_style = """
+    #             QComboBox{combobox-popup: 0;}
+    #             QComboBox QAbstractItemView {min-width: 64px;}
+    #         """
+    #     app.setStyleSheet(app.styleSheet() + macos_style)
 
     font = app.font()
     font.setPointSize(11)

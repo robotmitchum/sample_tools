@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\split_tool.ui'
+# Form implementation generated from reading ui file 'split_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -15,11 +15,6 @@ class Ui_split_tool_mw(object):
     def setupUi(self, split_tool_mw):
         split_tool_mw.setObjectName("split_tool_mw")
         split_tool_mw.resize(640, 600)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
-        split_tool_mw.setFont(font)
         split_tool_mw.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(split_tool_mw)
         self.centralwidget.setObjectName("centralwidget")
@@ -46,11 +41,7 @@ class Ui_split_tool_mw(object):
         self.input_lyt.addWidget(self.files_lw)
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.input_lyt.addWidget(self.set_files_tb)
@@ -238,11 +229,7 @@ class Ui_split_tool_mw(object):
         self.output_lyt.addWidget(self.output_path_l)
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_lyt.addWidget(self.set_output_path_tb)
@@ -332,11 +319,7 @@ class Ui_split_tool_mw(object):
         self.process_pb.setSizePolicy(sizePolicy)
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(127, 63, 95);\n"
 "color: rgb(255, 255, 255);}")
@@ -350,11 +333,7 @@ class Ui_split_tool_mw(object):
         self.process_sel_pb.setSizePolicy(sizePolicy)
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
-        font.setPointSize(10)
         font.setBold(True)
-        font.setWeight(75)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 0, 1, 1)

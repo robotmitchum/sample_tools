@@ -54,9 +54,10 @@ class WaveformDialog(QtWidgets.QDialog):
         subplt.clear()
         subplt.set_ylim(-1, 1)
 
-        # "Dark Theme"
-        bg_color = '#19232d'
-        mid_color = '#455364'
+        # Query palette color
+        plt = self.palette()
+        bg_color = plt.base().color().name()
+        mid_color = plt.windowText().color().name()
 
         self.figure.patch.set_facecolor(bg_color)
         subplt.set_facecolor(bg_color)
@@ -163,9 +164,10 @@ class LoopPointDialog(QtWidgets.QDialog):
 
         disp_len = disp_len or 200
 
-        # "Dark Theme"
-        bg_color = '#19232d'
-        mid_color = '#455364'
+        # Query palette color
+        plt = self.palette()
+        bg_color = plt.base().color().name()
+        mid_color = plt.windowText().color().name()
 
         self.figure.patch.set_facecolor(bg_color)
         subplt.set_facecolor(bg_color)

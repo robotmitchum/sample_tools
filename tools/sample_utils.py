@@ -19,7 +19,6 @@ from pathlib import Path
 import mutagen
 import numpy as np
 import soundfile as sf
-from chunkmuncher.chunk import Chunk
 
 from common_math_utils import clamp
 from parseAttrString import parse_string, compose_string
@@ -36,6 +35,10 @@ class Sample:
     """
 
     def __init__(self, path='', extra_tags=None):
+        """
+        :param str path:
+        :param list extra_tags:
+        """
         if not path:
             return
 

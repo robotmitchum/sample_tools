@@ -18,7 +18,7 @@ def write_json(data, filepath, separators=(',', ':'), sort_keys=True, indent=Non
     :param bool sort_keys: Ordered keys
     :param tuple(str,str) separators:
     :param any data: Python data structure
-    :param str filepath: File path
+    :param str or Path filepath: File path
     :return: If no file path supplied return json string
     :rtype: bool or str
     """
@@ -40,7 +40,7 @@ def write_json(data, filepath, separators=(',', ':'), sort_keys=True, indent=Non
 def read_json(filepath):
     """
     Read json file and return retrieved data
-    :param str filepath: File path
+    :param str or Path filepath: File path
     :return: Python data structure
     :rtype: any
     """

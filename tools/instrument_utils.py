@@ -16,6 +16,7 @@ from common_math_utils import lerp
 from file_utils import recursive_search
 from parseAttrString import parse_string, compose_string
 from sample_utils import info_from_name
+import inspect
 
 
 class Instrument:
@@ -23,12 +24,17 @@ class Instrument:
     Instrument class
     """
 
-    def __init__(self, root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'),
+    def __init__(self, root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'), files=None,
                  pattern='{group}_{note}_{vel}', transpose=0, **kwargs):
 
         self.root_dir = root_dir
         self.smp_subdir = smp_subdir
-        self.name = Path(root_dir).stem
+        if root_dir:
+            self.name = Path(root_dir).stem
+        else:
+            self.name = 'Instrument'
+
+        self.files = files
 
         self.smp_fmt = smp_fmt
         self.pattern = pattern
@@ -62,8 +68,12 @@ class Instrument:
         Retrieve instrument samples with attributes using pattern and build a data frame from it
         set df and samples attributes
         """
-        self.df, self.samples = samples_to_df(self.root_dir, smp_subdir=self.smp_subdir, smp_fmt=self.smp_fmt,
-                                              pattern=self.pattern, transpose=self.transpose, **self.kwargs)
+        if self.files is None:
+            self.df, self.samples = samples_to_df(self.root_dir, smp_subdir=self.smp_subdir, smp_fmt=self.smp_fmt,
+                                                  pattern=self.pattern, transpose=self.transpose, **self.kwargs)
+        else:
+            self.df, self.samples = audio_files_to_df(files=self.files, pattern=self.pattern, transpose=self.transpose,
+                                                      **self.kwargs)
 
     def sort_df(self):
         self.df, self.samples = sort_df(self.df, self.samples)
@@ -288,7 +298,34 @@ def samples_to_df(root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'),
     if not files:
         return None, None
 
+    result = audio_files_to_df(files, pattern=pattern, transpose=transpose, **kwargs)
+    return result
+
+
+def audio_files_to_df(files, pattern='{group}_{note}_{vel}', transpose=0, **kwargs):
+    """
+    Convert list of audio files to a pandas data frame structure
+    The data frame can then be used to retrieve collective information efficiently
+    Also return a list of Sample objects ordered using the indices of the dataframe
+
+    :param list files:
+    :param str pattern: Pattern used to parse sample attributes
+    :param int transpose:
+    :param dict kwargs: Extra arguments used for info_from_name function
+
+    :return: Instrument Dataframe, List of Samples
+    :rtype: pandas.core.frame.DataFrame, list(Sample)
+    """
+
+    if not files:
+        return None, None
+
     samples = []
+
+    # Filter unwanted keyword arguments
+    func_args = inspect.getfullargspec(info_from_name)[0]
+    kwargs = {k: v for k, v in kwargs.items() if k in func_args}
+
     for f in files:
         smp = info_from_name(str(f), pattern=pattern, **kwargs)
         smp.transpose(transpose)

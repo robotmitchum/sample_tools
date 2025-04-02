@@ -83,3 +83,12 @@ def random_from_string(name):
     seed = int(hashlib.md5(name.encode()).hexdigest(), 16) % (2 ** 32)
     np.random.seed(seed)
     return np.random.random()
+
+
+def np_to_rgbint(arr):
+    """
+    Convert numpy array to 8-bit unsigned integer tuple
+    :param nd.array arr:
+    :return:
+    """
+    return tuple(np.clip(np.round(arr * 255, 0), 0, 255).astype(np.uint8))

@@ -25,7 +25,7 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
     """
     Create basic background image (vertical gradient)
 
-    :param str filepath:
+    :param str or Path or None filepath: Return PIL image if no path provided
     :param int w: Width
     :param int h: Height
 
@@ -33,7 +33,7 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
     :param float gamma: Gamma to compensate when interpolating colors
 
     :param str or None text: Title to write in the top-left corner of the image
-    :param tuple(float,float) text_xy: Text coordinates
+    :param tuple[float, float] text_xy: Text coordinates
 
     :param tuple text_font: Font name, Font size
     :param list or tuple text_color: RGBA color
@@ -41,13 +41,14 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
 
     :param bool overwrite: Overwrite background if present
 
-    :return: Created image
-    :rtype: str
+    :return: Created image path or PIL Image object
+    :rtype: str or Image
     """
-    if not overwrite and Path(filepath).is_file():
-        return filepath
-    elif overwrite and Path(filepath).is_file():
-        os.remove(filepath)
+    if filepath is not None:
+        if not overwrite and Path(filepath).is_file():
+            return filepath
+        elif overwrite and Path(filepath).is_file():
+            os.remove(filepath)
 
     num = len(colors)
 
@@ -74,7 +75,35 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
     ramp = np.clip(ramp, 0, 255)
 
     im = Image.fromarray(np.round(ramp).astype(np.uint8), mode='RGB')
+    im = write_text(im, text=text, text_xy=text_xy, text_font=text_font, text_color=text_color, scl=scl)
 
+    if filepath:
+        im.save(str(filepath), subsampling=0, quality=95)
+        return filepath
+    else:
+        return im
+
+
+def write_text(im, text=None, text_xy=(0, 0),
+               text_font=('HelveticaNeueThin.otf', 16), text_color=(1, 1, 1, 1), max_length=None,
+               align='left', anchor=None, stroke_width=0, scl=1):
+    """
+    Write text to a PIL Image
+
+    :param Image im: PIL Image
+    :param str or None text: Title to write in the top-left corner of the image
+    :param tuple[float, float] text_xy: Text coordinates
+    :param str align: 'left', 'right', 'center'
+    :param str or None anchor: To use in combination of align
+    https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html
+    :param float stroke_width:
+
+    :param tuple text_font: Font name, Font size
+    :param list or tuple text_color: RGBA color
+    :param float or None max_length:
+    :param float scl: Overall scaling
+    :return:
+    """
     if text:
         bg_color = list(text_color)[:-1] + [0]
         fill = tuple(int(v * 255) for v in text_color)
@@ -84,21 +113,99 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
 
         try:
             font = ImageFont.truetype(text_font[0], int(text_font[1] * scl))
+            font_name = text_font[0]
         except Exception:
             try:
                 # Seemingly supplied by default with PIL
                 print(f'{text_font[0]} could not be found')
                 font = ImageFont.truetype('DejaVuSans.ttf', int(text_font[1] * scl))
+                font_name = 'DejaVuSans.ttf'
             except Exception:
                 # Fallback font but can't be sized properly
                 font = ImageFont.load_default()
+                font_name = None
 
         text_xy = tuple(v * scl for v in text_xy)
-        draw.text(xy=text_xy, text=text, fill=fill, font=font)
-        im = Image.alpha_composite(im.convert("RGBA"), text_img).convert('RGB')
 
-    im.save(filepath, subsampling=0, quality=95)
+        # Adjust font size if needed
+        if max_length is not None and font_name is not None:
+            fl = font.getlength(text)
+            if fl > max_length * scl:
+                factor = max_length * scl / fl
+                new_size = text_font[1] * scl * factor
+                font = ImageFont.truetype(font_name, new_size)
 
+        draw.text(xy=text_xy, text=text, fill=fill, font=font, align=align, anchor=anchor,
+                  stroke_width=stroke_width)
+        im = Image.alpha_composite(im.convert('RGBA'), text_img).convert('RGB')
+
+    return im
+
+
+def limit_font_size(texts=(), text_font=('HelveticaNeueThin.otf', 16), max_length=64):
+    """
+    Get optimal font size required to match a minimum text length given a list of text
+    :param list texts: List of texts
+    :param tuple[str,float] text_font:
+    :param float max_length:
+    :return: Adjusted size
+    :rtype: float
+    """
+    try:
+        font = ImageFont.truetype(text_font[0], text_font[1])
+    except Exception:
+        try:
+            # Seemingly supplied by default with PIL
+            print(f'{text_font[0]} could not be found')
+            font = ImageFont.truetype('DejaVuSans.ttf', text_font[1])
+        except Exception:
+            print('No suitable font found')
+            return text_font[1]
+
+    result = []
+    for text in texts:
+        tl = font.getlength(text)
+        if tl > max_length:
+            new_size = text_font[1] * max_length / tl
+            result.append(new_size)
+        else:
+            result.append(text_font[1])
+
+    return min(result)
+
+
+def apply_symbol(im, symbol_path='', pos_xy=(0, 0), size=(32, 32), color=(1, 1, 1, 1), scl=1):
+    """
+    Composite symbol image over a background image
+    :param Image im:
+    :param str or Path symbol_path:
+    :param tuple[int,int] pos_xy:
+    :param tuple[int,int] size:
+    :param tuple[int,int,int,int] color:
+    :param int scl:
+    :return:
+    :rtype: Image
+    """
+    scl_pos_xy = tuple(int(round(v * scl)) for v in pos_xy)
+    scl_size = tuple(int(round(v * scl)) for v in size)
+    symbol = Image.open(str(symbol_path)).convert('RGBA').resize(scl_size, Image.LANCZOS)
+    symbol_color = tuple(int(v * 255) for v in color)
+    bg_color = tuple(int(v * 255) for v in list(color)[:-1] + [0])
+    overlay = Image.new('RGBA', im.size, bg_color)
+    symbol_fill = Image.new('RGBA', symbol.size, symbol_color)
+    overlay.paste(im=symbol_fill, box=scl_pos_xy, mask=symbol)
+    return Image.alpha_composite(im.convert('RGBA'), overlay).convert('RGB')
+
+
+def write_pil_image(filepath, im, quality=95):
+    """
+    :param str or Path filepath:
+    :param Image im:
+    :param int quality:
+    :return: Image path
+    :rtype sr: str
+    """
+    im.save(str(filepath), subsampling=0, quality=quality)
     return filepath
 
 
@@ -131,6 +238,30 @@ def basic_button(filepath, size=32, rgba=(1, 1, 1, 1), overwrite=True):
     img[:, :, -1] = alpha * rgba[-1]
 
     im = Image.fromarray(np.round(img * 255).astype(np.uint8), mode='RGBA')
+    im.save(filepath)
+
+    return filepath
+
+
+def blank_button(filepath, size=32, overwrite=True):
+    """
+    Write a blank square image
+
+    :param str filepath:
+    :param int size:
+    :param list or tuple rgba:
+    :param bool overwrite:
+
+    :return:
+    :rtype: str
+    """
+    if not overwrite and Path(filepath).is_file():
+        return filepath
+    elif overwrite and Path(filepath).is_file():
+        os.remove(filepath)
+
+    wh = (size, size)
+    im = Image.new(mode='RGBA', size=wh, color=(0, 0, 0, 0))
     im.save(filepath)
 
     return filepath
@@ -192,6 +323,19 @@ def hsv_adjust(rgb=(1, 0, 0), adjust=(0, 1, 1)):
     return result
 
 
+def plt_to_rgba(plt, rgba=(1, 1, 1, 1), alpha=1):
+    """
+    Convert ds argb hex value to float rgba
+    :param str plt:
+    :param list rgba:
+    :param float alpha:
+    :return:
+    """
+    mult = list(rgba)
+    mult[-1] *= alpha
+    return np.array(mult) * np.roll(hex_to_rgba(plt), -1).tolist()
+
+
 def get_color_name(hexcolor='929edf'):
     """
     Translate a color hex value to the closest named web color
@@ -213,5 +357,3 @@ def get_color_name(hexcolor='929edf'):
             mn = d
             result = color_names[key]
     return result
-
-# basic_button(filepath='button_test.png', size=32, rgba=(1, .75, .5, 1))

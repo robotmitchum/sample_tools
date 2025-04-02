@@ -266,3 +266,76 @@ def pad_audio(audio, before=0, after=0, mode='constant'):
         result = result.reshape(-1)
 
     return result
+
+
+def pan_audio(audio, value=0):
+    """
+    Apply stereo panning to an audio array
+    :param np.ndarray audio:
+    :param float value: value between -1 and 1
+    :return:
+    :rtype: np.ndarray
+    """
+    nch = audio.ndim
+    if nch > 1:
+        st_audio = audio
+        mono_audio = np.mean(audio, axis=1)
+        result = lerp(st_audio, np.column_stack([mono_audio, mono_audio]), abs(value))
+    else:
+        result = np.column_stack([audio, audio])
+
+    x = (value + 1) / 2
+    result = result * np.array([1 - x, x])
+
+    return result
+
+
+def balance_audio(audio, value=0):
+    """
+    Apply stereo balance to an audio array
+    :param np.ndarray audio:
+    :param float value: value between -1 and 1
+    :return:
+    :rtype: np.ndarray
+    """
+    if audio.ndim > 1:
+        st_audio = audio
+    else:
+        st_audio = np.column_stack([audio, audio])
+
+    x = (value + 1) / 2
+    result = st_audio * np.array([1 - x, x])
+
+    return result
+
+
+def pitch_audio(audio, pitch=0):
+    """
+    Basic pitch shifter for preview purpose
+    :param np.ndarray audio:
+    :param float pitch: Pitch shifting in semitones
+    :return:
+    :rtype: np.ndarray
+    """
+    nch = audio.ndim
+
+    x = np.linspace(0, 1, num=len(audio), endpoint=True)
+    new_length = len(audio) * pow(2, -pitch / 12)
+    new_length = int(round(new_length))
+    xi = np.linspace(0, 1, num=new_length, endpoint=True)
+
+    result = np.zeros(new_length)
+    result = np.column_stack([result, result])
+
+    for c in range(nch):
+        if nch > 1:
+            chn = audio[:, c]
+        else:
+            chn = audio
+        chn_result = np.interp(xi, x, chn)
+        if nch > 1:
+            result[:, c] = chn_result
+        else:
+            result = chn_result
+
+    return result

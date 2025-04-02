@@ -96,8 +96,8 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
 
         self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_start_dsb.setEnabled(state == 'custom'))
         self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_start_l.setEnabled(state == 'custom'))
-        self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_size_dsb.setEnabled(state == 'custom'))
-        self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_size_l.setEnabled(state == 'custom'))
+        self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_end_dsb.setEnabled(state == 'custom'))
+        self.fft_range_cmb.currentTextChanged.connect(lambda state: self.fft_end_l.setEnabled(state == 'custom'))
 
         self.resynth_mix_cmb.currentTextChanged.connect(lambda state: self.st_width_dsb.setEnabled(state == 'all'))
         self.resynth_mix_cmb.currentTextChanged.connect(lambda state: self.st_width_l.setEnabled(state == 'all'))

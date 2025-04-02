@@ -23,16 +23,16 @@ import threading
 from pathlib import Path
 from typing import cast
 
-import qdarkstyle
 import soundfile as sf
 from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 
 from audio_player import AudioPlayer
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import FilePathLabel, replace_widget, resource_path
+from common_ui_utils import FilePathLabel, replace_widget, get_custom_font
 from common_ui_utils import Node, KeyPressHandler, sample_to_name
-from tools.worker import Worker
+from dark_fusion_style import apply_dark_theme
 from sample_utils import Sample
+from tools.worker import Worker
 from waveform_widgets import WaveformDialog, LoopPointDialog
 
 
@@ -86,15 +86,11 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.progress_pb.setTextVisible(True)
 
         # Set a mono font to the list widget to simplify white spaces handling
-        font_path = resource_path(self.current_dir / 'RobotoMono-Medium.ttf')
-        font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
-        font_family = QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-
-        custom_font = Qt.QFont(font_family, 11)
+        custom_font = get_custom_font(self.current_dir / 'RobotoMono-Medium.ttf')
+        custom_font.setPointSize(11)
         self.files_lw.setFont(custom_font)
         self.files_lw.setUniformItemSizes(True)
 
-        custom_font = Qt.QFont(font_family)
         self.progress_pb.setFont(custom_font)
 
     def setup_connections(self):
@@ -130,6 +126,10 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def setup_menu_bar(self):
         self.menu_bar = QtWidgets.QMenuBar(self)
         self.menu_bar.setNativeMenuBar(False)
+
+        plt = self.menu_bar.palette()
+        plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
+        self.menu_bar.setPalette(plt)
 
         self.settings_menu = QtWidgets.QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
@@ -242,7 +242,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
             self.files_lw.takeItem(self.files_lw.row(item))
 
     def add_lw_items(self, files):
-        files = [os.path.normpath(f) for f in files]
+        files = [str(Path(f).as_posix()) for f in files]
         files = list(dict.fromkeys(files))
         names = [sample_to_name(f) for f in files]
 
@@ -458,14 +458,14 @@ def launch(mw, app_id=''):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
     app = QtWidgets.QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5'))
+    apply_dark_theme(app)
 
-    if platform.system() == "Darwin":
-        macos_style = """
-                QComboBox{combobox-popup: 0;}
-                QComboBox QAbstractItemView {min-width: 64px;}
-            """
-        app.setStyleSheet(app.styleSheet() + macos_style)
+    # if platform.system() == "Darwin":
+    #     macos_style = """
+    #             QComboBox{combobox-popup: 0;}
+    #             QComboBox QAbstractItemView {min-width: 64px;}
+    #         """
+    #     app.setStyleSheet(app.styleSheet() + macos_style)
 
     font = app.font()
     font.setPointSize(11)

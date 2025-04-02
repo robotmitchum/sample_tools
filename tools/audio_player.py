@@ -26,6 +26,9 @@ class AudioPlayer:
         self.is_playing = threading.Event()
         self.stream = None
         self.signals = AudioPlayerSignals()
+        self.tuning = 0
+        self.pan = 0
+        self.volume = 1
 
     def play(self, data, sr, loop_start, loop_end):
         if not self.is_playing.is_set():

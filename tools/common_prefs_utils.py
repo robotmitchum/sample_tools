@@ -2,6 +2,7 @@
 """
     :module: common_prefs_utils.py
     :description: Generic functions to get, set, save and load user widgets configuration
+    For custom widgets, define get/set methods using get_prefs/set_prefs attributes
     :author: Michel 'Mitch' Pecqueur
     :date: 2024.12
 """
@@ -42,7 +43,10 @@ def get_settings(widget, node):
                 p = child.fullPath()
                 value = Path(p).as_posix() if p else ''
             case _:
-                value = None
+                if hasattr(child, 'get_prefs'):
+                    value = child.get_prefs()
+                else:
+                    value = None
 
         if value is not None:
             if node:
@@ -81,6 +85,9 @@ def set_settings(widget, node):
                 child.setText(value)
             case 'FilePathLabel':
                 child.setFullPath(value)
+            case _:
+                if hasattr(child, 'set_prefs'):
+                    child.set_prefs(value)
 
     return True
 
@@ -104,7 +111,7 @@ def write_settings(widget, filepath=None, startdir=None, ext='json'):
         if filepath:
             filepath = Path(filepath)
             prefs = get_settings(widget, None)
-            write_json(data=prefs, filepath=str(filepath), indent=2)
+            write_json(data=prefs, filepath=str(filepath), indent=2, sort_keys=False)
             return filepath
         else:
             return False

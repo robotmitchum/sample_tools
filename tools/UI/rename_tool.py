@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\rename_tool.ui'
+# Form implementation generated from reading ui file 'rename_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -15,11 +15,6 @@ class Ui_rename_tool_mw(object):
     def setupUi(self, rename_tool_mw):
         rename_tool_mw.setObjectName("rename_tool_mw")
         rename_tool_mw.resize(800, 800)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setStrikeOut(False)
-        font.setStyleStrategy(QtGui.QFont.PreferAntialias)
-        rename_tool_mw.setFont(font)
         rename_tool_mw.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(rename_tool_mw)
         self.centralwidget.setObjectName("centralwidget")
@@ -47,7 +42,6 @@ class Ui_rename_tool_mw(object):
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.files_lyt.addWidget(self.set_files_tb)
@@ -109,7 +103,6 @@ class Ui_rename_tool_mw(object):
         self.src_pattern_pb.setMinimumSize(QtCore.QSize(128, 0))
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.src_pattern_pb.setFont(font)
         self.src_pattern_pb.setObjectName("src_pattern_pb")
         self.pattern_lyt.addWidget(self.src_pattern_pb)
@@ -128,7 +121,6 @@ class Ui_rename_tool_mw(object):
         self.tgt_pattern_pb.setMinimumSize(QtCore.QSize(128, 0))
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.tgt_pattern_pb.setFont(font)
         self.tgt_pattern_pb.setObjectName("tgt_pattern_pb")
         self.pattern_lyt.addWidget(self.tgt_pattern_pb)
@@ -275,7 +267,6 @@ class Ui_rename_tool_mw(object):
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_path_lyt.addWidget(self.set_output_path_tb)
@@ -353,7 +344,6 @@ class Ui_rename_tool_mw(object):
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 0, 1, 1)
@@ -366,7 +356,6 @@ class Ui_rename_tool_mw(object):
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(159, 95, 95);\n"
 "color: rgb(255, 255, 255);}")

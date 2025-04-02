@@ -106,13 +106,30 @@ def resource_path_alt(relative_path, parent_dir=None, as_str=True):
         return resource_path(relative_path, as_str=as_str)
 
 
+def get_custom_font(path):
+    """
+    Return PyQt font object from file path
+    :param str or Path path:
+    :return:
+    :rtype: Qt.QFont
+    """
+    font_path = resource_path(path)
+    font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
+    font_family = QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
+    custom_font = Qt.QFont(font_family)
+    return custom_font
+
+
 # Utility classes
 
 class FilePathLabel(QtWidgets.QLabel):
+    pathChanged = QtCore.pyqtSignal(str)
+
     def __init__(self, text='', file_mode=False, parent=None):
         super().__init__(text, parent)
         self._full_path = ''
         self._default_path = ''
+        self._placeholder_text = ''
 
         self._file_mode = file_mode
         self.display_length = 40
@@ -134,13 +151,29 @@ class FilePathLabel(QtWidgets.QLabel):
         :return:
         """
         if path:
-            path = os.path.normpath(path)
             p = Path(path)
             if p.is_relative_to(self.current_dir):
-                path = str(p.relative_to(self.current_dir))
-            self.start_dir = (path, str(Path(path).parent))[self._file_mode]
+                p = p.relative_to(self.current_dir)
+            path = str(p.as_posix())
+            self.start_dir = (path, str(p.parent))[self._file_mode]
+            text = self.shorten_path(path or '')
+        else:
+            text = self._placeholder_text or ''
         self._full_path = path
-        self.setText(self.shorten_path(path))
+        self.setText(text)
+        self.pathChanged.emit(path)
+
+    def setPlaceholderText(self, text):
+        self._placeholder_text = text
+        if not self._full_path:
+            self.setText(text)
+
+    def placeholderText(self):
+        return self._placeholder_text
+
+    def update_text(self):
+        if not self._full_path:
+            self.setText(self._placeholder_text)
 
     def shorten_path(self, path):
         if len(path) > self.display_length:
@@ -159,11 +192,10 @@ class FilePathLabel(QtWidgets.QLabel):
             path = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory", self.start_dir)
 
         if path:
-            path = os.path.normpath(path)
             p = Path(path)
             if p.is_relative_to(self.current_dir):
-                path = str(p.relative_to(self.current_dir))
-            self.setFullPath(path)
+                p = p.relative_to(self.current_dir)
+            self.setFullPath(p)
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
@@ -174,11 +206,10 @@ class FilePathLabel(QtWidgets.QLabel):
             else:
                 items = [item for item in items if Path(item).is_dir()]
             if items:
-                path = os.path.normpath(items[0])
-                p = Path(path)
+                p = Path(items[0])
                 if p.is_relative_to(self.current_dir):
-                    path = str(p.relative_to(self.current_dir))
-                self.setFullPath(path)
+                    p = p.relative_to(self.current_dir)
+                self.setFullPath(p)
         else:
             event.ignore()
 
@@ -223,7 +254,7 @@ class KeyPressHandler(QtCore.QObject):
 
 # Context Menu
 
-def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None):
+def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, alignment=None):
     """
     Add a simple context menu setting provided values to the given widget
 
@@ -234,6 +265,8 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None):
     must match values length
     :param QWidget or None trigger: Optional widget triggering the context menu
     typically a QPushButton or QToolButton
+    :param QAlignment or None alignment: Optional styling to control context menu centering
+    Example: QtCore.Qt.AlignCenter
     """
     if not names:
         names = list(values)
@@ -242,18 +275,38 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None):
 
     def show_context_menu(event):
         menu = QtWidgets.QMenu(widget)
+
         for name, value in zip(names, values):
             if value == '---':
                 menu.addSeparator()
             else:
-                action = QtWidgets.QAction(f'{name}', widget)
+                if alignment is not None:
+                    # Custom alignment
+                    action_label = QtWidgets.QLabel(f'{name}', parent=widget)
+                    action_label.setAlignment(alignment)
+                    action_label.setAttribute(QtCore.Qt.WA_Hover, True)
+                    action_label.setMouseTracking(True)
+                    plt = widget.palette()
+                    style = (f'QLabel{{background-color: {plt.alternateBase().color().name()};}}'
+                             f'color: {plt.text().color().name()};}}')
+                    style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()};'
+                              f'color: {plt.highlightedText().color().name()};}}')
+                    action_label.setStyleSheet(style)
+                    action = QtWidgets.QWidgetAction(widget)
+                    action.setDefaultWidget(action_label)
+                else:
+                    # Default alignment (left)
+                    action = QtWidgets.QAction(f'{name}', widget)
+
                 if hasattr(widget, 'setValue'):
                     action.triggered.connect(lambda checked, v=value: widget.setValue(v))
                 elif hasattr(widget, 'setFullPath'):
                     action.triggered.connect(lambda checked, v=value: widget.setFullPath(v))
                 elif hasattr(widget, 'setText'):
                     action.triggered.connect(lambda checked, v=value: widget.setText(v))
+
                 menu.addAction(action)
+
         pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
         menu.setMinimumWidth(widget.width())
         menu.exec_(pos)
@@ -323,6 +376,12 @@ def popup_menu(content, parent=None):
 
 # Name formatting
 def shorten_path(file_path, max_length=30):
+    """
+    :param str file_path:
+    :param int max_length:
+    :return:
+    :rtype: str
+    """
     if len(file_path) <= max_length:
         return file_path
     return '...' + file_path[-max_length:]
@@ -331,13 +390,13 @@ def shorten_path(file_path, max_length=30):
 def sample_to_name(file_path):
     """
     Format name to display in sample list widget
-    :param file_path:
+    :param str file_path:
     :return:
     """
-    info = Sample(file_path)
+    info = Sample(str(file_path))
 
     path_len = 30
-    sn = shorten_path(file_path, path_len)
+    sn = shorten_path(str(file_path), path_len)
     spc = ' ' * 2
 
     try:
