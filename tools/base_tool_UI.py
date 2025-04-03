@@ -460,13 +460,6 @@ def launch(mw, app_id=''):
     app = QtWidgets.QApplication(sys.argv)
     apply_dark_theme(app)
 
-    # if platform.system() == "Darwin":
-    #     macos_style = """
-    #             QComboBox{combobox-popup: 0;}
-    #             QComboBox QAbstractItemView {min-width: 64px;}
-    #         """
-    #     app.setStyleSheet(app.styleSheet() + macos_style)
-
     font = app.font()
     font.setPointSize(11)
     app.setFont(font)

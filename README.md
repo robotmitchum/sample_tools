@@ -24,7 +24,6 @@ Additional required packages all listed in provided requirements.txt
 - pillow
 - PyQt5
 - PyQt5_sip
-- QDarkStyle
 - scipy
 - sounddevice
 - soundfile

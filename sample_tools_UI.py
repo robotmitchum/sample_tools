@@ -205,12 +205,12 @@ class IconButton(QtWidgets.QPushButton):
         self.setFlat(True)
 
 
-def global_exception_handler(exctype, value, tb):
-    logger.log_exception(value)
+# def global_exception_handler(exctype, value, tb):
+#     logger.log_exception(value)
 
 
-logger = SimpleLogger('sample_tools_log.txt')
-sys.excepthook = global_exception_handler
+# logger = SimpleLogger('sample_tools_log.txt')
+# sys.excepthook = global_exception_handler
 # atexit.register(lambda: logger.logger.info("Application is shutting down."))
 
 if __name__ == '__main__':
@@ -221,13 +221,6 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication(sys.argv)
     apply_dark_theme(app)
-
-    # if platform.system() == "Darwin":
-    #     macos_style = """
-    #             QComboBox{combobox-popup: 0;}
-    #             QComboBox QAbstractItemView {min-width: 64px;}
-    #         """
-    #     app.setStyleSheet(app.styleSheet() + macos_style)
 
     font = app.font()
     font.setPointSize(11)
