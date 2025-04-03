@@ -287,9 +287,9 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
                     action_label.setAttribute(QtCore.Qt.WA_Hover, True)
                     action_label.setMouseTracking(True)
                     plt = widget.palette()
-                    style = (f'QLabel{{background-color: {plt.alternateBase().color().name()};}}'
+                    style = (f'QLabel {{background-color: {plt.alternateBase().color().name()}; '
                              f'color: {plt.text().color().name()};}}')
-                    style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()};'
+                    style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                               f'color: {plt.highlightedText().color().name()};}}')
                     action_label.setStyleSheet(style)
                     action = QtWidgets.QWidgetAction(widget)

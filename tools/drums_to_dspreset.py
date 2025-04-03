@@ -195,7 +195,7 @@ def create_drums_dspreset(root_dir='', smp_subdir='Samples', data=None,
                               text=bg_text, text_xy=(8, top_band_h + 8), text_font=text_font,
                               text_color=plt_to_rgba(bg_text_plt[0]))
 
-    info_w = 32
+    info_w = 24
     blank_button_path = resources_dir / 'blank_button.png'
     blank_button_path = blank_button(str(blank_button_path), size=info_w, overwrite=True)
     blank_button_path = Path(blank_button_path).relative_to(root_dir)

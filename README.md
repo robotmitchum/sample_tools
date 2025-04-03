@@ -109,6 +109,30 @@ This file is used to define custom instrument ranges used by this tool when pres
 
 Use instrument names as keys with min and max MIDI note number provided as a list
 
+## DR-DS
+
+![DR-DS](tools/UI/icons/drds_64.png)
+
+![DR-DS_UI](screencaps/drds_ui.png)
+
+Create Decent Sampler drum presets from samples in wav, flac or aif
+
+Similar to SMP2Ds but specialized for drum sets
+
+Up to 32 drum pads though only the first 16 active drum pads will send their output to aux channels
+
+Drag and drop a directory with a 'Samples' subdirectory containing drum samples on the root directory widget
+
+Assign samples to drum pads by dropping one or several files (for velocity and round-robin) on them
+
+- Each drum pad can choke itself and any other pad
+- Support for velocity and round-robin according to file names with pattern matching
+- Automatic creation of a working UI with a customisable color theme
+
+
+- wav, flac and aif IR files are supported for the convolution reverb, they must be located in an 'IR' subdirectory
+- dslibrary file generation from a dspreset directory ready to use or distribute
+
 ## Split Audio Tool
 
 ![SplitTool](tools/UI/icons/split_tool_64.png)

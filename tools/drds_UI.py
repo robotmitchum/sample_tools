@@ -924,11 +924,11 @@ class AudioFilesLw(QListWidget):
     def get_prefs(self):
         result = []
         for item in self.get_lw_items():
-            p = Path(item)
+            p = Path(item).resolve()
             if self.root_dir:
                 if p.is_relative_to(self.root_dir):
                     p = p.relative_to(self.root_dir)
-            result.append(str(p.as_posix()))
+            result.append(p.as_posix())
         return result
 
     def set_prefs(self, value):
@@ -938,7 +938,7 @@ class AudioFilesLw(QListWidget):
             if not p.is_file() and self.root_dir:
                 p = Path(self.root_dir) / item
             if p.is_file():
-                files.append(str(p))
+                files.append(str(p.resolve()))
             else:
                 print(f'{item} missing')
         self.add_lw_items(files)
@@ -963,10 +963,11 @@ class AudioFilesLw(QListWidget):
 
     def refresh_lw_items(self):
         lw_items = [self.item(i) for i in range(self.count())]
-        for item in lw_items:
-            f = item.data(Qt.UserRole)
-            if Path(f).is_file():
-                item.setText(simplify_path(f, root_dir=self.root_dir))
+        for i, item in enumerate(lw_items):
+            p = Path(item.data(Qt.UserRole))
+            if not p.is_file():
+                self.item(i).setData(Qt.UserRole, p.resolve())
+                item.setText(simplify_path(p.resolve(), root_dir=self.root_dir))
             else:
                 self.takeItem(self.files_lw.row(item))
         self.update()
@@ -1387,9 +1388,9 @@ class CheckPullDown(QPushButton):
                 action_label.setEnabled(False)
             action_label.setMouseTracking(True)
             plt = self.palette()
-            style = (f'QLabel{{background-color: {plt.alternateBase().color().name()};}}'
+            style = (f'QLabel {{background-color: {plt.alternateBase().color().name()}; '
                      f'color: {plt.text().color().name()};}}')
-            style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()};'
+            style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                       f'color: {plt.highlightedText().color().name()};}}')
             action_label.setStyleSheet(style)
             action = QWidgetAction(self)
@@ -1415,9 +1416,9 @@ class CheckPullDown(QPushButton):
                 action_label.setAttribute(Qt.WA_Hover, True)
                 action_label.setMouseTracking(True)
                 plt = self.palette()
-                style = (f'QLabel{{background-color: {plt.alternateBase().color().name()};}}'
+                style = (f'QLabel {{background-color: {plt.alternateBase().color().name()}; '
                          f'color: {plt.text().color().name()};}}')
-                style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()};'
+                style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                           f'color: {plt.highlightedText().color().name()};}}')
                 action_label.setStyleSheet(style)
                 action = QWidgetAction(self)

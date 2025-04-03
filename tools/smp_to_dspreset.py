@@ -1051,7 +1051,7 @@ def create_dslibrary(root_dir):
     # Get dependencies from each dspreset
     deps = set()
     for f in dspreset_files:
-        deps.add(str((Path(f).relative_to(root_dir))))
+        deps.add(Path(f).relative_to(root_dir).as_posix())
         deps |= get_dspreset_dependencies(f)
     deps = sorted(list(deps))
 
