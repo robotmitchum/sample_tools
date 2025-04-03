@@ -964,12 +964,12 @@ class AudioFilesLw(QListWidget):
     def refresh_lw_items(self):
         lw_items = [self.item(i) for i in range(self.count())]
         for i, item in enumerate(lw_items):
-            p = Path(item.data(Qt.UserRole))
-            if not p.is_file():
-                self.item(i).setData(Qt.UserRole, p.resolve())
-                item.setText(simplify_path(p.resolve(), root_dir=self.root_dir))
+            p = Path(item.data(Qt.UserRole)).resolve()
+            if p.is_file():
+                self.item(i).setData(Qt.UserRole, p)
+                item.setText(simplify_path(p, root_dir=self.root_dir))
             else:
-                self.takeItem(self.files_lw.row(item))
+                self.takeItem(self.row(item))
         self.update()
 
     def play_lw_item(self, *args):
