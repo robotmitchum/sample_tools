@@ -23,8 +23,8 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 from smp_to_dspreset import write_xml_to_file
 
-__ds_version__ = '1.11.19'
-__version__ = '1.0.0'
+__ds_version__ = '1.12.11'
+__version__ = '1.0.1'
 
 
 def create_drums_dspreset(root_dir='', smp_subdir='Samples', data=None,

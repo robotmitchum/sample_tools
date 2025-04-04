@@ -30,7 +30,7 @@ from audio_player import AudioPlayer, play_notification
 from common_audio_utils import pitch_audio, balance_audio, db_to_lin
 from common_math_utils import lerp, np_to_rgbint
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import FilePathLabel, resource_path, get_custom_font, resource_path_alt
+from common_ui_utils import (FilePathLabel, style_widget, resource_path, get_custom_font, resource_path_alt)
 from common_ui_utils import Node, KeyPressHandler, shorten_path
 from common_ui_utils import add_ctx, add_insert_ctx, shorten_str, beautify_str, popup_menu
 from dark_fusion_style import apply_dark_theme
@@ -167,7 +167,7 @@ class DrDsUi(QMainWindow):
         self.pattern_pb.setMaximumWidth(96)
         self.pattern_pb.setToolTip(
             'Pattern used to convert sample names to attribute values (group, velocity, round-robin...)\n\n'
-            'Also used to set Name and Label automatically for a drum pad'
+            'Also used to set Name and Label automatically for a drum pad\n'
             'Click for some pattern examples')
         self.pattern_le.setFrame(False)
         self.pattern_le.setToolTip(
@@ -343,11 +343,6 @@ class DrDsUi(QMainWindow):
         self.knobs_lyt.setSpacing(8)
         self.lyt.addLayout(self.knobs_lyt)
 
-        # self.tvp_cb_lyt = QHBoxLayout()
-        # self.tvp_cb_lyt.setContentsMargins(0, 4, 0, 4)
-        # self.tvp_cb_lyt.setSpacing(8)
-        # self.knobs_lyt.addLayout(self.tvp_cb_lyt)
-
         self.knob_cb_widgets = []
         for name, checked in zip(['Tuning', 'Volume', 'Pan'], [0, 1, 1]):
             wid = QCheckBox(f'{name} Knobs', parent=self.cw)
@@ -437,7 +432,7 @@ class DrDsUi(QMainWindow):
 
         self.dspreset_pb = QPushButton('Create dspreset', parent=self.cw)
         self.dspreset_pb.setToolTip('Create a dspreset file in root directory and from current settings')
-        self.dspreset_pb.setStyleSheet(f'QPushButton{{background-color: rgb(63,127,95);border-radius:12;}}')
+        style_widget(self.dspreset_pb, properties={'background-color': 'rgb(63,127,95)', 'border-radius': 12})
         self.dspreset_pb.setFixedSize(256, 32)
         self.buttons_lyt.addWidget(self.dspreset_pb)
         self.dspreset_pb.setFont(font)
@@ -446,7 +441,7 @@ class DrDsUi(QMainWindow):
         self.dslibrary_pb = QPushButton('Create dslibrary', parent=self.cw)
         self.dslibrary_pb.setToolTip('Create dslibrary from root directory by archiving only required files\n'
                                      'At least one valid dspreset must exist in the directory')
-        self.dslibrary_pb.setStyleSheet(f'QPushButton{{border-radius:12;}}')
+        style_widget(self.dslibrary_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 12})
         self.dslibrary_pb.setFixedSize(256, 32)
         self.buttons_lyt.addWidget(self.dslibrary_pb)
         self.dslibrary_pb.setFont(font)
@@ -1331,6 +1326,8 @@ class CheckPullDown(QPushButton):
         size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(size_policy)
 
+        style_widget(self, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+
         self.items = dict()
         self.set_items(items)
 
@@ -1392,6 +1389,8 @@ class CheckPullDown(QPushButton):
                      f'color: {plt.text().color().name()};}}')
             style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                       f'color: {plt.highlightedText().color().name()};}}')
+            style += (f'QLabel:disabled {{background-color: {plt.alternateBase().color().name()}; '
+                      f'color: {plt.color(QPalette.Disabled, QPalette.Text).name()};}}')
             action_label.setStyleSheet(style)
             action = QWidgetAction(self)
             action.setDefaultWidget(action_label)
@@ -1504,8 +1503,8 @@ class DrumpadButton(QWidget):
 
         col = 1 - bgc
         chk = lerp(bgc, np.array([0.25, 1.0, 0.75]), .5)
-        hvc = lerp(bgc, 1.0, .25)
-        chk_hvc = lerp(chk, 1.0, .25)
+        hvc = lerp(bgc, 1.0, .3)
+        chk_hvc = lerp(chk, 1.0, .3)
 
         style = f'QPushButton{{background-color:rgb{np_to_rgbint(bgc)};}}'
         style += f'QPushButton{{color:rgb{np_to_rgbint(col)};}}'
@@ -1531,8 +1530,8 @@ class DrumpadButton(QWidget):
 
         col = 1 - bgc
         chk = lerp(bgc, np.array([.125, .5, 1.0]), .5)
-        hvc = lerp(bgc, 1.0, .25)
-        chk_hvc = lerp(chk, 1.0, .25)
+        hvc = lerp(bgc, 1.0, .3)
+        chk_hvc = lerp(chk, 1.0, .3)
 
         style = f'QPushButton{{background-color:rgb{np_to_rgbint(bgc)};}}'
         style += f'QPushButton{{color:rgb{np_to_rgbint(col)};}}'

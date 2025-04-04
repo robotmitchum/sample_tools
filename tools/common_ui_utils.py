@@ -11,8 +11,10 @@ import sys
 import traceback
 from pathlib import Path
 
+import numpy as np
 from PyQt5 import QtCore, Qt, QtWidgets, QtGui
 
+from common_math_utils import lerp
 from sample_utils import Sample
 
 
@@ -382,9 +384,10 @@ def shorten_path(file_path, max_length=30):
     :return:
     :rtype: str
     """
-    if len(file_path) <= max_length:
-        return file_path
-    return '...' + file_path[-max_length:]
+    result = str(file_path)
+    if len(result) <= max_length:
+        return result
+    return '...' + result[-max_length:]
 
 
 def sample_to_name(file_path):
@@ -464,3 +467,67 @@ def beautify_str(name, sep='_'):
     res = [r[0].upper() + r[1:] for r in res.split()]
     result = ' '.join(res)
     return result
+
+
+# Stylesheet utils
+
+def dict_to_stylesheet(widget: str, properties: dict) -> str:
+    result = ('', f'{widget} {{')[bool(widget)]
+    for key, value in properties.items():
+        result += f'{key}: {value}; '
+    result = (result[:-1], result[:-1] + '}')[bool(widget)]
+    return result
+
+
+def get_text_color(widget: QtWidgets.QWidget) -> QtGui.QColor:
+    """Get most relevant text color"""
+    plt = widget.palette()
+    for role in [QtGui.QPalette.ButtonText, QtGui.QPalette.WindowText,
+                 QtGui.QPalette.Text, QtGui.QPalette.Foreground]:
+        color = plt.color(role)
+        if color.isValid():
+            return color
+    return QtGui.QColor(0, 0, 0)
+
+
+def style_widget(widget: any, properties: dict, clickable: bool = True):
+    """
+    Style a given widget using stylesheet creating derived colors for hover and disabled state
+    :param widget:
+    :param properties:
+    :param clickable: Create a clicked state (typically for buttons)
+    """
+    wid_class = widget.__class__.__name__
+
+    widget.show()  # Force color update
+    plt = widget.palette()
+
+    text_color = get_text_color(widget)
+    bg_color = plt.color(widget.backgroundRole())
+
+    properties['color'] = properties.get('color', text_color.name())
+    properties['background-color'] = properties.get('background-color', bg_color.name())
+
+    ss = dict_to_stylesheet(wid_class, properties)
+
+    widget.setStyleSheet(ss)
+    plt = widget.palette()
+    text_color = get_text_color(widget)
+    bg_color = plt.color(widget.backgroundRole())
+
+    # Calculate hover, disabled and pressed states from base color
+    text_rgb = np.array(bg_color.getRgb()[:3])
+    bg_rgb = np.array(bg_color.getRgb()[:3])
+    hover_bg_color = tuple(np.round(lerp(bg_rgb, 255, .3)).astype(np.uint8).tolist())
+
+    disabled_text_color = tuple(np.round(lerp(max(text_rgb), np.array([127] * 3), .3)).astype(np.uint8).tolist())
+    disabled_bg_color = tuple(np.round(lerp(max(bg_rgb), np.array([127] * 3), .3)).astype(np.uint8).tolist())
+
+    ss += f'\n{wid_class}:hover {{color: {text_color.name()}; background-color: rgb{hover_bg_color};}}'
+    ss += f'\n{wid_class}:disabled {{color: rgb{disabled_text_color}; background-color: rgb{disabled_bg_color};}}'
+
+    if clickable:
+        pressed_bg_color = tuple(np.round(lerp(bg_rgb, 127, .3)).astype(np.uint8).tolist())
+        ss += f'\n{wid_class}:pressed {{color: {text_color.name()}; background-color: rgb{pressed_bg_color};}}'
+
+    widget.setStyleSheet(ss)

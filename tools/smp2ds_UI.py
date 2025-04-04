@@ -131,7 +131,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                 values=['{group}_{note}', '{group}_{note}_{vel}', '{group}_{note}_{seqPosition}',
                         '{group}_{note}_{trigger}'],
                 trigger=self.pattern_pb)
-        smp_attrib = ['group', 'note', 'pitchFraction', 'vel', 'trigger', 'seqPosition']
+        smp_attrib = ['group', 'note', 'pitchFraction', 'vel', 'trigger', 'seqPosition', '_']
         src_fields = [f'{{{at}}}' for at in smp_attrib]
         add_insert_ctx(self.pattern_le, values=src_fields)
 
