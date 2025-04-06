@@ -128,7 +128,6 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         add_ctx(self.st_width_dsb, [0, .25, .5, .75, 1])
 
         # Output directory
-        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
         default_dir = get_user_directory()
         desktop_dir = get_user_directory('Desktop')
         add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],

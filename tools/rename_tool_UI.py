@@ -70,7 +70,6 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         super().setup_connections()
 
         # Output path widgets
-        self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
         default_dir = get_user_directory()
         desktop_dir = get_user_directory('Desktop')
         add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],

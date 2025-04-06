@@ -57,7 +57,6 @@ def smoothstep(a=0, b=1, x=.5):
 
 def linstep(a, b, x):
     w = (x - a) / (b - a)
-    # return min(max(w, 0), 1)
     return np.clip(w, 0.0, 1.0)
 
 
