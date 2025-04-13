@@ -348,10 +348,15 @@ class DrDsUi(QMainWindow):
             wid = QCheckBox(f'{name} Knobs', parent=self.cw)
             wid.setObjectName(f'add_{name.lower()}_cb')
             wid.setToolTip(f'Add {name.lower()} knobs to generated UI')
-            # wid.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             wid.setChecked(checked)
             self.knob_cb_widgets.append(wid)
             self.knobs_lyt.addWidget(wid)
+
+        self.hd_knobs_cb = QCheckBox('HD Knobs', parent=self.cw)
+        self.hd_knobs_cb.setObjectName('hd_knobs_cb')
+        self.hd_knobs_cb.setToolTip('Render knob atlases with double definition\n'
+                                    'A bit longer to render and leads to image strips up to 8K')
+        self.knobs_lyt.addWidget(self.hd_knobs_cb)
 
         # Reverb effect widgets
         self.reverb_lyt = QHBoxLayout()
@@ -368,7 +373,6 @@ class DrDsUi(QMainWindow):
         self.reverb_wet_dsb = QDoubleSpinBox(self.cw)
         self.reverb_wet_dsb.setObjectName('reverb_wet_dsb')
         self.reverb_wet_dsb.setAlignment(Qt.AlignCenter)
-        # self.reverb_wet_dsb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.reverb_wet_dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
         self.reverb_wet_dsb.setFrame(False)
         self.reverb_wet_dsb.setMaximum(1.0)
@@ -381,7 +385,6 @@ class DrDsUi(QMainWindow):
 
         self.use_ir_cb = QCheckBox('Use IR', self.cw)
         self.use_ir_cb.setObjectName('use_ir_cb')
-        # self.use_ir_cb.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.use_ir_cb.setToolTip('Use or ignore IR samples\n'
                                   'IR samples must be located in a separate subdirectory called \'IR\'')
         self.reverb_cb.stateChanged.connect(lambda state: self.use_ir_cb.setEnabled(state))
@@ -541,6 +544,8 @@ class DrDsUi(QMainWindow):
         for wid, attr in zip(self.knob_cb_widgets, attrs):
             setattr(self.options, attr, wid.isChecked())
 
+        self.options.knob_scl = (1, 2)[self.hd_knobs_cb.isChecked()]
+
         # self.options.attenuation = self.attenuation_dsb.value()
         # self.options.vel_track = self.ampveltrk_dsb.value()
 
@@ -584,6 +589,7 @@ class DrDsUi(QMainWindow):
         self.root_dir = self.output_path_l.fullPath()
 
         if not self.root_dir:
+            QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
         result = smp2ds.create_dslibrary(self.root_dir)
@@ -600,6 +606,7 @@ class DrDsUi(QMainWindow):
         self.root_dir = self.output_path_l.fullPath()
 
         if not self.root_dir:
+            QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
         add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
@@ -612,7 +619,8 @@ class DrDsUi(QMainWindow):
         filepath = Path.joinpath(Path(self.root_dir), f'{basename}.dspreset')
 
         if filepath.is_file() and not auto_increment:
-            confirm_dlg = QMessageBox.question(self, 'Confirmation', f'{filepath.name} already exists\nOverwrite?',
+            confirm_dlg = QMessageBox.question(self, 'Confirmation',
+                                               f'{filepath.name} already exists\nOverwrite?',
                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if not confirm_dlg == QMessageBox.Yes:
                 return False
@@ -640,6 +648,8 @@ class DrDsUi(QMainWindow):
 
         if result:
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
+        else:
+            play_notification(audio_file=self.current_dir / 'process_error.flac')
 
     def create_dspreset_process(self, worker, progress_callback, message_callback):
         self.get_options()
@@ -649,12 +659,8 @@ class DrDsUi(QMainWindow):
         option_kwargs = {k: v for k, v in options.items() if k in func_args}
 
         print(option_kwargs)
-
-        result = drds.create_drums_dspreset(**option_kwargs,
-                                            worker=worker, progress_callback=progress_callback,
+        result = drds.create_drums_dspreset(**option_kwargs, worker=worker, progress_callback=progress_callback,
                                             message_callback=message_callback)
-
-        print(result)
 
         return result
 

@@ -174,15 +174,17 @@ def limit_font_size(texts=(), text_font=('HelveticaNeueThin.otf', 16), max_lengt
     return min(result)
 
 
-def apply_symbol(im, symbol_path='', pos_xy=(0, 0), size=(32, 32), color=(1, 1, 1, 1), scl=1):
+def apply_symbol(im: Image, symbol_path: str | Path = '',
+                 pos_xy: tuple[int, int] = (0, 0), size: tuple[int, int] = (32, 32),
+                 color: tuple[float, float, float, float] = (1, 1, 1, 1), scl: float = 1) -> Image:
     """
     Composite symbol image over a background image
-    :param Image im:
-    :param str or Path symbol_path:
-    :param tuple[int,int] pos_xy:
-    :param tuple[int,int] size:
-    :param tuple[int,int,int,int] color:
-    :param int scl:
+    :param im: PIL image input
+    :param symbol_path:
+    :param pos_xy:
+    :param size:
+    :param color: rgba color
+    :param scl: Scale factor
     :return:
     :rtype: Image
     """
@@ -284,25 +286,27 @@ def adjust_palette(plt_data, adjust=(0, 1, 1)):
     return plt_data
 
 
-def hex_to_rgba(hexcolor='ff808080'):
+def hex_to_rgba(hexcolor: str = 'ff808080', shift: int = 0) -> tuple[float, float, float, float]:
     """
     NOTE : Decent Sampler uses argb and not rgba
     :param str hexcolor:
+    :param shift: 1 rgba to argb, 0 unchanged, -1 argb to rgba
     :return: list of float
-    :rtype: list of float values
     """
-    rgba = [int(hexcolor[i * 2:i * 2 + 2], 16) / 255 for i in range(len(hexcolor) // 2)]
-    return rgba
+    values = [int(hexcolor[i * 2:i * 2 + 2], 16) / 255 for i in range(len(hexcolor) // 2)]
+    values = np.roll(values, shift).tolist()
+    return values
 
 
-def rgba_to_hex(rgba=(1, 1, 1, 1)):
+def rgba_to_hex(rgba: tuple[float, float, float, float] = (1, 1, 1, 1), shift: int = 0) -> str:
     """
     NOTE : Decent Sampler uses argb and not rgba
-    :param list or tuple rgba: list of float values
+    :param rgba: list of float values
+    :param shift: 1 rgba to argb, 0 unchanged, -1 argb to rgba
     :return: Hex string
-    :rtype: str
     """
-    hexcolor = [hex(int(clamp(v * 255, 0, 255)))[2:].zfill(2) for v in rgba]
+    values = np.clip(np.round(np.roll(np.array(rgba), shift) * 255), 0, 255).astype(np.uint8).tolist()
+    hexcolor = [hex(int(v))[2:].zfill(2) for v in values]
     return ''.join(hexcolor).upper()
 
 
@@ -323,17 +327,17 @@ def hsv_adjust(rgb=(1, 0, 0), adjust=(0, 1, 1)):
     return result
 
 
-def plt_to_rgba(plt, rgba=(1, 1, 1, 1), alpha=1):
+def plt_to_rgba(plt: str, rgba: tuple[float, float, float, float] = (1, 1, 1, 1),
+                alpha: float = 1.0) -> tuple[int, int, int, int]:
     """
     Convert ds argb hex value to float rgba
-    :param str plt:
-    :param list rgba:
-    :param float alpha:
-    :return:
+    :param plt:
+    :param rgba:
+    :param alpha:
     """
-    mult = list(rgba)
-    mult[-1] *= alpha
-    return np.array(mult) * np.roll(hex_to_rgba(plt), -1).tolist()
+    m = np.array(rgba, dtype=float)
+    m[-1] = m[-1] * alpha
+    return m * np.array(hex_to_rgba(plt, -1)).tolist()
 
 
 def get_color_name(hexcolor='929edf'):

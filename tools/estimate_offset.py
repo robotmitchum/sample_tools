@@ -19,14 +19,15 @@ from split_audio import envelope_transform
 from scipy.signal import fftconvolve
 
 
-def sampleset_offset(input_path, smp_fmt=('wav', 'flac', 'aif'), verbose=True, **kwargs):
+def sampleset_offset(input_path: str | list, smp_fmt: tuple[str, ...] = ('wav', 'flac', 'aif'),
+                     verbose: bool = False, **kwargs) -> float:
     """
     Estimate average sample offset for a given sample set
 
-    :param str or list input_path:
-    :param tuple or list smp_fmt:
-    :param bool verbose:
-    :param dict kwargs:
+    :param input_path:
+    :param smp_fmt:
+    :param verbose:
+    :param kwargs: Optional keyword arguments supported by sub-function estimate offset
 
     :return:
     :rtype: int or float
@@ -41,7 +42,8 @@ def sampleset_offset(input_path, smp_fmt=('wav', 'flac', 'aif'), verbose=True, *
 
         p = Path(item)
         if p.is_dir():
-            samples = p.glob('*.flac')
+            for ext in smp_fmt:
+                samples.extend(p.glob('*.' + ext))
         elif p.is_file():
             if p.suffix[1:] in smp_fmt:
                 samples = [p]
@@ -60,17 +62,16 @@ def sampleset_offset(input_path, smp_fmt=('wav', 'flac', 'aif'), verbose=True, *
         return mean
 
 
-def estimate_offset(audio, sr, amp=.5, factor=1.0, rtyp='ms'):
+def estimate_offset(audio: np.ndarray, sr: int, amp: float = .5, factor: float = 1.0, rtyp: str = 'ms') -> float:
     """
     Estimate sample time offset from amplitude envelope
 
-    :param np.ndarray audio: Input audio
-    :param int sr: Sampling rate
-    :param float amp: (0-1) factor applied to found attack end amplitude to use as starting point
-    :param float factor: (0-1) Result multiplier
-    :param str rtyp: Return type: 'ms' (milliseconds), 's' (seconds) or samples
+    :param audio: Input audio
+    :param sr: Sampling rate
+    :param amp: (0-1) factor applied to found attack end amplitude to use as starting point
+    :param factor: (0-1) Result multiplier
+    :param rtyp: Return type: 'ms' (milliseconds), 's' (seconds) or samples
     :return: Estimated offset
-    :rtype: int or float
     """
     if audio.ndim > 1:
         mono_audio = audio.mean(axis=1)

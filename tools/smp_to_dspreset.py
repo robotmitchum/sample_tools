@@ -15,9 +15,8 @@ import xml.etree.ElementTree as Et
 from pathlib import Path
 from xml.dom import minidom
 
-import numpy as np
-
 import instrument_utils as iu
+from bitmap_knobs import *
 from color_utils import (adjust_palette, basic_background, basic_button, blank_button, write_pil_image,
                          write_text, limit_font_size, apply_symbol, hex_to_rgba, rgba_to_hex, plt_to_rgba)
 from common_math_utils import linstep, lerp, clamp
@@ -26,126 +25,134 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 
 __ds_version__ = '1.12.11'
-__version__ = '1.4.0'
+__version__ = '1.4.1'
 
 
-def create_dspreset(root_dir, smp_subdir='Samples',
-                    smp_fmt=('wav', 'flac'), ir_fmt=('wav', 'aif', 'flac'),
+def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
+                    smp_fmt: list[str] = ('wav', 'flac'), ir_fmt: list[str] = ('wav', 'aif', 'flac'),
 
-                    smp_attrib_cfg='smp_attrib_cfg.json',
+                    smp_attrib_cfg: str = 'smp_attrib_cfg.json',
 
-                    pattern='{group}_{note}_{trigger}', group_naming='keep', override=False, loop=True,
-                    transpose=0, tuning=0, seq_mode='random',
-                    pad_vel=False,
+                    pattern: str = '{group}_{note}_{trigger}', group_naming: str = 'keep',
+                    override: bool = False, loop: bool = True,
+                    transpose: int = 0, tuning: float = 0, seq_mode: str = 'random',
+                    pad_vel: bool = False,
 
-                    adsr=(0.001, 0, 1, .25), adr_curve=(None, None, None),
+                    adsr: tuple[float, float, float, float] = (0.001, 0, 1, .25),
+                    adr_curve: tuple[float | None, float | None, float | None] = (None, None, None),
 
-                    fake_release=False, fk_rls_mode='start',
-                    fk_rls_volume=-24, fk_rls_tuning=0, fk_rls_cutoff=1000,
-                    fk_rls_adsr=(.001, .05, 0, .05), fk_rls_adr_curve=(None, None, None),
+                    fake_release: bool = False, fk_rls_mode: str = 'start',
+                    fk_rls_volume: float = -24, fk_rls_tuning: float = 0, fk_rls_cutoff: float = 1000,
+                    fk_rls_adsr: tuple[float, float, float, float] = (.001, .05, 0, .05),
+                    fk_rls_adr_curve: tuple[float | None, float | None, float | None] = (None, None, None),
 
-                    fake_legato=False,
-                    fk_leg_start=.1, fk_leg_a=.1, fk_leg_a_curve=None,
+                    fake_legato: bool = False,
+                    fk_leg_start: float = .1, fk_leg_a: float = .1, fk_leg_a_curve: float | None = None,
 
-                    note_spread='mid', limit=True, note_limit_mode='shared',
-                    rr_offset=None, rr_bounds=True,
-                    pf_mode='off', pf_th=5,
-                    crossfade_mode='linear', crossfade=.05,
+                    note_spread: str = 'mid', limit: bool = True, note_limit_mode: str = 'shared',
+                    rr_offset: tuple[int] | None = None, rr_bounds: bool = True,
+                    pf_mode: str = 'off', pf_th: float = 5,
+                    crossfade_mode: str = 'linear', crossfade: float = .05,
 
-                    attenuation=-6, vel_track=1.0, note_pan=0,
+                    attenuation: float = -6, vel_track: float = 1.0, note_pan: float = 0,
 
-                    monophonic=False,
+                    monophonic: bool = False,
 
-                    bg_text=None,
-                    text_font=('HelveticaNeueThin.otf', 24),
+                    bg_text: str or None = None,
+                    text_font: tuple[str, int] = ('HelveticaNeueThin.otf', 24),
 
-                    color_plt_cfg='plt_cfg/Dark_plt_cfg.json', plt_adjust=(0, 1, 1),
-                    group_knobs_rows=1, no_solo_grp_knob=True,
-                    adsr_knobs=True, max_adsr_knobs=10,
-                    use_reverb=True, reverb_wet=0.2, ir_subdir='IR',
+                    color_plt_cfg: str = 'plt_cfg/Dark_plt_cfg.json',
+                    plt_adjust: tuple[float, float, float] = (0, 1, 1),
+                    group_knobs_rows: int = 1, no_solo_grp_knob: bool = True,
+                    adsr_knobs: bool = True, max_adsr_knobs: float = 10,
+                    use_reverb: bool = True, reverb_wet: float = 0.2, ir_subdir: str = 'IR',
+                    knob_scl: float = 1.0,
 
-                    add_suffix='', auto_increment=True,
+                    add_suffix: str = '', auto_increment: bool = True,
 
                     worker=None, progress_callback=None, message_callback=None):
     """
     Create a Decent Sampler Preset from audio samples
 
-    :param tuple(str,float) text_font: font path, font size
-    :param str root_dir: Instrument root directory
-    :param str smp_subdir: Samples subdirectory name
-    :param str or None ir_subdir: Impulse Response subdirectory name
+    :param text_font: font path, font size
+    :param root_dir: Instrument root directory
+    :param smp_subdir: Samples subdirectory name
+    :param ir_subdir: Impulse Response subdirectory name
 
-    :param list or tuple smp_fmt: Accepted sample format extensions
-    :param list or tuple ir_fmt: Accepted IR file format extensions
+    :param smp_fmt: Accepted sample format extensions
+    :param ir_fmt: Accepted IR file format extensions
 
-    :param str smp_attrib_cfg: Path to a json file holding sample attribute configuration
-    :param str color_plt_cfg: Path to a json file holding color configuration used to generate UI
+    :param smp_attrib_cfg: Path to a json file holding sample attribute configuration
+    :param color_plt_cfg: Path to a json file holding color configuration used to generate UI
 
-    :param str pattern: Pattern used to figure the mapping
-    :param str group_naming: 'keep', 'beautify', 'upper', 'lower','shorten'
-    :param bool override: If True, info from sample name override metadata
-    :param bool loop: Use sample loop
+    :param pattern: Pattern used to figure the mapping
+    :param group_naming: 'keep', 'beautify', 'upper', 'lower','shorten'
+    :param override: If True, info from sample name override metadata
+    :param loop: Use sample loop
 
-    :param int transpose: Transpose the whole mapping
-    :param float tuning: Tuning adjustment at group level
-    :param str seq_mode: Round-Robin mode - 'round_robin','random', 'true_random' or 'always' (off)
+    :param transpose: Transpose the whole mapping
+    :param tuning: Tuning adjustment at group level
+    :param seq_mode: Round-Robin mode - 'round_robin','random', 'true_random' or 'always' (off)
 
-    :param bool pad_vel: Re-use/duplicate note samples for velocity layers with fewer note samples
+    :param pad_vel: Re-use/duplicate note samples for velocity layers with fewer note samples
 
-    :param list or tuple adsr: ADSR envelope (in s, except sustain)
-    :param list or tuple adr_curve: ADR Curve (-100 log, 0 lin, 100 exp)
+    :param adsr: ADSR envelope (in s, except sustain)
+    :param adr_curve: ADR Curve (-100 log, 0 lin, 100 exp)
 
-    :param bool fake_release: Create fake release from attack group and samples
-    :param str fk_rls_mode: 'start' 'loop_end' 'cue'
-    :param float fk_rls_volume: Release attenuation
+    :param fake_release: Create fake release from attack group and samples
+    :param fk_rls_mode: 'start' 'loop_end' 'cue'
+    :param fk_rls_volume: Release attenuation
     :param fk_rls_tuning: Release pitch shifting
     :param fk_rls_cutoff: Low pass filter value in Hz
     :param fk_rls_adsr: ADSR envelope of release
     :param fk_rls_adr_curve: ADR Curve of release
 
-    :param bool fake_legato: Create fake legato from attack group and samples
+    :param fake_legato: Create fake legato from attack group and samples
     :param fk_leg_start: Start of legato sample in s
     :param fk_leg_a: Attack of legato envelope
     :param fk_leg_a_curve: Attack curve of legato envelope
 
-    :param str note_spread: 'up' 'mid' 'down' or None
-    :param list or tuple or bool limit: Limit note range to bounding samples or extend bounds
+    :param note_spread: 'up' 'mid' 'down' or None
+    :param limit: Limit note range to bounding samples or extend bounds
     Extended bound can be given as a list
-    :param str note_limit_mode: 'shared' or 'group'
+    :param note_limit_mode: 'shared' or 'group'
 
-    :param list or tuple rr_offset: Fake Round-Robin offsets
-    :param bool rr_bounds: Steal notes further to make fake RR work on bounding notes
+    :param rr_offset: Fake Round-Robin offsets
+    :param rr_bounds: Steal notes further to make fake RR work on bounding notes
 
-    :param str pf_mode: Pitch fraction mode, 'off', 'on', 'on_rand', 'on_threshold', 'on_threshold_rand'
-    :param float pf_th: Pitch fraction threshold/random value
+    :param pf_mode: Pitch fraction mode, 'off', 'on', 'on_rand', 'on_threshold', 'on_threshold_rand'
+    :param pf_th: Pitch fraction threshold/random value
 
-    :param str crossfade_mode: 'linear' 'equal_power' or 'off'
-    :param float crossfade: Percent of loop length
+    :param crossfade_mode: 'linear' 'equal_power' or 'off'
+    :param crossfade: Percent of loop length
 
-    :param float attenuation: Volume attenuation to prevent saturation/clipping
-    :param float vel_track: Velocity Tracking Amplitude
-    :param float note_pan: Auto pan sample from left to right depending on note number
-    :param bool monophonic: Set instrument to monophonic
+    :param attenuation: Volume attenuation to prevent saturation/clipping
+    :param vel_track: Velocity Tracking Amplitude
+    :param note_pan: Auto pan sample from left to right depending on note number
+    :param monophonic: Set instrument to monophonic
 
-    :param str or None bg_text: Override text written on background image otherwise use directory name
-    :param int group_knobs_rows: Number of rows for group knobs
-    :param bool no_solo_grp_knob: Do not generate any group knob if there is only one
-    :param bool adsr_knobs: Add ASDR knobs to UI
-    :param float max_adsr_knobs: Max length in s for ASDR knobs
-    :param list or tuple plt_adjust: Global Hue Saturation Value adjustment of color palette
+    :param bg_text: Override text written on background image otherwise use directory name
+    :param group_knobs_rows: Number of rows for group knobs
+    :param no_solo_grp_knob: Do not generate any group knob if there is only one
+    :param adsr_knobs: Add ASDR knobs to UI
+    :param max_adsr_knobs: Max length in s for ASDR knobs
+    :param plt_adjust: Global Hue Saturation Value adjustment of color palette
 
-    :param bool use_reverb: Add reverb knob to UI
-    :param float reverb_wet: Default reverb wet level
+    :param use_reverb: Add reverb knob to UI
+    :param reverb_wet: Default reverb wet level
 
-    :param str add_suffix: Add suffix to created file
-    :param bool auto_increment: Increment file to avoid overwriting
+    :param knob_scl: Knob render factor
+
+    :param add_suffix: Add suffix to created file
+    :param auto_increment: Increment file to avoid overwriting
+
+    :param Worker worker:
+    :param progress_callback:
+    :param message_callback:
 
     :return: Created file
     :rtype: str
     """
-
-    current_dir = Path(__file__).parent
-    base_dir = current_dir.parent
 
     # - Retrieve instrument samples -
 
@@ -169,6 +176,9 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                           override=override, extra_tags=ds_smp_attrib, num_attrib=num_attrs)
 
     if instr.df is None:
+        if message_callback:
+            progress_callback.emit(0)
+            message_callback.emit(f'Your samples must be located in a "{smp_subdir}" sub-directoy')
         return False
 
     if pad_vel:
@@ -183,6 +193,28 @@ def create_dspreset(root_dir, smp_subdir='Samples',
         add_grp_knobs = len(instr.groups) > 1 or not no_solo_grp_knob
     else:
         add_grp_knobs = False
+
+    # - Path management -
+
+    current_dir = Path(__file__).parent
+    base_dir = current_dir.parent
+
+    resources_dir = Path(root_dir) / 'Resources'
+    if not resources_dir.exists():
+        os.makedirs(resources_dir, exist_ok=True)
+
+    basename = Path(root_dir).stem
+    file_suffix = ('', add_suffix)[bool(add_suffix)]
+
+    filepath = Path(root_dir) / f'{basename}{file_suffix}.dspreset'
+
+    if auto_increment:
+        filepath = resolve_overwriting(filepath, mode='file', test_run=True)
+        version = Path(filepath).stem.split('_')[-1]
+        file_suffix += f'_{version}'
+
+    bg_path = resources_dir / f'bg{file_suffix}.jpg'
+    rel_bg_path = bg_path.relative_to(root_dir).as_posix()
 
     # IR Samples
     ir_samples = []
@@ -210,7 +242,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     if 'keyboard' in plt_data:
         keyboard_plt = list(plt_data['keyboard'].values())
     else:
-        keyboard_plt = [rgba_to_hex(rgba=[1, .625, .875, 1])]
+        keyboard_plt = [rgba_to_hex(rgba=(1, .625, .875, 1))]
 
     # Active keys color
     if len(keyboard_plt) > 1:
@@ -229,6 +261,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     piano_keys_h = 110  # Bottom keyboard height with UI default state
     ui_h = h - top_band_h - piano_keys_h  # Usable "canvas" height for UI, bottom position
     cx, cy = w // 2, ui_h // 2  # Center of "canvas"
+    row_spc_adjust = (1, 1.33)[group_knobs_rows > 1]
 
     # Create background image
     resources_dir = Path(root_dir) / 'Resources'
@@ -255,6 +288,7 @@ def create_dspreset(root_dir, smp_subdir='Samples',
             btn_path = basic_button(str(btn_path), size=btn_w * 2, rgba=rgba)
             btn_path = Path(btn_path).relative_to(root_dir)
             btn_paths.append(str(btn_path.as_posix()))
+    btn_w /= row_spc_adjust
 
     # Round-Robin offsets (Fake Round-Robin)
     rr_offset = rr_offset or [0]
@@ -271,18 +305,17 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     # - Root XML level -
     decentsampler = Et.Element('DecentSampler', attrib={'minVersion': __ds_version__})
     decentsampler.append(Et.Comment(f'Generated by {Path(__file__).stem} {__version__}'))
+    decentsampler.append(Et.Comment('"https://github.com/robotmitchum/sample_tools"'))
     tags = Et.SubElement(decentsampler, 'tags')
     effects = Et.SubElement(decentsampler, 'effects')
     midi = Et.SubElement(decentsampler, 'midi')
 
     # - Instrument UI -
     ui = Et.SubElement(decentsampler, 'ui',
-                       attrib={'width': str(w), 'height': str(h), 'bgImage': '', 'layoutMode': 'relative',
+                       attrib={'width': str(w), 'height': str(h), 'bgImage': str(rel_bg_path), 'layoutMode': 'relative',
                                'bgColor': "00000000"})
     tab = Et.SubElement(ui, 'tab', attrib={'name': 'main'})
     keyboard = Et.SubElement(ui, 'keyboard')
-
-    ui.set('bgImage', 'ducaca')
 
     # Information / Credits
     info_text, info_tooltip = 'Info', ''
@@ -331,26 +364,39 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     margin = 120  # Margin for group sliders from canvas left border
 
     # - "Expression" (Volume) -
-    x = 8
+    ex = 48
     sw = 32
-    ew, eh = 48, 160 - sw
-    y = cy - eh // 2 + sw
+    ew, eh = 16, 160 - sw
+    x = 8 + ex // 2
+    y = cy - eh // 2 + sw - 4
 
     symbol_path = current_dir / 'symbols/expression.png'
-    bg_img = apply_symbol(bg_img, symbol_path=symbol_path,
-                          pos_xy=(x + ew // 2 - sw // 2, top_band_h + y - sw),
+    bg_img = apply_symbol(bg_img, symbol_path=symbol_path, pos_xy=(x - sw // 2, top_band_h + y - sw),
                           size=(sw, sw), scl=2, color=plt_to_rgba(ctrl_plt['expression']))
 
-    vol_ctrl = Et.SubElement(tab, 'control',
-                             attrib={'x': str(x), 'y': str(y), 'width': str(ew), 'height': str(eh),
-                                     'parameterName': 'expression', 'style': 'linear_vertical',
-                                     'showLabel': 'false', 'textColor': ctrl_plt['expression'], 'textSize': '40',
-                                     'trackForegroundColor': ctrl_plt['expression'],
-                                     'trackBackgroundColor': track_bg_plt[0],
-                                     'tooltip': 'Expression',
-                                     'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': '1',
-                                     'defaultValue': '1'})
-    Et.SubElement(vol_ctrl, 'binding',
+    frames = 128
+    expr_path = resources_dir / f'expr_slider{file_suffix}.png'
+    linear_slider(filepath=expr_path, shape=(ew, eh), scl=knob_scl,
+                  bg_r=2, fg_r=2, dot_r=5,
+                  bg_color=track_bg_plt[0], fg_color=ctrl_plt['expression'], dot_color=None,
+                  frames=frames)
+
+    expr_ctrl = Et.SubElement(tab, 'control',
+                              attrib={'x': str(x - ew // 2), 'y': str(y), 'width': str(ew), 'height': str(eh),
+                                      'parameterName': 'expression', 'style': 'custom_skin_vertical_drag',
+
+                                      'customSkinImage': expr_path.relative_to(root_dir).as_posix(),
+                                      'customSkinNumFrames': str(frames), 'customSkinImageOrientation': 'horizontal',
+
+                                      'showLabel': 'false', 'textColor': ctrl_plt['expression'],
+                                      'textSize': '40',
+                                      'trackForegroundColor': ctrl_plt['expression'],
+                                      'trackBackgroundColor': track_bg_plt[0],
+                                      'tooltip': 'Expression',
+                                      'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': '1',
+                                      'defaultValue': '1'})
+
+    Et.SubElement(expr_ctrl, 'binding',
                   attrib={'type': 'amp', 'level': 'tag', 'identifier': 'expression', 'parameter': 'AMP_VOLUME'})
 
     # Link to CC 11
@@ -367,29 +413,41 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     table = [f'{round(float(x[i]), 3)},{int(y[i])}' for i in range(steps)]
     table = ';'.join(table)
 
-    x = 56
+    ex = 48
     sw = 32
-    ew, eh = 48, 160 - sw
-    y = cy - eh // 2 + sw
+    ew, eh = 16, 160 - sw
+    x = 56 + ex // 2
+    y = cy - eh // 2 + sw - 4
 
     symbol_path = current_dir / 'symbols/modulation.png'
-    bg_img = apply_symbol(bg_img, symbol_path=symbol_path,
-                          pos_xy=(x + ew // 2 - sw // 2, top_band_h + y - sw),
+    bg_img = apply_symbol(bg_img, symbol_path=symbol_path, pos_xy=(x - sw // 2, top_band_h + y - sw),
                           size=(sw, sw), scl=2, color=plt_to_rgba(ctrl_plt['modulation']))
 
-    ctrl = Et.SubElement(tab, 'control',
-                         attrib={'x': str(x), 'y': str(y), 'width': str(ew), 'height': str(eh),
-                                 'parameterName': 'modulation', 'style': 'linear_vertical',
-                                 'showLabel': 'false', 'textColor': ctrl_plt['modulation'], 'textSize': '40',
-                                 'trackForegroundColor': ctrl_plt['modulation'],
-                                 'trackBackgroundColor': track_bg_plt[0],
-                                 'tooltip': 'Modulation (Low Pass Filter)',
-                                 'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': '1',
-                                 'defaultValue': '1'})
-    bind = Et.SubElement(ctrl, 'binding',
+    mod_path = resources_dir / f'mod_slider{file_suffix}.png'
+    linear_slider(filepath=mod_path, shape=(ew, eh), scl=knob_scl,
+                  bg_r=2, fg_r=2, dot_r=5,
+                  bg_color=track_bg_plt[0], fg_color=ctrl_plt['modulation'], dot_color=None,
+                  frames=frames)
+
+    mod_ctrl = Et.SubElement(tab, 'control',
+                             attrib={'x': str(x - ew // 2), 'y': str(y), 'width': str(ew), 'height': str(eh),
+                                     'parameterName': 'modulation', 'style': 'custom_skin_vertical_drag',
+
+                                     'customSkinImage': mod_path.relative_to(root_dir).as_posix(),
+                                     'customSkinNumFrames': str(frames), 'customSkinImageOrientation': 'horizontal',
+
+                                     'showLabel': 'false', 'textColor': ctrl_plt['modulation'], 'textSize': '40',
+                                     'trackForegroundColor': ctrl_plt['modulation'],
+                                     'trackBackgroundColor': track_bg_plt[0],
+                                     'tooltip': 'Modulation (Low Pass Filter)',
+                                     'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': '1',
+                                     'defaultValue': '1'})
+
+    bind = Et.SubElement(mod_ctrl, 'binding',
                          attrib={'type': 'effect', 'level': 'instrument', 'position': '1',
                                  'parameter': 'FX_FILTER_FREQUENCY', 'translation': 'table',
                                  'translationTable': table})
+
     bind.append(Et.Comment('Straight line in log scale'))
 
     # LP effect
@@ -403,39 +461,55 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     # - Reverb -
     if use_reverb:
-        rw = 96
+        rx = 96
+        rw = 80
         rh = rw
-        x = w - rw - 8
-        y = cy - rh / 2
+        x = w - 8 - rx // 2
+        y = cy + 8
         verb_dv = reverb_wet * 100
 
-        symbol_path = current_dir / 'symbols/reverb.png'
         sw = 32
+        symbol_path = current_dir / 'symbols/reverb.png'
         bg_img = apply_symbol(bg_img, symbol_path=symbol_path,
-                              pos_xy=(w - rw / 2 - sw / 2 - 8, top_band_h + cy - sw // 2),
+                              pos_xy=(x - sw // 2, top_band_h + y - sw // 2),
                               size=(sw, sw), scl=2, color=plt_to_rgba(ctrl_plt['reverb']))
 
-        knob = Et.SubElement(tab, 'labeled-knob',
-                             attrib={'x': str(x), 'y': str(y), 'width': str(rw), 'height': str(rh),
-                                     'parameterName': 'reverb', 'type': 'percent',
-                                     'showLabel': 'false',
-                                     'textColor': ctrl_plt['reverb'], 'textSize': '40',
-                                     'trackForegroundColor': ctrl_plt['reverb'],
-                                     'trackBackgroundColor': track_bg_plt[0],
-                                     'tooltip': 'Reverb Wet Level',
-                                     'minValue': '0', 'maxValue': '100',
-                                     'value': f'{verb_dv}',
-                                     'defaultValue': f'{verb_dv}'})
+        frames = 49
+        verb_path = resources_dir / f'verb_knob{file_suffix}.png'
+        rotary_knob(filepath=verb_path, size=rw, scl=knob_scl,
+                    bg_r=2, fg_r=2, dot_r=5,
+                    bg_color=track_bg_plt[0], fg_color=ctrl_plt['reverb'], dot_color=None,
+                    frames=frames)
+
+        verb_knob = Et.SubElement(tab, 'labeled-knob',
+                                  attrib={'x': str(x - rw / 2), 'y': str(y - rh // 2), 'width': str(rw),
+                                          'height': str(rh),
+                                          'parameterName': 'reverb', 'type': 'percent',
+                                          'style': 'custom_skin_vertical_drag',
+
+                                          'customSkinImage': verb_path.relative_to(root_dir).as_posix(),
+                                          'customSkinNumFrames': str(frames), 'customSkinImageOrientation': 'vertical',
+
+                                          'showLabel': 'false',
+                                          'textColor': ctrl_plt['reverb'], 'textSize': '40',
+                                          'trackForegroundColor': ctrl_plt['reverb'],
+                                          'trackBackgroundColor': track_bg_plt[0],
+                                          'tooltip': 'Reverb Wet Level',
+                                          'minValue': '0', 'maxValue': '100',
+                                          'value': f'{verb_dv}',
+                                          'defaultValue': f'{verb_dv}'})
 
         prm = ('FX_REVERB_WET_LEVEL', 'FX_MIX')[bool(ir_samples)]
-        Et.SubElement(knob, 'binding', attrib={'type': 'effect', 'level': 'instrument', 'position': '2',
-                                               'parameter': prm, 'translation': 'linear',
-                                               'translationOutputMin': '0', 'translationOutputMax': '1'})
+        Et.SubElement(verb_knob, 'binding', attrib={'type': 'effect', 'level': 'instrument', 'position': '2',
+                                                    'parameter': prm, 'translation': 'linear',
+                                                    'translationOutputMin': '0', 'translationOutputMax': '1'})
 
         # Pull down menu to choose between available IR files
         if ir_samples:
+            mw, mh = 96, 32
             menu = Et.SubElement(tab, 'menu',
-                                 attrib={'x': str(x), 'y': str(y + kw), 'width': str(kw), 'height': '32',
+                                 attrib={'x': str(x - mw // 2), 'y': str(y + rh // 2), 'width': str(mw),
+                                         'height': str(mh),
                                          'parameter': 'IR', 'value': '1'})
             for ir in sorted(ir_samples):
                 ir_name = beautify_str(Path(ir).stem)
@@ -458,20 +532,28 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                               'translation': "linear", 'translationOutputMin': "0", 'translationOutputMax': "1"})
 
     # - ADSR Knobs -
+    adsr_spc = 64
     if adsr_knobs:
         prms = ['ENV_ATTACK', 'ENV_DECAY', 'ENV_SUSTAIN', 'ENV_RELEASE']
         tooltips = ['Attack', 'Decay', 'Sustain', 'Release']
         adsr_mx = [max_adsr_knobs, max_adsr_knobs, 1, max_adsr_knobs]
-        # adsr_margin = margin * 2.5
-        # w_m = w - adsr_margin * 2
+
         if add_grp_knobs:
             # To bottom and smaller when using group knobs
-            adsr_spc = 56
-            y = ui_h - adsr_spc
+            adsr_spc = 48
+            y = ui_h - adsr_spc - 8
         else:
             # To center and bigger when no group knob
             adsr_spc = 64
             y = cy - adsr_spc / 2
+
+        frames = 61
+        adsr_path = resources_dir / f'adsr_knob{file_suffix}.png'
+        rotary_knob(filepath=adsr_path, size=adsr_spc, scl=knob_scl,
+                    bg_r=2, fg_r=2, dot_r=4,
+                    bg_color=track_bg_plt[0], fg_color=group_plt[0], dot_color=None,
+                    frames=frames)
+
         for i, (knob_name, value, mx_value, prm, tooltip) in enumerate(zip('ADSR', adsr, adsr_mx, prms, tooltips)):
             x = cx + (adsr_spc * (i - 1.5))
 
@@ -480,18 +562,25 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                                 text_font=(text_font[0], lbl_h), text_color=plt_to_rgba(text_plt[0]),
                                 align='center', anchor='mm', stroke_width=0, scl=2)
 
-            knob = Et.SubElement(tab, 'labeled-knob',
-                                 attrib={'x': str(x - adsr_spc / 2), 'y': str(y),
-                                         'width': str(adsr_spc), 'height': str(adsr_spc),
-                                         'type': 'float',
-                                         'parameterName': knob_name, 'label': knob_name,
-                                         'showLabel': 'false', 'textColor': text_plt[0],
-                                         'textSize': str(adsr_spc // 2),
-                                         'trackForegroundColor': group_plt[0], 'trackBackgroundColor': track_bg_plt[0],
-                                         'minValue': '0', 'maxValue': str(mx_value),
-                                         'value': str(value), 'defaultValue': str(value),
-                                         'tooltip': tooltip})
-            Et.SubElement(knob, 'binding',
+            adsr_knob = Et.SubElement(tab, 'labeled-knob',
+                                      attrib={'x': str(x - adsr_spc / 2), 'y': str(y),
+                                              'width': str(adsr_spc), 'height': str(adsr_spc),
+                                              'parameterName': 'reverb', 'type': 'percent',
+                                              'style': 'custom_skin_vertical_drag',
+
+                                              'customSkinImage': adsr_path.relative_to(root_dir).as_posix(),
+                                              'customSkinNumFrames': str(frames),
+                                              'customSkinImageOrientation': 'vertical',
+
+                                              'showLabel': 'false',
+                                              'textColor': text_plt[0], 'textSize': str(adsr_spc // 2),
+                                              'trackForegroundColor': group_plt[0],
+                                              'trackBackgroundColor': track_bg_plt[0],
+                                              'minValue': '0', 'maxValue': str(mx_value),
+                                              'value': f'{value}', 'defaultValue': f'{value}',
+                                              'tooltip': tooltip})
+
+            Et.SubElement(adsr_knob, 'binding',
                           attrib={'type': 'amp', 'level': 'instrument', 'position': '0', 'parameter': prm})
 
     # - Groups -
@@ -499,57 +588,93 @@ def create_dspreset(root_dir, smp_subdir='Samples',
 
     # Velocity Track
     knob_w = 160
-    knob_h = 32
-    x = cx - knob_w // 2
-    y = 0
+    knob_h = 16
+    x = cx
+    y = 16
 
+    sw = 16
     symbol_path = current_dir / 'symbols/velocity.png'
-    sw = knob_h // 3
-    bg_img = apply_symbol(bg_img, symbol_path=symbol_path,
-                          pos_xy=(cx - sw // 2, top_band_h + knob_h // 4 - sw // 2),
+    bg_img = apply_symbol(bg_img, symbol_path=symbol_path, pos_xy=(x - sw // 2, top_band_h + y // 2 - sw // 2),
                           size=(sw, sw), scl=2, color=plt_to_rgba(other_plt['ampVelTrack']))
 
+    frames = 61
+    vel_path = resources_dir / f'vel_slider{file_suffix}.png'
+    linear_slider(filepath=vel_path, shape=(knob_w, knob_h), scl=knob_scl,
+                  bg_r=2, fg_r=2, dot_r=5,
+                  bg_color=track_bg_plt[0], fg_color=other_plt['ampVelTrack'], dot_color=None,
+                  frames=frames)
+
     vel_ctrl = Et.SubElement(tab, 'control',
-                             attrib={'x': str(x), 'y': str(y), 'width': str(knob_w), 'height': str(knob_h),
+                             attrib={'x': str(x - knob_w // 2), 'y': str(y - knob_h // 2),
+                                     'width': str(knob_w), 'height': str(knob_h),
                                      'parameterName': 'ampVelTrack', 'label': 'amplitude velocity tracking',
-                                     'style': 'linear_horizontal', 'showLabel': 'false',
+                                     'style': 'custom_skin_horizontal_drag', 'showLabel': 'false',
+
+                                     'customSkinImage': vel_path.relative_to(root_dir).as_posix(),
+                                     'customSkinNumFrames': str(frames), 'customSkinImageOrientation': 'vertical',
+
                                      'trackForegroundColor': other_plt['ampVelTrack'],
                                      'trackBackgroundColor': track_bg_plt[0],
                                      'tooltip': 'Amplitude Velocity Tracking',
                                      'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': str(vel_track),
                                      'defaultValue': str(vel_track)})
+
     Et.SubElement(vel_ctrl, 'binding', attrib={'type': 'amp', 'level': 'instrument', 'parameter': 'AMP_VEL_TRACK'})
 
     # Release Knob
     if enable_release:
-        knob_h = 128
+        knob_h = 80
 
-        if group_knobs_rows > 1:
-            pos = math.ceil(len(instr.groups) / group_knobs_rows)
+        if add_grp_knobs:
+            avt_h = 40
+            gk_h = 120 / row_spc_adjust
+            gk_cy = gk_h / 2 + avt_h
+
+            n_x = math.ceil(len(instr.groups) / max(1, group_knobs_rows))
+
+            sw = 16
+
+            x = ((w - margin * 2 - ew) / n_x) * ((n_x - 1) + .5) + margin + ew
+            x += spc // 2
+            y = gk_cy - knob_h / 2
         else:
-            pos = len(instr.groups)
-
-        x_div = pos + 1
-        x = ((w - margin * 2) / x_div) * (pos + .5) + margin - spc / 2
-        y = cy - knob_h / 2
+            if adsr_knobs:
+                adsr_spc = 64
+                x = cx + adsr_spc * 1.5
+                x += spc // 2
+            else:
+                x = cx
+            y = cy - knob_h / 2
 
         symbol_path = current_dir / 'symbols/release.png'
-        sw = 16
         bg_img = apply_symbol(bg_img, symbol_path=symbol_path,
-                              pos_xy=(round(x) + spc // 2 - sw // 2, top_band_h + y - sw),
+                              pos_xy=(int(x) - sw // 2, top_band_h + y - sw),
                               size=(sw, sw), scl=2, color=plt_to_rgba(other_plt['ampVelTrack']))
 
+        frames = 61
+        rls_path = resources_dir / f'rls_slider{file_suffix}.png'
+        linear_slider(filepath=rls_path, shape=(ew, knob_h), scl=knob_scl,
+                      bg_r=2, fg_r=2, dot_r=5,
+                      bg_color=track_bg_plt[0], fg_color=other_plt['ampVelTrack'], dot_color=None,
+                      frames=frames)
+
         ctrl = Et.SubElement(tab, 'control',
-                             attrib={'x': str(round(x)), 'y': str(y),
-                                     'width': str(spc), 'height': str(knob_h),
-                                     'parameterName': 'ReleaseVolume', 'label': 'release volume',
-                                     'style': 'linear_vertical', 'showLabel': 'false',
-                                     'textColor': other_plt['ampVelTrack'],
+                             attrib={'x': str(int(x) - ew // 2), 'y': str(y),
+                                     'width': str(ew), 'height': str(knob_h),
+                                     'parameterName': 'release', 'style': 'custom_skin_vertical_drag',
+
+                                     'customSkinImage': rls_path.relative_to(root_dir).as_posix(),
+                                     'customSkinNumFrames': str(frames),
+                                     'customSkinImageOrientation': 'horizontal',
+
+                                     'showLabel': 'false', 'textColor': other_plt['ampVelTrack'],
+                                     'textSize': '40',
                                      'trackForegroundColor': other_plt['ampVelTrack'],
                                      'trackBackgroundColor': track_bg_plt[0],
                                      'tooltip': 'Release Volume',
                                      'type': 'float', 'minValue': '0', 'maxValue': '1', 'value': '1',
                                      'defaultValue': '1'})
+
         Et.SubElement(ctrl, 'binding',
                       attrib={'type': 'amp', 'level': 'tag', 'identifier': trig_tag_dict['release'],
                               'parameter': 'AMP_VOLUME'})
@@ -566,6 +691,8 @@ def create_dspreset(root_dir, smp_subdir='Samples',
     active_keys, active_key_groups = set(), set()
     note_idx = 0
     grp_font_size_limit = None
+
+    grp_knob_paths = {}
 
     for gt_idx, (grp, trg) in enumerate(instr.group_trigger):
         if isinstance(instr.limit, list):
@@ -694,44 +821,25 @@ def create_dspreset(root_dir, smp_subdir='Samples',
             slider_idx = instr.groups.index(grp)
 
             avt_h = 40
-            gk_h = 120
+
+            gk_h = 120 / row_spc_adjust
 
             gk_cy = gk_h / 2 + avt_h
 
-            # m_spc = spc
-
-            # if group_knobs_rows > 1:
-            #     # m_spc = spc * 1.25
-            #     n_x = math.ceil(len(instr.groups) / group_knobs_rows)
-            #     x_div = n_x + int(enable_release)
-            #     m_spc = (w - margin * 2) / x_div
-            #     row_n = slider_idx // n_x
-            #     x = ((w - margin * 2) / x_div) * (slider_idx % n_x + .5) + margin - m_spc / 2 / group_knobs_rows
-            #     y = cy + (row_n - 1) * spc / group_knobs_rows
-            # else:
-            #     x_div = len(instr.groups) + int(enable_release)
-            #     m_spc = (w - margin * 2) / x_div
-            #     x = ((w - margin * 2) / x_div) * (slider_idx + .5) + margin - spc / 2
-            #     y = cy - spc / 2
-
             n_x = math.ceil(len(instr.groups) / max(1, group_knobs_rows))
             row_n = slider_idx // n_x
-            x_div = n_x + int(enable_release)
+            x_div = n_x
 
-            ctrl_w = min((w - margin * 2) / x_div, gk_h / group_knobs_rows)
+            ctrl_w = min((w - margin * 2) / x_div, gk_h / group_knobs_rows, 80)
 
-            x = ((w - margin * 2) / x_div) * (slider_idx % n_x + .5) + margin - ctrl_w / 2
-            y = gk_cy + (row_n * ctrl_w) - (ctrl_w / 2) * group_knobs_rows
+            er = (0, ew)[enable_release]
 
-            # if adsr_knobs:
-            #     y -= adsr_spc / 4
-
-            # y -= btn_w / 2
+            x = ((w - margin * 2 - er / 2) / x_div) * (slider_idx % n_x + .5) + margin - ctrl_w / 2 - er / 2
+            y = gk_cy + (row_n * ctrl_w * row_spc_adjust) - (ctrl_w / 2) * group_knobs_rows
 
             if ctrlname not in ctrls:
-                # ctrl_w = (w - margin * 2) / x_div / group_knobs_rows
-
                 lbl_h = ctrl_w / 4
+
                 if grp_font_size_limit is None:
                     grp_font_size_limit = limit_font_size(texts=list(grp_label.keys()), text_font=(text_font[0], lbl_h),
                                                           max_length=ctrl_w - 8)
@@ -740,19 +848,36 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                 bg_img = write_text(bg_img, text=ctrlname, text_xy=(x + ctrl_w / 2, top_band_h + y),
                                     text_font=(text_font[0], lbl_h),
                                     text_color=plt_to_rgba(text_plt[0]),
-                                    align='center', anchor='ms', stroke_width=0, scl=2)
+                                    align='center', anchor='md', stroke_width=0, scl=2)
+
+                frames = 49
+                grp_plt_idx = slider_idx % len(group_plt)
+
+                if grp_plt_idx not in grp_knob_paths:
+                    p = resources_dir / f'grp_knob{file_suffix}.png'
+                    rotary_knob(filepath=p, size=int(ctrl_w), scl=knob_scl,
+                                bg_r=2, fg_r=2, dot_r=4, gap=90,
+                                bg_color=track_bg_plt[0], fg_color=group_plt[grp_plt_idx], dot_color=None,
+                                frames=frames)
+                    grp_knob_paths[grp_plt_idx] = p.relative_to(root_dir).as_posix()
 
                 ctrl = Et.SubElement(tab, 'control',
                                      attrib={'x': str(x), 'y': str(y),
                                              'width': str(ctrl_w), 'height': str(ctrl_w),
-                                             'style': 'rotary_vertical_drag',
+                                             'style': 'custom_skin_vertical_drag',
                                              'parameterName': shorten_str(grp), 'label': ctrlname,
-                                             # 'showLabel': 'false', 'textColor': text_plt[0], 'textSize': str(ts),
-                                             'trackForegroundColor': group_plt[slider_idx % len(group_plt)],
+
+                                             'customSkinImage': grp_knob_paths[grp_plt_idx],
+                                             'customSkinNumFrames': str(frames),
+                                             'customSkinImageOrientation': 'vertical',
+
+                                             'showLabel': 'false', 'textColor': text_plt[0], 'textSize': str(ts),
+                                             'trackForegroundColor': group_plt[grp_plt_idx],
                                              'trackBackgroundColor': track_bg_plt[0],
                                              'tooltip': f'{beautify_str(grp)} Volume',
                                              'type': 'float', 'minValue': "0", 'maxValue': "1", 'value': '1',
                                              'defaultValue': '1'})
+
                 Et.SubElement(ctrl, 'binding',
                               attrib={'type': 'amp', 'level': 'tag', 'identifier': grp, 'parameter': 'AMP_VOLUME'})
                 ctrls.append(ctrlname)
@@ -982,21 +1107,6 @@ def create_dspreset(root_dir, smp_subdir='Samples',
                           attrib={'loNote': str(lo), 'hiNote': str(hi), 'color': keyboard_plt[0]})
 
     # Write XML and background image
-    basename = Path(root_dir).stem
-    bg_basename = 'bg'
-    if add_suffix:
-        basename += add_suffix
-        bg_basename += add_suffix
-    filepath = Path(root_dir) / f'{basename}.dspreset'
-    bg_path = Path(root_dir) / f'Resources/{bg_basename}.jpg'
-
-    if auto_increment:
-        filepath = resolve_overwriting(filepath, mode='file', test_run=True)
-        version = Path(filepath).stem.split('_')[-1]
-        bg_path = Path(root_dir) / f'Resources/{bg_basename}_{version}.jpg'
-
-    rel_bg_path = bg_path.relative_to(root_dir).as_posix()
-    ui.set('bgImage', rel_bg_path)
 
     write_xml_to_file(decentsampler, str(filepath))
     write_pil_image(bg_path, im=bg_img)
@@ -1029,9 +1139,16 @@ def get_dspreset_dependencies(dspreset_file):
     tree = Et.parse(dspreset_file)
     root = tree.getroot()
     result = set()
+
     # Retrieve all attribute values qualifying as valid file paths
     for elem in root.iter():
         result |= {v for v in elem.attrib.values() if root_dir.joinpath(v).is_file()}
+
+    # Also include text files and preference files
+    for ext in ('txt', 'spm2ds', 'drds'):
+        files = root_dir.glob(f'*.{ext}')
+        result |= {f.relative_to(root_dir).as_posix() for f in files}
+
     return result
 
 
@@ -1043,7 +1160,7 @@ def create_dslibrary(root_dir):
     :rtype: str
     """
     # Get all dspreset files from root_dir
-    dspreset_files = Path(root_dir).glob('*.dspreset')
+    dspreset_files = [f for f in Path(root_dir).glob('*.dspreset')]
 
     if not dspreset_files:
         return None

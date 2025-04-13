@@ -91,12 +91,12 @@ class Instrument:
 
         return query_df(df=self.df, fltr=fltr, attr=attr)
 
-    def set_limit(self, limit='autox2', mode='shared'):
+    def set_limit(self, limit: list | dict[list] | bool = 'autox2', mode: str = 'shared'):
         """
         Set limit attribute, list or a dict depending on mode
         See limit_from_notes function
-        :param list or str limit:
-        :param str mode: 'shared':list or 'group':dict(list)
+        :param limit:
+        :param mode: 'shared' or 'group'
         """
         if mode == 'shared':
             smp_notes = self.df['note'].unique().tolist()

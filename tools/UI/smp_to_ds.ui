@@ -3425,6 +3425,33 @@ IR samples must be located in a separate subdirectory called 'IR'</string>
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QCheckBox" name="hd_knobs_cb">
+        <property name="toolTip">
+         <string>Render knob atlases with double definition
+A bit longer to render and leads to image strips up to 8K</string>
+        </property>
+        <property name="text">
+         <string>HD Knobs</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_31">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
      </layout>
     </item>
     <item>

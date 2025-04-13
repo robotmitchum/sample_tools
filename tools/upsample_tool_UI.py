@@ -23,7 +23,7 @@ from UI import upsample_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import pad_audio
-from common_ui_utils import add_ctx, FilePathLabel, replace_widget, resource_path, get_user_directory
+from common_ui_utils import add_ctx, FilePathLabel, replace_widget, resource_path, get_user_directory, style_widget
 from file_utils import resolve_overwriting
 from loop_sample import db_to_lin
 from sample_utils import Sample
@@ -32,7 +32,7 @@ from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
@@ -88,8 +88,16 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
 
         # Process buttons
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_pb.setFixedHeight(24)
+        style_widget(self.process_pb, properties={'border-radius': 8})
+
         self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.process_sel_pb.setFixedHeight(24)
+        style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+
         self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
+        self.preview_pb.setFixedHeight(24)
+        style_widget(self.preview_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
     def get_options(self):
         super().get_options()

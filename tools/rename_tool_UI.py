@@ -37,12 +37,12 @@ import sample_utils as st
 from UI import rename_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, add_insert_ctx, get_user_directory, resource_path
+from common_ui_utils import add_ctx, add_insert_ctx, get_user_directory, resource_path, style_widget
 from file_utils import move_to_subdir
 
 # from simple_logger import SimpleLogger
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
@@ -112,7 +112,12 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         # Process buttons
         self.process_sel_pb.clicked.connect(partial(self.do_process, mode='sel'))
+        self.process_sel_pb.setFixedHeight(24)
+        style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+
         self.process_pb.clicked.connect(partial(self.do_process, mode='batch'))
+        self.process_pb.setFixedHeight(24)
+        style_widget(self.process_pb, properties={'border-radius': 8})
 
         # Custom events
 

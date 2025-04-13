@@ -31,12 +31,13 @@ from UI import st_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
 from common_audio_utils import rms
-from common_ui_utils import add_ctx, replace_widget, FilePathLabel, resource_path, resource_path_alt, get_user_directory
+from common_ui_utils import add_ctx, replace_widget, FilePathLabel, style_widget
+from common_ui_utils import resource_path, resource_path_alt, get_user_directory
 from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
@@ -132,8 +133,16 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
         # Process buttons
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_pb.setFixedHeight(24)
+        style_widget(self.process_pb, properties={'border-radius': 8})
+
         self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.process_sel_pb.setFixedHeight(24)
+        style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+
         self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
+        self.preview_pb.setFixedHeight(24)
+        style_widget(self.preview_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
         # Custom events
 

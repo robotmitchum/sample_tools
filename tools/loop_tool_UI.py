@@ -28,7 +28,7 @@ import loop_sample as ls
 from UI import loop_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, resource_path, get_user_directory
+from common_ui_utils import add_ctx, resource_path, get_user_directory, style_widget
 from sample_utils import Sample
 from utils import is_note_name, name_to_note, note_to_hz
 
@@ -140,8 +140,16 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         # Preview / Process buttons
         # Execute "as worker" to prevent multiple execution
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_pb.setFixedHeight(24)
+        style_widget(self.process_pb, properties={'border-radius': 8})
+
         self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.process_sel_pb.setFixedHeight(24)
+        style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+
         self.preview_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='preview')))
+        self.preview_pb.setFixedHeight(24)
+        style_widget(self.preview_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
         # Custom events
 

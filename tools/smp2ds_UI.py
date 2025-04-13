@@ -34,7 +34,7 @@ import smp_to_dspreset as smp2ds
 from UI import smp_to_ds as gui
 from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font
+from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font, style_widget
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
 from jsonFile import read_json
 from smp_to_dspreset import __version__
@@ -212,7 +212,12 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         add_ctx(self.suffix_le, values=['', '_release', '_legato'])
 
         self.create_dsp_pb.clicked.connect(self.create_dspreset)
+        self.create_dsp_pb.setFixedHeight(32)
+        style_widget(self.create_dsp_pb, properties={'border-radius': 12})
+
         self.create_dslib_pb.clicked.connect(partial(self.as_worker, self.create_dslibrary))
+        self.create_dslib_pb.setFixedHeight(32)
+        style_widget(self.create_dslib_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 12})
 
         # Settings
         self.load_settings_a.triggered.connect(self.load_settings)
@@ -359,10 +364,13 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.options.use_reverb = self.use_reverb_cb.isChecked()
         self.options.reverb_wet = self.reverb_wet_dsb.value()
 
+        self.options.knob_scl = (1, 2)[self.hd_knobs_cb.isChecked()]
+
         self.options.max_adsr_knobs = self.max_adsr_dsb.value()
 
     def create_dspreset(self):
         if not self.root_dir:
+            QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
         add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
@@ -403,6 +411,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         if result:
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
+        else:
+            play_notification(audio_file=self.current_dir / 'process_error.flac')
 
     def create_dspreset_process(self, worker, progress_callback, message_callback):
         self.get_options()
@@ -419,6 +429,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
     def create_dslibrary(self, worker, progress_callback, message_callback):
         if not self.root_dir:
+            QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
         result = smp2ds.create_dslibrary(self.root_dir)

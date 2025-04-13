@@ -66,13 +66,13 @@ def get_silence_threshold(bit_depth, as_db=True):
 def convolve(audio, ir, mx_len=False, wet=1.0, comp_vol=True):
     """
     Convolve input audio with an impulse response
-    :param np.array audio: Input audio
-    :param np.array ir: Impulse response
+    :param np.ndarray audio: Input audio
+    :param np.ndarray ir: Impulse response
     :param bool mx_len: Extend length so convolved tail is not cut
     :param float wet: Blend between processed and original audio
     :param bool comp_vol: Compensate rms volume so it does not change after convolution
     :return: Processed audio
-    :rtype: np.array
+    :rtype: np.ndarray
     """
     au_nch, ir_nch = audio.ndim, ir.ndim
     au_l, ir_l = len(audio), len(ir)
@@ -116,13 +116,13 @@ def deconvolve(audio, reference, lambd=1e-3, mode='minmax_sum'):
     """
     Deconvolve audio from a reference sound (typically a sweep) to an impulse response
 
-    :param np.array audio: Convolved audio
-    :param np.array reference: Reference audio
+    :param np.ndarray audio: Convolved audio
+    :param np.ndarray reference: Reference audio
     :param float lambd: Peak signal-to-noise ratio
     :param str mode: Match length mode between audio and ref, "min", "max" or 'minmax_sum' (to alleviate wrap-around)
 
     :return: Resulting IR
-    :rtype: np.array
+    :rtype: np.ndarray
     """
     au_nch, ref_nch = audio.ndim, reference.ndim
 
@@ -173,10 +173,10 @@ def generate_sweep(duration=4, sr=48000, db=-6, start_freq=20, window=True, os=1
     :param int sr: Sample Rate
     :param float db: Volume
     :param float start_freq: in Hz
-    :param nool window: Apply window
+    :param bool window: Apply window
     :param int os: Oversampling factor
     :return: Generated audio
-    :rtype: np.array
+    :rtype: np.ndarray
     """
     length = int(duration * sr)
     end_freq = sr / 2
@@ -209,11 +209,11 @@ def generate_sweep(duration=4, sr=48000, db=-6, start_freq=20, window=True, os=1
 def compensate_ir(audio, mode='rms', sr=48000):
     """
     Compensate impulse response volume so convolved audio keeps approximately the same gain as original
-    :param np.array audio: Input impulse response
+    :param np.ndarray audio: Input impulse response
     :param str mode: Normalization mode, 'peak' or 'rms'
     :param int sr: Sampling rate
     :return: processed IR
-    :rtype: np.array
+    :rtype: np.ndarray
     """
     nch = audio.ndim
     length = len(audio)
@@ -243,7 +243,7 @@ def compensate_ir(audio, mode='rms', sr=48000):
 def pad_audio(audio, before=0, after=0, mode='constant'):
     """
     Simplified multichannel audio padding
-    :param np.array audio:
+    :param np.ndarray audio:
     :param int before:
     :param int after:
     :param str mode:
@@ -325,7 +325,7 @@ def pitch_audio(audio, pitch=0):
     xi = np.linspace(0, 1, num=new_length, endpoint=True)
 
     result = np.zeros(new_length)
-    result = np.column_stack([result, result])
+    result = np.column_stack([result] * nch)
 
     for c in range(nch):
         if nch > 1:

@@ -27,7 +27,7 @@ import split_audio as sa
 from UI import split_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, get_user_directory, resource_path
+from common_ui_utils import add_ctx, get_user_directory, resource_path, style_widget
 from sample_utils import Sample
 
 try:
@@ -100,7 +100,12 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         # Preview / Process buttons
         # Execute "as worker" to prevent multiple execution
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
+        self.process_pb.setFixedHeight(24)
+        style_widget(self.process_pb, properties={'border-radius': 8})
+
         self.process_sel_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='sel')))
+        self.process_sel_pb.setFixedHeight(24)
+        style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
     def setup_pitch_mode_cmb(self, use_crepe=False):
         """

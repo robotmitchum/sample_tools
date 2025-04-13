@@ -58,3 +58,21 @@ def apply_dark_theme(widget):
     widget.setPalette(dark_plt)
 
     QToolTip.setPalette(dark_plt)
+
+    # Also style QMessageBox buttons
+    widget.setStyleSheet("""
+            QMessageBox QPushButton {
+                background-color: #474747;
+                color: #dfdfdf;
+                border: 1px solid #5c5c5c;
+                padding: 5px 10px;
+                border-radius: 4px;
+                min-width: 80px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #5e5e5e;
+            }
+            QMessageBox QPushButton:pressed {
+                background-color: #3d3d3d;
+            }
+        """)
