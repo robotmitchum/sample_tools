@@ -1,7 +1,7 @@
 # coding:utf-8
 """
     :module: screen_caps.py
-    :description: Quick and dirty batch screen capture for all the tools to update the documentation more easily
+    :description: Quick and dirty batch screen capture to update the documentation more easily
     :author: Michel 'Mitch' Pecqueur
     :date: 2025.04
 """
@@ -43,6 +43,8 @@ class ScreenCap(QMainWindow):
         self.script_modules = {}
 
         self.batch_capture()
+
+        QTimer.singleShot(1000, partial(self.close))
 
     def batch_capture(self):
         for script in self.scripts:

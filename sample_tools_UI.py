@@ -49,6 +49,8 @@ def resource_path(relative_path, as_str=True):
 class SampleToolsUi(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+        self.confirm_close = False
+
         self.setObjectName('sample_tools_ui')
         self.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.setWindowTitle(f'Sample Tools v{__version__}')
@@ -197,13 +199,14 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         return self
 
     def closeEvent(self, event):
-        confirm_dlg = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Are you sure you want to quit?',
-                                                     Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
-        if confirm_dlg == Qt.QMessageBox.Yes:
-            print(f'{self.objectName()} closed')
-            event.accept()
-        else:
-            event.ignore()
+        if self.confirm_close:
+            confirm_dlg = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Are you sure you want to quit?',
+                                                         Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
+            if confirm_dlg == Qt.QMessageBox.Yes:
+                print(f'{self.objectName()} closed')
+                event.accept()
+            else:
+                event.ignore()
 
 
 def run(mw=SampleToolsUi, parent=None):
@@ -259,6 +262,7 @@ if __name__ == '__main__':
 
     try:
         win = run()
+        win.confirm_close = True
 
     except Exception as e:
         print(e)
