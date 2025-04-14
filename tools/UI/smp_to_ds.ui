@@ -3437,6 +3437,25 @@ A bit longer to render and leads to image strips up to 8K</string>
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="estimate_delay_cb">
+        <property name="toolTip">
+         <string>Estimate sample set delay and write it in the info tool tip (circled 'i' in the corner)
+
+This does not affect the preset generation in any way
+However, this is a useful information for instruments with a slower attack (typically brass and winds)
+You can then use this value as an offset in your DAW to compensate the perceived delay in the samples
+
+Adds some overhead when generating the preset
+(performs an estimate for each samples then average the results)
+
+Not required for tightly trimmed samples with sharp percussive attacks</string>
+        </property>
+        <property name="text">
+         <string>Estimate Delay</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer_31">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

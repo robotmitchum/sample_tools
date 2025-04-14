@@ -23,6 +23,7 @@ from common_math_utils import linstep, lerp, clamp
 from common_ui_utils import shorten_str, beautify_str
 from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
+from estimate_offset import sampleset_offset
 
 __ds_version__ = '1.12.11'
 __version__ = '1.4.1'
@@ -69,6 +70,8 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                     knob_scl: float = 1.0,
 
                     add_suffix: str = '', auto_increment: bool = True,
+
+                    estimate_delay: bool = False,
 
                     worker=None, progress_callback=None, message_callback=None):
     """
@@ -145,6 +148,8 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
     :param add_suffix: Add suffix to created file
     :param auto_increment: Increment file to avoid overwriting
+
+    :param estimate_delay: Estimate sample set delay and append information to info tool tip
 
     :param Worker worker:
     :param progress_callback:
@@ -327,10 +332,15 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                 line = line.strip()
                 if line:
                     info_tooltip += f'{line}\n'
-        info_tooltip += '\n'
     else:
         info_tooltip = f'Samplist - {beautify_str(getpass.getuser())}\n'
-        info_tooltip += f"UI - {beautify_str(Path(__file__).stem)} {__version__}\n\n"
+        info_tooltip += f"UI - {beautify_str(Path(__file__).stem)} {__version__}\n"
+
+    if estimate_delay:
+        delay = sampleset_offset(input_path=instr.df['path'].tolist(), verbose=True)
+        info_tooltip += f'Negative Delay : {-round(delay)} ms\n'
+
+    info_tooltip += '\n'
 
     symbol_path = current_dir / 'symbols/info.png'
     bg_img = apply_symbol(bg_img, symbol_path=symbol_path, pos_xy=(w - info_w - 8, top_band_h + 8),

@@ -1063,6 +1063,9 @@ class Ui_smp_to_ds_ui(object):
         self.hd_knobs_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.hd_knobs_cb.setObjectName("hd_knobs_cb")
         self.reverb_lyt.addWidget(self.hd_knobs_cb)
+        self.estimate_delay_cb = QtWidgets.QCheckBox(self.centralwidget)
+        self.estimate_delay_cb.setObjectName("estimate_delay_cb")
+        self.reverb_lyt.addWidget(self.estimate_delay_cb)
         spacerItem60 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.reverb_lyt.addItem(spacerItem60)
         self.centralwidget_lyt.addLayout(self.reverb_lyt)
@@ -1422,6 +1425,17 @@ class Ui_smp_to_ds_ui(object):
         self.hd_knobs_cb.setToolTip(_translate("smp_to_ds_ui", "Render knob atlases with double definition\n"
 "A bit longer to render and leads to image strips up to 8K"))
         self.hd_knobs_cb.setText(_translate("smp_to_ds_ui", "HD Knobs"))
+        self.estimate_delay_cb.setToolTip(_translate("smp_to_ds_ui", "Estimate sample set delay and write it in the info tool tip (circled \'i\' in the corner)\n"
+"\n"
+"This does not affect the preset generation in any way\n"
+"However, this is a useful information for instruments with a slower attack (typically brass and winds)\n"
+"You can then use this value as an offset in your DAW to compensate the perceived delay in the samples\n"
+"\n"
+"Adds some overhead when generating the preset\n"
+"(performs an estimate for each samples then average the results)\n"
+"\n"
+"Not required for tightly trimmed samples with sharp percussive attacks"))
+        self.estimate_delay_cb.setText(_translate("smp_to_ds_ui", "Estimate Delay"))
         self.add_suffix_cb.setText(_translate("smp_to_ds_ui", "Add Suffix"))
         self.suffix_le.setToolTip(_translate("smp_to_ds_ui", "Add custom suffix to disambiguate a preset variant"))
         self.suffix_le.setPlaceholderText(_translate("smp_to_ds_ui", "_suffix"))

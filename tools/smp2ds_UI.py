@@ -368,6 +368,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.options.max_adsr_knobs = self.max_adsr_dsb.value()
 
+        self.options.estimate_delay = self.estimate_delay_cb.isChecked()
+
     def create_dspreset(self):
         if not self.root_dir:
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
