@@ -47,8 +47,8 @@ def resource_path(relative_path, as_str=True):
 
 
 class SampleToolsUi(QtWidgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.setObjectName('sample_tools_ui')
         self.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.setWindowTitle(f'Sample Tools v{__version__}')
@@ -178,6 +178,24 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         self.running[name] = tool
         print(f'{name} launched')
 
+    def run(self):
+        # Center on screen not on its parent
+        parent = self.parent()
+        if parent:
+            screen = self.parent().screen()
+        else:
+            screen = self.screen()
+
+        self.show()
+
+        screen_geo = screen.geometry()
+        # Move window up in the screen
+        x = screen_geo.x() + (screen_geo.width() - self.width()) // 2
+        y = screen_geo.y() + int(screen_geo.height() * .1 - self.height() / 2)
+        self.move(x, y)
+
+        return self
+
     def closeEvent(self, event):
         confirm_dlg = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Are you sure you want to quit?',
                                                      Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
@@ -186,6 +204,11 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+
+def run(mw=SampleToolsUi, parent=None):
+    window = mw(parent=parent)
+    return window.run()
 
 
 class IconButton(QtWidgets.QPushButton):
@@ -235,14 +258,10 @@ if __name__ == '__main__':
     screen_geo = current_screen.geometry()
 
     try:
-        window = SampleToolsUi()
-        # Move window up in the screen
-        x = screen_geo.x() + (screen_geo.width() - window.width()) // 2
-        y = screen_geo.y() + int(screen_geo.height() * .1 - window.height() / 2)
-        window.move(x, y)
-        window.show()
-        sys.exit(app.exec_())
+        win = run()
 
     except Exception as e:
         print(e)
         # logger.log_exception(e)
+
+    sys.exit(app.exec_())
