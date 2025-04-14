@@ -68,6 +68,10 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     apply_dark_theme(app)
 
+    font = app.font()
+    font.setPointSize(11)
+    app.setFont(font)
+
     window = ScreenCap()
     window.show()
 
