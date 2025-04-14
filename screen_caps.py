@@ -6,15 +6,16 @@
     :date: 2025.04
 """
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-import sys
-from pathlib import Path
-from functools import partial
 import importlib
-from dark_fusion_style import apply_dark_theme
 import os
+import sys
+from functools import partial
+from pathlib import Path
+
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
+from dark_fusion_style import apply_dark_theme
 
 
 class ScreenCap(QMainWindow):
