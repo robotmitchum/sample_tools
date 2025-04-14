@@ -28,9 +28,7 @@ def sampleset_offset(input_path: str | list, smp_fmt: tuple[str, ...] = ('wav', 
     :param smp_fmt:
     :param verbose:
     :param kwargs: Optional keyword arguments supported by sub-function estimate offset
-
-    :return:
-    :rtype: int or float
+    :return: Average offset
     """
 
     if isinstance(input_path, str):
@@ -62,7 +60,8 @@ def sampleset_offset(input_path: str | list, smp_fmt: tuple[str, ...] = ('wav', 
         return mean
 
 
-def estimate_offset(audio: np.ndarray, sr: int, amp: float = .5, factor: float = 1.0, rtyp: str = 'ms') -> float:
+def estimate_offset(audio: np.ndarray, sr: int, amp: float = .5, factor: float = 1.0,
+                    rtyp: str | None = 'ms') -> float:
     """
     Estimate sample time offset from amplitude envelope
 
@@ -89,7 +88,7 @@ def estimate_offset(audio: np.ndarray, sr: int, amp: float = .5, factor: float =
     # Find where the attack ends
     attack_end = np.argwhere(np.diff(envelope) <= 0).reshape(-1)
 
-    # Find where the audio reach a given factor of the attack end volume
+    # Find where the audio reaches a given factor of the attack end volume
     start_amp = envelope[attack_end[0]] * amp
     offset = np.argwhere(envelope >= start_amp).reshape(-1)[0] * factor
 
