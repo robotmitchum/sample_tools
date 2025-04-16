@@ -271,9 +271,42 @@ def dial_knob(filepath: str | Path | None = 'dial_knob.png',
     im.save(str(filepath))
     return filepath
 
-# rotary_knob('rotary_knob.png', fg_r=1.5, bg_r=1.5, dot_r=4, bg_move=True, start_end_hide=True)
-# dial_knob('dial_knob.png', bg_r=None, bg_stroke_r=None, mark_r=2, mark_p=(12, 32), scl=2.5, frames=5,
-#           bg_color='7f7f7f7f')
-# linear_slider(shape=(16, 160), dot_r=4)
-# result = gamma_rgb(result, 2.0)
-# result = grade_rgb(result, (.25, .5, 1.), (1., .5, .25))
+
+def round_button(filepath: str | Path | None = 'round_button.png',
+                 size: int = 64, margin: float = 1, scl: float = 1,
+                 bg_r: float | None = None,
+                 bg_color: str = 'ffffffff'):
+    """
+    Render a basic round button
+
+    :param filepath: Return array if None
+
+    :param size: Image size
+    :param margin: Margin around the image in pixels
+    :param scl: Scale factor
+
+    :param bg_r: radius in pixels
+
+    :param bg_color: argb hex color
+
+    :return: Image path or array
+    """
+    shape = np.abs(np.array((size, size)) * scl).astype(np.uint).tolist()
+    sx, sy = shape
+
+    p = np.array([sx / 2 - .5] * 2)
+
+    max_r = sx / 2 - margin
+    r = min((bg_r, max_r)[bg_r is None], max_r)
+
+    df = point_df(shape, p) - r
+    alpha = test_df(df, 0)
+
+    result = extend_edge(fill_alpha(alpha, plt_to_rgba(bg_color)))
+
+    if not filepath:
+        return result
+
+    im = np_to_pil(result)
+    im.save(str(filepath))
+    return filepath

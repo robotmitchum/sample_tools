@@ -211,40 +211,6 @@ def write_pil_image(filepath, im, quality=95):
     return filepath
 
 
-def basic_button(filepath, size=32, rgba=(1, 1, 1, 1), overwrite=True):
-    """
-    Render an anti-aliased circle
-
-    :param str filepath:
-    :param int size:
-    :param list or tuple rgba:
-    :param bool overwrite:
-
-    :return:
-    :rtype: str
-    """
-    if not overwrite and Path(filepath).is_file():
-        return filepath
-    elif overwrite and Path(filepath).is_file():
-        os.remove(filepath)
-
-    r = size / 2
-
-    y, x = np.ogrid[:size, :size]
-    cx, cy = size / 2 - .5, size / 2 - .5
-    d = np.sqrt((x - cx) ** 2 + (y - cy) ** 2)
-    alpha = 1 - linstep(r - 2, r - 1, d)
-
-    img = np.zeros((size, size, 4))
-    img[:, :] = np.array(rgba)
-    img[:, :, -1] = alpha * rgba[-1]
-
-    im = Image.fromarray(np.round(img * 255).astype(np.uint8), mode='RGBA')
-    im.save(filepath)
-
-    return filepath
-
-
 def blank_button(filepath, size=32, overwrite=True):
     """
     Write a blank square image

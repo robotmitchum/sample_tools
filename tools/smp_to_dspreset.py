@@ -17,7 +17,7 @@ from xml.dom import minidom
 
 import instrument_utils as iu
 from bitmap_knobs import *
-from color_utils import (adjust_palette, basic_background, basic_button, blank_button, write_pil_image,
+from color_utils import (adjust_palette, basic_background, blank_button, write_pil_image,
                          write_text, limit_font_size, apply_symbol, hex_to_rgba, rgba_to_hex, plt_to_rgba)
 from common_math_utils import linstep, lerp, clamp
 from common_ui_utils import shorten_str, beautify_str
@@ -288,12 +288,11 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
     btn_w = 16
     if add_grp_knobs:
         for i, plt in enumerate([track_bg_plt[0], mute_btn_plt[0]]):
-            rgba = np.array([1, 1, 1, 1]) * np.roll(hex_to_rgba(plt), -1).tolist()
             btn_path = resources_dir / f'grp_btn{i}.png'
-            btn_path = basic_button(str(btn_path), size=btn_w * 2, rgba=rgba)
+            btn_path = round_button(btn_path, size=btn_w, bg_color=plt, scl=2)
             btn_path = Path(btn_path).relative_to(root_dir)
             btn_paths.append(str(btn_path.as_posix()))
-    btn_w /= row_spc_adjust
+    # btn_w /= row_spc_adjust
 
     # Round-Robin offsets (Fake Round-Robin)
     rr_offset = rr_offset or [0]
@@ -893,6 +892,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                 ctrls.append(ctrlname)
 
                 # Mute button
+                btn_w = (ctrl_w / 80) * 16
                 btn = Et.SubElement(tab, 'button',
                                     attrib={'x': str(x + (ctrl_w - btn_w) // 2), 'y': str(y + ctrl_w - btn_w // 2),
                                             'style': 'image', 'width': str(btn_w), 'height': str(btn_w),
