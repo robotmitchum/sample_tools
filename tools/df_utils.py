@@ -143,7 +143,7 @@ def sdf_from_alpha(alpha: np.ndarray,
     """
     alpha_upsampled = np.repeat(np.repeat(alpha, scl, axis=0), scl, axis=1)
 
-    kernel = 1 - np.abs(np.linspace(-1, 1, scl * 2)[1:-1])
+    kernel = 1 - np.abs(np.linspace(-1, 1, scl * 2)[1:-1])  # Triangle filter kernel for up+scaling
     kernel /= kernel.sum()
 
     for i in range(2):
@@ -225,7 +225,7 @@ def fill_alpha(arr: np.ndarray, rgba: tuple[float, float, float, float] = (1, 1,
 
 def unpremult(arr: np.ndarray, th_alpha: bool = False) -> np.ndarray:
     """
-    Convert image as straight/un-matted by dividing rgb by alpha
+    Convert image to straight/un-matted by dividing rgb by alpha
     :param arr: input rgba array
     :param th_alpha: Apply threshold to alpha, used by edge extension
     """
@@ -241,7 +241,7 @@ def unpremult(arr: np.ndarray, th_alpha: bool = False) -> np.ndarray:
 
 def extend_edge(arr: np.ndarray, iterations: int = 3) -> np.ndarray:
     """
-    Cheap edge extension, repeated blur and unpremult
+    Cheap edge extension, repeated blur and un-premult
     :param arr: rgba array
     :param iterations:
     """
@@ -251,7 +251,7 @@ def extend_edge(arr: np.ndarray, iterations: int = 3) -> np.ndarray:
         blurred = box_blur(result, size=3)
         unpr = unpremult(blurred, th_alpha=True)
         result = merge(result, unpr)
-    result[..., -1] = np.copy(arr[..., -1])  # Restore original alpha
+    result[..., -1] = np.copy(arr[..., -1])  # Copy original alpha
     return result
 
 
@@ -271,7 +271,6 @@ def box_blur(image, size=3):
 
 
 # Auxiliary definitions
-
 
 def gen_uv(shape: tuple[int, int], nrm: bool = False) -> np.ndarray:
     """
