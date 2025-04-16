@@ -3426,6 +3426,34 @@ IR samples must be located in a separate subdirectory called 'IR'</string>
        </spacer>
       </item>
       <item>
+       <widget class="QCheckBox" name="multi_out_cb">
+        <property name="toolTip">
+         <string>Enable separate group output to AUX channels
+
+NOTE: instrument level effects such as reverb and LPF are not present in the AUX channels</string>
+        </property>
+        <property name="text">
+         <string>Multi Output</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_32">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QCheckBox" name="hd_knobs_cb">
         <property name="toolTip">
          <string>Render knob atlases with double definition

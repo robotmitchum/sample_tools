@@ -368,6 +368,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.options.max_adsr_knobs = self.max_adsr_dsb.value()
 
+        self.options.multi_out = self.multi_out_cb.isChecked()
+
         self.options.estimate_delay = self.estimate_delay_cb.isChecked()
 
     def create_dspreset(self):

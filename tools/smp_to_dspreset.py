@@ -71,6 +71,8 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
                     add_suffix: str = '', auto_increment: bool = True,
 
+                    multi_out: bool = True,
+
                     estimate_delay: bool = False,
 
                     worker=None, progress_callback=None, message_callback=None):
@@ -148,6 +150,8 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
     :param add_suffix: Add suffix to created file
     :param auto_increment: Increment file to avoid overwriting
+
+    :param multi_out: Enable multiple output
 
     :param estimate_delay: Estimate sample set delay and append information to info tool tip
 
@@ -541,7 +545,6 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                               'translation': "linear", 'translationOutputMin': "0", 'translationOutputMax': "1"})
 
     # - ADSR Knobs -
-    adsr_spc = 64
     if adsr_knobs:
         prms = ['ENV_ATTACK', 'ENV_DECAY', 'ENV_SUSTAIN', 'ENV_RELEASE']
         tooltips = ['Attack', 'Decay', 'Sustain', 'Release']
@@ -574,7 +577,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
             adsr_knob = Et.SubElement(tab, 'labeled-knob',
                                       attrib={'x': str(x - adsr_spc / 2), 'y': str(y),
                                               'width': str(adsr_spc), 'height': str(adsr_spc),
-                                              'parameterName': 'reverb', 'type': 'percent',
+                                              'parameterName': knob_name, 'type': 'percent',
                                               'style': 'custom_skin_vertical_drag',
 
                                               'customSkinImage': adsr_path.relative_to(root_dir).as_posix(),
@@ -635,7 +638,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
         knob_h = 80
 
         if add_grp_knobs:
-            avt_h = 40
+            avt_h = 40  # Amplitude Velocity Tracking Height
             gk_h = 120 / row_spc_adjust
             gk_cy = gk_h / 2 + avt_h
 
@@ -765,6 +768,15 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
             else:
                 grp_attrib['silencedBy'] = grp
 
+        # - Multi-Output -
+        slider_idx = instr.groups.index(grp)
+
+        if multi_out:
+            grp_attrib['output1Target'] = 'MAIN_OUTPUT'
+            grp_attrib['output1Volume'] = '1.0'
+            grp_attrib['output2Target'] = f'AUX_STEREO_OUTPUT_{slider_idx + 1}'
+            grp_attrib['output2Volume'] = '1.0'
+
         # - Group creation -
 
         ds_group = Et.SubElement(groups, 'group', attrib=grp_attrib)
@@ -827,7 +839,6 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
         # - Group Volume -
         if add_grp_knobs:
             ctrlname = grp_label[grp]
-            slider_idx = instr.groups.index(grp)
 
             avt_h = 40
 
