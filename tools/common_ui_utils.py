@@ -530,6 +530,3 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
         ss += f'\n{wid_class}:pressed {{color: {text_color.name()}; background-color: rgb{pressed_bg_color};}}'
 
     widget.setStyleSheet(ss)
-
-
-print(beautify_str('bossDR-110'))
