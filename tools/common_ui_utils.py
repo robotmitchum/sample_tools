@@ -450,20 +450,19 @@ def shorten_str(name, sep='_'):
     return result
 
 
-def beautify_str(name, sep='_'):
+def beautify_str(name: str, sep: str = '_') -> str:
     """
     Transform a camelCased string or a string with separators / spaces into a 'beautified' string
     Example : 'thisIs1Example' -> 'This Is 1 Example'
 
-    :param str name: String to beautify
-    :param str sep: Separator to remove
+    :param name: String to beautify
+    :param sep: Separator to remove
 
     :return: beautified string
-    :rtype: str
     """
     res = name.replace(sep, ' ')
-    res = re.sub(r'(?<![A-Z])(?=[A-Z])', ' ', res)  # Insert spaces at caps not preceded by another cap
-    res = re.sub(r'(?<!\d)(?=\d)', ' ', res)  # Insert spaces at digits not preceded by another digit
+    res = re.sub(r'(?<![A-Z\-])(?=[A-Z])', ' ', res)
+    res = re.sub(r'(?<![\d\-])(?=\d)', ' ', res)
     res = [r[0].upper() + r[1:] for r in res.split()]
     result = ' '.join(res)
     return result
@@ -531,3 +530,6 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
         ss += f'\n{wid_class}:pressed {{color: {text_color.name()}; background-color: rgb{pressed_bg_color};}}'
 
     widget.setStyleSheet(ss)
+
+
+print(beautify_str('bossDR-110'))
