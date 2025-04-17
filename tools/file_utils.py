@@ -93,8 +93,3 @@ def move_to_subdir(files, sub_dir=None, test_run=False):
             Path(d).rmdir()
 
     return result
-
-
-fp = r"D:\APPS\AUDIO\VSTi\DS NK SF2 Instruments\Boss DR-110\Samples\clap.flac"
-foo = resolve_overwriting(fp, test_run=False)
-print(foo)
