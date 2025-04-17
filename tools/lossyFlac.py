@@ -73,7 +73,7 @@ def lossy_flac(input_file, output_file, quality='X', no_overwriting=True):
 
     # Convert result to flac
     lossy_audio, sr = sf.read(str(tmp_lossy_wav))
-    if no_overwriting and str(output_file) == input_file:
+    if no_overwriting and Path(output_file).resolve() == Path(input_file).resolve():
         resolve_overwriting(input_file, mode='dir', dir_name='backup_', test_run=False)
     sf.write(str(output_file), lossy_audio, samplerate=sr, subtype=subtype)
 

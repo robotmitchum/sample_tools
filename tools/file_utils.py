@@ -22,20 +22,17 @@ def resolve_overwriting(input_path, mode='dir', dir_name='backup_', test_run=Fal
     """
     p = Path(input_path)
     parent, stem, ext = p.parent, p.stem, p.suffix
-
     i = 0
     new_path = p
     while new_path.is_file():
         i += 1
         if mode == 'file':
-            new_path = parent.joinpath(f'{stem}_{i:03d}{ext}')
+            new_path = parent / f'{stem}_{i:03d}{ext}'
         else:
-            new_path = parent.joinpath(f'{dir_name}{i:03d}/{stem}{ext}')
-
-    if not test_run and Path(input_path) != Path(new_path):
+            new_path = parent / f'{dir_name}{i:03d}/{stem}{ext}'
+    if test_run is False and Path(input_path).resolve() != new_path.resolve():
         new_path.parent.mkdir(exist_ok=True)
         Path(input_path).rename(new_path)
-
     return new_path
 
 
@@ -96,3 +93,8 @@ def move_to_subdir(files, sub_dir=None, test_run=False):
             Path(d).rmdir()
 
     return result
+
+
+fp = r"D:\APPS\AUDIO\VSTi\DS NK SF2 Instruments\Boss DR-110\Samples\clap.flac"
+foo = resolve_overwriting(fp, test_run=False)
+print(foo)

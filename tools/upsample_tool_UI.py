@@ -265,7 +265,7 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
                 # Write file
 
                 if mode != 'preview':
-                    if self.no_overwriting_cb.isChecked() and str(filepath) == input_file:
+                    if self.no_overwriting_cb.isChecked() and Path(filepath).resolve() == Path(input_file).resolve():
                         resolve_overwriting(input_file, mode='dir', dir_name='backup_', test_run=False)
 
                     # Soundfile only recognizes aiff and not aif when writing

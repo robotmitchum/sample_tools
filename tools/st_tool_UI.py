@@ -256,7 +256,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                     bit_depth = int(options['bit_depth'])
 
                 suffix = options['suffix']
-                filepath = Path.joinpath(Path(parent), f'{stem}{suffix}.{ext}')
+                filepath = Path(parent) / f'{stem}{suffix}.{ext}'
 
                 self.temp_audio.audio = ps.pseudo_stereo(data, sr, delay=options['delay'], mode=options['mode'],
                                                          seed=options['seed'], ir_file=options['ir_path'],
@@ -267,7 +267,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                 self.temp_audio.info = info
 
                 if mode != 'preview':
-                    if self.no_overwriting_cb.isChecked() and str(filepath) == input_file:
+                    if self.no_overwriting_cb.isChecked() and filepath.resolve() == Path(input_file).resolve():
                         resolve_overwriting(input_file, mode='dir', dir_name='backup_', test_run=False)
 
                     # Soundfile only recognizes aiff and not aif when writing

@@ -258,7 +258,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
     if ext == 'flac':
         bit_depth = min(bit_depth, 24)
 
-    if no_overwriting and str(output_file) == input_file:
+    if no_overwriting and Path(output_file).resolve() == Path(input_file).resolve():
         resolve_overwriting(input_file, mode='dir', dir_name='backup_', test_run=False)
 
     # Write file
