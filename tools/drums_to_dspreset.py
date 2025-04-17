@@ -521,7 +521,7 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples', data:
         print(f'Group: {grp_name}')
 
         grp_attrib['name'] = grp_name
-        grp_attrib['tags'] = 'expression'
+        grp_attrib['tags'] = f'expression,{grp_name}'
         grp_samples = grp['samples']
         label_text = grp.get('label', shorten_str(grp_name))
 
@@ -535,14 +535,14 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples', data:
         choke_indices = grp.get('choke', [])
         # choke_indices.append(g)  # Self-Choke
         choke_names = [group_names[c] for c in sorted(list(set(choke_indices)))]
-        grp_attrib['silencedBy'] = ','.join(choke_names)
+        grp_attrib['silencedByTags'] = ','.join(choke_names)
         grp_attrib['silencingMode'] = 'fast'
 
         # Round-Robin mode
         if use_seq:
             grp_attrib['seqMode'] = seq_mode or 'round_robin'
-        else:
-            grp_attrib['seqMode'] = 'always'
+        # else:
+        #     grp_attrib['seqMode'] = 'always'
 
         # Note and tuning
         note = grp.get('note', g + 36)
