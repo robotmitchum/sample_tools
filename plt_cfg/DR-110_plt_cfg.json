@@ -1,0 +1,35 @@
+{
+  "textColor": {
+    "0": "ff322e34"
+  },
+  "trackBackgroundColor": {
+    "0": "ff322e34"
+  },
+  "control": {
+    "expression": "ff15a0e0",
+    "modulation": "ff15a0e0",
+    "reverb": "ff15a0e0"
+  },
+  "other": {
+    "ampVelTrack": "ff1e77c7",
+    "release": "ff1e77c7"
+  },
+  "backgroundRamp": {
+    "0": "fffefdff",
+    "1": "ffbfbcbe"
+  },
+  "group": {
+    "0": "ff15a0e0"
+  },
+  "muteButton": {
+    "0": "fff86d00"
+  },
+  "backgroundText": {
+    "0": "ff1e77c7",
+    "1": "ff2f2c32"
+  },
+  "keyboard": {
+    "0": "ffa8b7a9",
+    "1": "ff15a0e0"
+  }
+}
