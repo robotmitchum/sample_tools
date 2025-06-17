@@ -25,39 +25,45 @@ from common_math_utils import q_log, q_exp
 importlib.reload(pd)
 
 
-def split_audio(input_file='', output_file='', bit_depth=None,
-                suffix=(), pitch_mode='pyin', use_note=0, use_pitch_fraction=True,
-                extra_suffix='',
+def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | None = None,
+                suffix: list[str] | None = (), pitch_mode: str = 'pyin', use_note: int | None = 0,
+                use_pitch_fraction: bool = True,
+                extra_suffix: str | None = '',
                 split_db=-60, fade_db=-48, min_duration=.1,
-                dither=True, dc_offset=True,
-                write_cue_file=True, dry_run=True, progress_bar=None,
-                worker=None, progress_callback=None, message_callback=None, range_callback=None):
+                dither: bool = False, dc_offset: bool = True,
+                write_cue_file=True, dry_run=True, progress_bar: None = None,
+
+                worker=None, progress_callback=None, message_callback=None, range_callback=None) -> list[str]:
     """
-    :param str input_file:
-    :param str output_file:
+    :param input_file:
+    :param output_file:
     :param list or tuple or None suffix:
-    :param str or None extra_suffix:
+    :param extra_suffix:
 
-    :param int or None bit_depth: If None use input bit-depth
-    :param bool write_cue_file: Write a non-split file with cues
+    :param bit_depth: If None use input bit-depth
+    :param write_cue_file: Write a non-split file with cues
 
-    :param bool dc_offset:
-    :param bool dither: Apply triangular noise to improve quantization distortion when writing to 16 bits
+    :param dc_offset:
+    :param dither: Apply triangular noise to improve quantization distortion when writing to 16 bits
     Only applied to fades
 
     :param float split_db: Split threshold
     :param float or None fade_db: Fade threshold
     :param float min_duration: Minimum silence/sound duration
 
-    :param str pitch_mode: 'corr' (fastest), 'pyin' (average) or 'crepe' (slow)
-    :param int use_note: 0 disabled, 1 MIDI note number, 2 note name
-    :param bool use_pitch_fraction: Set pitch fraction to 'smpl'
+    :param pitch_mode: 'corr' (fastest), 'pyin' (average) or 'crepe' (slow)
+    :param use_note: 0 disabled, 1 MIDI note number, 2 note name
+    :param use_pitch_fraction: Set pitch fraction to 'smpl'
 
-    :param QProgressBar or None progress_bar: Optional
+    :param progress_bar: Optional, only used to query info about the progress bar
+    :param worker: Worker class (unused)
+    :param progress_callback:
+    :param message_callback: (unused)
+    :param range_callback:
 
     :param bool dry_run: Simulate process without writing anything, for debugging
-    :return:
-    :rtype: list
+
+    :return: List of resulting files
     """
     audio, sr = sf.read(input_file)
 
@@ -66,8 +72,8 @@ def split_audio(input_file='', output_file='', bit_depth=None,
     else:
         mono_audio = audio
 
-    window_size = max(int(min_duration * sr / 2), 64)
-    envelope = envelope_transform(mono_audio, w=window_size, mode='max')
+    window_size = max(int(min_duration * sr / 4), 64)
+    envelope = envelope_transform(mono_audio, w=window_size, mode='rms')
     region_data = find_regions(envelope, sr, db=split_db, min_duration=min_duration)
     region_data = trim_regions(md=region_data, data=mono_audio, db=split_db)
 
@@ -77,13 +83,17 @@ def split_audio(input_file='', output_file='', bit_depth=None,
     name, ext = p.stem, p.suffix[1:]
     path = p.parent
 
-    if not os.path.exists(path) and not dry_run:
+    if not path.exists() and not dry_run:
         os.makedirs(path, exist_ok=True)
 
+    # Get input subtype
+    subtype = sf.info(input_file).subtype
+
+    # Cue file
     if write_cue_file:
         cue_file_path = Path.joinpath(path, f'{name}_cues.wav')
         if not dry_run:
-            sf.write(cue_file_path, audio, samplerate=sr)
+            sf.write(cue_file_path, audio, samplerate=sr, subtype=subtype)
             append_markers(str(cue_file_path), cues.tolist())
         else:
             print(f'Cue file: {cue_file_path}')
@@ -91,8 +101,8 @@ def split_audio(input_file='', output_file='', bit_depth=None,
     # - Bit Depth -
     subtypes = {'PCM_16': 16, 'PCM_24': 24, 'FLOAT': 32}
     bd_dict = {v: k for k, v in subtypes.items()}
+
     if bit_depth is None:
-        subtype = sf.info(input_file).subtype
         bit_depth = subtypes[subtype]
     # flac supports 24 bits at most
     if ext == 'flac':
@@ -164,21 +174,21 @@ def split_audio(input_file='', output_file='', bit_depth=None,
             incr += 1
             filepath = Path.joinpath(Path(path), f'{p.stem}_{incr:03d}.{ext}')
 
+        if dc_offset:
+            dc_offset = np.mean(data)
+            data -= dc_offset
+
         if fade_db is not None:
-            _, fade_cues = trim_audio(data, db=fade_db)
+            _, fade_cues = trim_audio(data, db=fade_db, prevent_empty=False)
+            if fade_cues is not None:
+                orig_data = np.array(data)
+                data = apply_fade(data, fade_in=(0, fade_cues[0], 'log'),
+                                  fade_out=(fade_cues[1], len(data) - 1 - fade_cues[1], 'log'))
 
-            if dc_offset:
-                dc_offset = np.mean(data)
-                data -= dc_offset
-
-            orig_data = np.array(data)
-            data = apply_fade(data, fade_in=(0, fade_cues[0], 'log'),
-                              fade_out=(fade_cues[1], len(data) - 1 - fade_cues[1], 'log'))
-
-            if dither is True and bit_depth < 24:
-                dither_mask = (np.abs(orig_data - data) > 0).astype(np.float64)
-                dither = dither_mask * np.random.triangular(-1, 0, 1, data.shape)
-                data = np.round(data * mx + dither).astype(np.int16)
+                if dither is True and bit_depth < 24:
+                    dither_mask = (np.abs(orig_data - data) > 0).astype(np.float64)
+                    dither = dither_mask * np.random.triangular(-1, 0, 1, data.shape)
+                    data = np.round(data * mx + dither).astype(np.int16)
 
         if not dry_run:
             # Soundfile only recognizes aiff and not aif when writing
@@ -214,41 +224,49 @@ def split_audio(input_file='', output_file='', bit_depth=None,
 # Auxiliary defs
 
 
-def trim_audio(data, db=-60):
+def trim_audio(data: np.ndarray, db: float = -60, prevent_empty: bool = True) -> namedtuple:
     """
     Remove trailing silence
-    :param np.array data: Input audio
-    :param float db: Silence threshold in dB
-    :return: processed audio
-    :rtype: np.array
+    :param data: Input audio
+    :param db: Silence threshold in dB
+    :param prevent_empty: Return original audio if trimming fails otherwise returns (None,None)
+    :return: Return processed audio and new cues as a named tuple (data,cues)
     """
     if data.ndim > 1:
         mono_audio = data.mean(axis=-1)
     else:
         mono_audio = data
+    data_len = len(mono_audio)
+    # mono_audio = np.pad(mono_audio, pad_width=(1, 1), mode='constant', constant_values=.0)
 
     th = np.power(10, db / 20)
     silence = np.abs(mono_audio) < th
+    # idx = np.clip(np.where(silence == 0)[0] - 1, 0, data_len - 1)
     idx = np.where(silence == 0)[0]
 
     trim = namedtuple('trim', 'data cues')
-    result = trim(data[idx[0]:idx[-1] + 1], (idx[0], idx[-1]))
+
+    if len(idx) > 0:
+        result = trim(data[idx[0]:idx[-1] + 1], (idx[0], idx[-1]))
+    else:
+        if prevent_empty:
+            result = trim(data, (0, data_len - 1))
+        else:
+            result = trim(None, None)
 
     return result
 
 
-def find_regions(envelope, sr, db=-60, min_duration=.1):
+def find_regions(envelope: np.ndarray, sr: int, db: float = -60, min_duration: float = .1) -> namedtuple:
     """
     Detect regions from a volume envelope
 
-    :param np.array envelope: Input envelope
+    :param envelope: Input envelope
 
-    :param int sr: Sample rate for duration
-    :param float db: Silence threshold in dB
-    :param float min_duration: in s
-    :return: Return regions and cues as a named tuple
-
-    :rtype: namedtuple
+    :param sr: Sample rate for duration
+    :param db: Silence threshold in dB
+    :param min_duration: in s
+    :return: Return regions and cues as a named tuple (regions,cues)
     """
 
     th = np.power(10, db / 20)
@@ -287,18 +305,17 @@ def find_regions(envelope, sr, db=-60, min_duration=.1):
     return result
 
 
-def trim_regions(md, data, db=-60):
+def trim_regions(md: namedtuple, data: np.ndarray, db: float = -60) -> namedtuple:
     """
     Refine regions by trimming from audio data
-    :param namedtuple md: regions,cues metadata
-    :param np.array data: Audio data, mono or stereo
-    :param float db: Silence threshold
-    :return: Processed metadata
-    :rtype: namedtuple
+    :param md: regions,cues metadata
+    :param data: Audio data, mono or stereo
+    :param db: Silence threshold
+    :return: Processed metadata as a named tuple (regions,cues)
     """
     cues = []
     for region in md.regions:
-        trim = trim_audio(data[region[0]:region[1] - 1], db=db)
+        trim = trim_audio(data[region[0]:region[1] - 1], db=db, prevent_empty=True)
         st, ed = trim.cues
         cues.extend([region[0] + st, region[0] + ed])
     cues = np.array(cues)
@@ -310,17 +327,16 @@ def trim_regions(md, data, db=-60):
     return result
 
 
-def envelope_transform(data, w=1024, mode='max', interp='linear'):
+def envelope_transform(data: np.ndarray, w: int = 1024, mode: str = 'max', interp: str = 'linear') -> np.ndarray:
     """
     Transform input audio to volume envelope
-    :param np.array data: Input single channel audio
-    :param int w: Rolling window size
-    :param str mode: 'max' for peak or 'rms' for root-mean-square
-    :param str interp: Interpolation type 'linear' or 'cubic'
+    :param data: Input single channel audio
+    :param w: Rolling window size
+    :param mode: 'max' for peak or 'rms' for root-mean-square
+    :param interp: Interpolation type 'linear' or 'cubic'
     'linear' is better for volume estimation (no overshoots)
     'cubic' is better for shaping (introduces less distortion)
-    :return:
-    :rtype: np.array
+    :return: Resulting envelope
     """
 
     length = data.size
@@ -349,14 +365,14 @@ def envelope_transform(data, w=1024, mode='max', interp='linear'):
 
 # Fade in/out functions
 
-def apply_fade(data=None, fade_in=(0, 100, 'log'), fade_out=(500, 32000, 'exp')):
+def apply_fade(data: np.ndarray, fade_in: tuple[int, int, str] = (0, 100, 'log'),
+               fade_out: tuple[int, int, str] = (500, 32000, 'exp')) -> np.ndarray:
     """
     Apply fade in/out to audio
-    :param np.array data: Input audio
-    :param tuple fade_in: Start, Duration, Curve
-    :param tuple fade_out: Start, Duration, Curve
+    :param data: Input audio
+    :param fade_in: Start, Duration, Curve
+    :param fade_out: Start, Duration, Curve
     :return: Processed audio
-    :rtype: np.array
     """
     nch = data.ndim
     length = len(data)

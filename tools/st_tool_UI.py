@@ -154,7 +154,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.options.delay = self.delay_dsb.value()
         self.options.width = self.width_dsb.value()
         self.options.seed = self.seed_sb.value()
-        self.options.balance = (0, 4)[self.balance_cb.isChecked()]
+        self.options.balance = self.balance_cb.isChecked()
         self.options.mx_len = self.mxlen_cb.isChecked()
         self.options.wet = self.wet_dsb.value()
 

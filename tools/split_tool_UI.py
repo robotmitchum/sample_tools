@@ -38,7 +38,7 @@ except Exception as e:
     has_crepe = False
     pass
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):

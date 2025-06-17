@@ -8,43 +8,41 @@
 
 import random
 
-import librosa
 import numpy as np
 import soundfile as sf
-from scipy import signal
 import soxr
-from scipy.signal import resample
+from scipy import signal
 
 from common_audio_utils import rms, peak, db_to_lin, st_to_ms, ms_to_st, convolve, compensate_ir, get_silence_threshold
 from common_math_utils import lerp
 from fft_utils import filter_mask, h_cos
 
 
-def pseudo_stereo(data, sr=44100, delay=6, mode='velvet', seed=0, balance=4,
-                  ir_file=None, mx_len=False, wet=1.0,
-                  cutoff=None, band=100,
-                  width=1.0):
+def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str = 'velvet', seed: int = 0,
+                  balance: bool = True,
+                  ir_file: str | None = None, mx_len: bool = False, wet: float = 1.0,
+                  cutoff: float | None = None, band: float = 100,
+                  width: float = 1.0) -> np.ndarray:
     """
     Apply pseudo-stereo effect on audio
 
-    :param np.array data: Mono audio signal
-    :param int sr: Sampling rate
+    :param data: Mono audio signal
+    :param sr: Sampling rate
 
-    :param int delay: in ms
-    :param str mode: "haas" delay side channel or "velvet" convolve side channel with velvet impulse
-    :param int seed: Seed for Velvet noise
+    :param delay: in ms
+    :param mode: "haas" delay side channel or "velvet" convolve side channel with velvet impulse
+    :param seed: Seed for Velvet noise
 
-    :param int balance: Attempt to balance stereo by detecting angle, number of iterations
+    :param balance: Attempt to balance stereo by detecting angle
 
-    :param str ir_file: IR sample to use with 'convolve' mode
+    :param ir_file: IR sample to use with 'convolve' mode
     :param mx_len: Extends length to account for IR tail
-    :param float wet: Blend convolved result with original
-    :param float or None cutoff: Cutoff frequency for side filtering
-    :param float band: Frequency width of the side filter, use negative value for high pass instead of low pass
-    :param float width: Stereo width 0 for mono, value>1 amplifies stereo effect
+    :param wet: Blend convolved result with original
+    :param cutoff: Cutoff frequency for side filtering
+    :param band: Frequency width of the side filter, use negative value for high pass instead of low pass
+    :param width: Stereo width 0 for mono, value>1 amplifies stereo effect
 
-    :return: stereo audio
-    :rtype: np.array
+    :return: Stereo audio
     """
     # Mid/Side process
     mid = data
@@ -114,15 +112,14 @@ def pseudo_stereo(data, sr=44100, delay=6, mode='velvet', seed=0, balance=4,
 # Auxiliary functions
 
 
-def velvet_ir(duration, sr, seed):
+def velvet_ir(duration: int, sr: int, seed: int) -> np.ndarray:
     """
     Generate Velvet impulse response
 
-    :param int duration: ms
-    :param int sr:
-    :param int seed: -1 to disable fixed seed
+    :param duration: in ms
+    :param sr:
+    :param seed: -1 to disable fixed seed
     :return: Generated Velvet impulse response
-    :rtype: np.array
     """
     length = int(round(duration / 1000 * sr)) + 1
 
@@ -158,14 +155,14 @@ def velvet_ir(duration, sr, seed):
 def convolve_side(audio, sr, ir_audio, ir_sr, mx_len=False, width=1.0):
     """
     Convolve the side channel using the side channel of a given STEREO impulse response
-    :param np.array audio: Input audio
+    :param np.ndarray audio: Input audio
     :param int sr: Sampling rate
     :param np.array ir_audio: Impulse response
     :param int ir_sr: IR sampling rate (used for sampling rate matching)
     :param bool mx_len: Extend length so convolved tail is not cut
     :param float width: Stereo width
     :return:
-    :rtype: np.array
+    :rtype: np.ndarray
     """
     if audio.ndim > 1:
         mid = np.mean(audio, axis=-1)
@@ -201,13 +198,12 @@ def convolve_side(audio, sr, ir_audio, ir_sr, mx_len=False, width=1.0):
     return result
 
 
-def trim_end(data, db=-60):
+def trim_end(data: np.ndarray, db: float = -60) -> np.ndarray:
     """
     Remove trailing silence at end
-    :param np.array data: Input audio
-    :param float db: Silence threshold in dB
+    :param data: Input audio
+    :param db: Silence threshold in dB
     :return: processed audio
-    :rtype: np.array
     """
     th = np.power(10, db / 20)
     silence = np.abs(data) < th
@@ -219,15 +215,13 @@ def trim_end(data, db=-60):
 # Extra functions
 
 
-def meier_crossfeed(audio, sr, strength=0.5, delay=0.3):
+def meier_crossfeed(audio: np.ndarray, sr: int, strength: float = 0.5, delay: float = 0.3) -> np.ndarray:
     """
     Apply Meier cross-feed to a stereo audio signal
-    :param np.array audio:
-    :param int sr:
-    :param float strength:
-    :param float delay:
-    :return:
-    :rtype: np.array
+    :param audio:
+    :param sr:
+    :param strength: Effect strength
+    :param delay:
     """
     delay_samples = int(sr * delay / 1000.0)
 
@@ -250,11 +244,11 @@ def meier_crossfeed(audio, sr, strength=0.5, delay=0.3):
     return result
 
 
-def rotate_stereo(audio, rotate=0):
+def rotate_stereo(audio: np.ndarray, rotate: float = 0) -> np.ndarray:
     """
     Stereo field rotation - from reaper jsfx
-    :param np.array audio:
-    :param float rotate: Rotation angle in degrees
+    :param audio:
+    :param rotate: Rotation angle in degrees
     :return:
     """
     l_chn, r_chn = audio[:, 0], audio[:, 1]
@@ -268,12 +262,11 @@ def rotate_stereo(audio, rotate=0):
     return np.column_stack((l_chn, r_chn))
 
 
-def get_angle(audio):
+def get_angle(audio: np.ndarray) -> np.ndarray:
     """
     Barycenter from volume used as angle cosine
-    :param np.array audio:
+    :param audio:
     :return:
-    :rtype: np.array
     """
     nrm = np.sum(np.abs(audio), axis=1).reshape(len(audio), 1)
     nrm = np.repeat(nrm, 2, axis=1)
