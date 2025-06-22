@@ -26,7 +26,7 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 
 __ds_version__ = '1.12.11'
-__version__ = '1.4.1'
+__version__ = '1.4.2'
 
 
 def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
@@ -766,7 +766,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
             if fake_legato:
                 grp_attrib['silencedByTags'] = trig_tag_dict['legato']
             else:
-                grp_attrib['silencedBy'] = grp
+                grp_attrib['silencedByTags'] = grp
 
         # - Multi-Output -
         slider_idx = instr.groups.index(grp)

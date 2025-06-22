@@ -2031,7 +2031,7 @@ Click for context menu and some examples</string>
 
 Avoid the &quot;machine-gun effect&quot; plaguing a lot of sampled instruments
 
-Steal notes from neighboring samples to simulate Round-Robins
+Borrow samples from neighboring zones to emulate Round-Robins
 Enter integer values (sample index offset) separated by a space
 A sufficient number of note samples is required for better results
 

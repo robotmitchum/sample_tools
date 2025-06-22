@@ -1340,7 +1340,7 @@ class Ui_smp_to_ds_ui(object):
 "\n"
 "Avoid the \"machine-gun effect\" plaguing a lot of sampled instruments\n"
 "\n"
-"Steal notes from neighboring samples to simulate Round-Robins\n"
+"Borrow samples from neighboring zones to emulate Round-Robins\n"
 "Enter integer values (sample index offset) separated by a space\n"
 "A sufficient number of note samples is required for better results\n"
 "\n"
