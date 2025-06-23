@@ -728,8 +728,3 @@ def read_metadata_generic(input_file, blocksize=1):
         pitch_fraction = uint32_to_pitch_fraction(pitch_fraction)
 
     return note, pitch_fraction, loop_start, loop_end, loops
-
-
-# fp = r"C:\Users\mitch\Desktop\Michelsonnes Toy Pianos\Samples\Metal\MichelsonneMetal_065.wav"
-# smp = Sample(fp)
-# print(smp.note, smp.pitchFraction)
