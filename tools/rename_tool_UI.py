@@ -89,8 +89,10 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         add_insert_ctx(self.src_pattern_le, values=src_fields)
 
         add_ctx(self.tgt_pattern_le,
-                values=['', '{group}_{note}', '{group}_{noteName}', '{group}_{noteName}_{trigger}',
-                        '{group}_{noteName}_v{vel}', '{group}_{noteName}_{seqPosition}', '{group}_{noteName}_{repstr}'],
+                values=['', '{group}_{note}', '{group}_{note}_{trigger}',
+                        '{group}_{noteName}', '{group}_{noteName}_{trigger}',
+                        '{group}_{noteName}_v{vel}', '{group}_{noteName}_{seqPosition}',
+                        '{group}_{noteName}_{repstr}'],
                 trigger=self.tgt_pattern_pb)
         tgt_attrib = ['group', 'note', 'noteName', 'pitchFraction', 'vel', 'dyn', 'trigger', 'seqPosition', 'repstr']
         tgt_fields = [f'{{{at}}}' for at in tgt_attrib]

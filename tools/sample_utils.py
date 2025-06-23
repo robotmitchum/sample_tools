@@ -71,10 +71,16 @@ class Sample:
 
         # Read ID3 tags
         md = read_metadata_tags(path, extra_tags)
+        # Convert md dict as attributes
+        for tag in md:
+            setattr(self, tag, md[tag])
 
         # Wav fourCC tags always override ID3 tags
         if self.filetype == 'wav':
             md.update(read_metadata(path))
+            # Convert md dict as attributes
+            for tag in md:
+                setattr(self, tag, md[tag])
             self.cues = get_cues(path)
 
             # Adjust note and pitch fraction when pitch fraction is superior to 50 to make values more meaningful
@@ -83,10 +89,6 @@ class Sample:
                 if self.pitchFraction > 50:
                     self.pitchFraction -= 100
                     self.note += 1
-
-        # Convert md dict as attributes
-        for tag in md:
-            setattr(self, tag, md[tag])
 
         self.noteName = None
         self.set_note(self.note)
@@ -726,3 +728,8 @@ def read_metadata_generic(input_file, blocksize=1):
         pitch_fraction = uint32_to_pitch_fraction(pitch_fraction)
 
     return note, pitch_fraction, loop_start, loop_end, loops
+
+
+# fp = r"C:\Users\mitch\Desktop\Michelsonnes Toy Pianos\Samples\Metal\MichelsonneMetal_065.wav"
+# smp = Sample(fp)
+# print(smp.note, smp.pitchFraction)

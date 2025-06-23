@@ -1166,7 +1166,7 @@ def get_dspreset_dependencies(dspreset_file):
         result |= {v for v in elem.attrib.values() if root_dir.joinpath(v).is_file()}
 
     # Also include text files and preference files
-    for ext in ('txt', 'spm2ds', 'drds'):
+    for ext in ('txt', 'smp2ds', 'drds'):
         files = root_dir.glob(f'*.{ext}')
         result |= {f.relative_to(root_dir).as_posix() for f in files}
 
