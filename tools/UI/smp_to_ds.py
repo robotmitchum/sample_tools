@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\smp_to_ds.ui'
+# Form implementation generated from reading ui file 'smp_to_ds.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #

@@ -42,6 +42,22 @@ from file_utils import move_to_subdir
 
 # from simple_logger import SimpleLogger
 
+try:
+    import crepe
+
+    has_crepe = True
+except Exception as e:
+    has_crepe = False
+    pass
+
+try:
+    import librosa
+
+    has_librosa = True
+except Exception as e:
+    has_librosa = False
+    pass
+
 __version__ = '1.1.1'
 
 
@@ -63,6 +79,8 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         self.setWindowIcon(app_icon)
 
         self.get_defaults()
+
+        self.setup_pitch_mode_cmb(use_librosa=has_librosa, use_crepe=has_crepe)
 
         self.update_message("Rename audio files and update their 'smpl' chunk information")
 
@@ -122,6 +140,28 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         style_widget(self.process_pb, properties={'border-radius': 8})
 
         # Custom events
+
+    def setup_pitch_mode_cmb(self, use_librosa=False, use_crepe=False):
+        """
+        Modify Pitch mode combo box depending on the presence of 'librosa' and 'crepe'
+        :param bool use_librosa:
+        :param bool use_crepe:
+        :return:
+        """
+        values = ['yin', 'corr']
+        tooltip = self.pitch_mode_cmb.toolTip()
+
+        if use_librosa:
+            values.append('pyin')
+            tooltip += "\n'pyin'\tpyin algorithm, good results with average speed"
+        if use_crepe:
+            tooltip += "\n'crepe'\tuses tensorFlow and slower to initialize, might work better in some cases"
+            values.append('crepe')
+
+        self.pitch_mode_cmb.clear()
+        self.pitch_mode_cmb.addItems(values)
+
+        self.pitch_mode_cmb.setToolTip(tooltip)
 
     def batch_rename(self, worker, progress_callback, message_callback, files, test_run):
         """
@@ -287,7 +327,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         f_len, r_len = [max([len(Path(item).name) for item in items]) for items in [files, result]]
 
         sep = '  ►  '
-        report = [f'{Path(in_f).name : <{f_len}}{sep}{Path(out_f).name}' for in_f, out_f in zip(files, result)]
+        report = [f'{Path(in_f).name: <{f_len}}{sep}{Path(out_f).name}' for in_f, out_f in zip(files, result)]
 
         dialog = InfoDialog(info_list=report, parent=self)
         dialog.accept_cmd = partial(self.as_worker, partial(self.batch_rename, files=files, test_run=False))

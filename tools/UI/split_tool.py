@@ -42,6 +42,7 @@ class Ui_split_tool_mw(object):
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.input_lyt.addWidget(self.set_files_tb)
@@ -102,7 +103,6 @@ class Ui_split_tool_mw(object):
         self.horizontalLayout.addWidget(self.pitch_mode_l)
         self.pitch_mode_cmb = QtWidgets.QComboBox(self.pitch_mode_wid)
         self.pitch_mode_cmb.setObjectName("pitch_mode_cmb")
-        self.pitch_mode_cmb.addItem("")
         self.pitch_mode_cmb.addItem("")
         self.pitch_mode_cmb.addItem("")
         self.horizontalLayout.addWidget(self.pitch_mode_cmb)
@@ -230,6 +230,7 @@ class Ui_split_tool_mw(object):
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_lyt.addWidget(self.set_output_path_tb)
@@ -320,6 +321,7 @@ class Ui_split_tool_mw(object):
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(127, 63, 95);\n"
 "color: rgb(255, 255, 255);}")
@@ -334,6 +336,7 @@ class Ui_split_tool_mw(object):
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 0, 1, 1)
@@ -383,16 +386,13 @@ class Ui_split_tool_mw(object):
         self.suffix_le.setText(_translate("split_tool_mw", "attack release"))
         self.pitch_mode_l.setText(_translate("split_tool_mw", "Pitch Mode"))
         self.pitch_mode_cmb.setToolTip(_translate("split_tool_mw", "Pitch detection algorithm\n"
+"NOTE:    No algorithm is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis\n"
+"    Pitch detection does not work on bell-like sounds\n"
 "\n"
-"\'corr\'    auto-correlation, fastest method by far but can be wrong about octave\n"
-"\'pyin\'    pyin algorithm, good results with average speed\n"
-"\'crepe\'    deep learning, different results with longer overhead\n"
-"\n"
-"NOTE:    None is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis\n"
-"    Pitch detection does not work on bell-like sounds"))
-        self.pitch_mode_cmb.setItemText(0, _translate("split_tool_mw", "corr"))
-        self.pitch_mode_cmb.setItemText(1, _translate("split_tool_mw", "pyin"))
-        self.pitch_mode_cmb.setItemText(2, _translate("split_tool_mw", "crepe"))
+"\'yin\'    good results and rather fast, best combined with fine tuning\n"
+"\'corr\'    auto-correlation, fastest method but can be wrong about octave"))
+        self.pitch_mode_cmb.setItemText(0, _translate("split_tool_mw", "yin"))
+        self.pitch_mode_cmb.setItemText(1, _translate("split_tool_mw", "corr"))
         self.use_pitch_fraction_cb.setToolTip(_translate("split_tool_mw", "Set pitch correction metadata"))
         self.use_pitch_fraction_cb.setText(_translate("split_tool_mw", "Use Pitch Fraction"))
         self.extra_suffix_cb.setText(_translate("split_tool_mw", "Extra Suffix"))

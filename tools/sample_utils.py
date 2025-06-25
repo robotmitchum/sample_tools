@@ -1,7 +1,7 @@
 # coding:utf-8
 """
     :module: sample_utils.py
-    :description: Base functions unctions to get, set or edit sample information.
+    :description: Base functions to get, set or edit sample information.
     These data are used by sampler programs to define instruments.
     They are typically stored in the 'smpl' chunk of wav riff files.
     :author: Michel 'Mitch' Pecqueur

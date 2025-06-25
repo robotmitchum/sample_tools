@@ -38,6 +38,14 @@ except Exception as e:
     has_crepe = False
     pass
 
+try:
+    import librosa
+
+    has_librosa = True
+except Exception as e:
+    has_librosa = False
+    pass
+
 __version__ = '1.1.1'
 
 
@@ -51,7 +59,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         app_icon.addFile(img_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
-        self.setup_pitch_mode_cmb(use_crepe=has_crepe)
+        self.setup_pitch_mode_cmb(use_librosa=has_librosa, use_crepe=has_crepe)
 
         self.use_pitch_fraction_cb.setChecked(True)
 
@@ -107,27 +115,27 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.process_sel_pb.setFixedHeight(24)
         style_widget(self.process_sel_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
-    def setup_pitch_mode_cmb(self, use_crepe=False):
+    def setup_pitch_mode_cmb(self, use_librosa=False, use_crepe=False):
         """
-        Modify Pitch mode combo box depending on the presence of 'crepe'
+        Modify Pitch mode combo box depending on the presence of 'librosa' and 'crepe'
+        :param bool use_librosa:
         :param bool use_crepe:
         :return:
         """
-        values = ['corr', 'pyin']
+        values = ['yin', 'corr']
+        tooltip = self.pitch_mode_cmb.toolTip()
+
+        if use_librosa:
+            values.append('pyin')
+            tooltip += "\n'pyin'\tpyin algorithm, good results with average speed"
         if use_crepe:
+            tooltip += "\n'crepe'\tuses tensorFlow and slower to initialize, might work better in some cases"
             values.append('crepe')
 
         self.pitch_mode_cmb.clear()
         self.pitch_mode_cmb.addItems(values)
 
-        tooltip = self.pitch_mode_cmb.toolTip()
-        lines = tooltip.split('\n')
-        tooltip = ''
-        for line in lines:
-            if 'crepe' not in line or use_crepe:
-                tooltip += line + '\n'
-
-        self.pitch_mode_cmb.setToolTip(tooltip[:-1])
+        self.pitch_mode_cmb.setToolTip(tooltip)
 
     def get_options(self):
         suffix_mode = self.suffix_mode_cmb.currentText()

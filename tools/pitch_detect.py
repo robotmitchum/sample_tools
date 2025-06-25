@@ -14,15 +14,24 @@ except Exception as e:
     has_crepe = False
     pass
 
-import librosa
-import soxr
+try:
+    import librosa
+
+    has_librosa = True
+except Exception as e:
+    has_librosa = False
+    pass
+
 import matplotlib.pyplot as plt
 import numpy as np
 import soundfile as sf
+import soxr
 from scipy.interpolate import interp1d
 from scipy.signal import find_peaks
+from scipy.ndimage import median_filter
 
 from utils import note_to_hz, hz_to_period, hz_to_note, note_to_name
+from yin_pitch import yin
 
 
 def pitch_detect(audio, sr, mode='pyin', resample=None, note_range=(20, 109), st_ed=.25):
@@ -31,7 +40,8 @@ def pitch_detect(audio, sr, mode='pyin', resample=None, note_range=(20, 109), st
 
     :param np.array audio:
     :param int sr: Input sampling rate
-    :param str mode: Pitch detection algorithm, 'pyin' or 'crepe' (requires tensorFlow)
+    :param str mode: Pitch detection algorithm
+    'corr', 'yin', 'pyin' (requires librosa) or 'crepe' (requires tensorFlow)
     :param int or None resample: Sample rate used for pitch detection, down-sampling may speed up process
     :param list or tuple or None note_range: Piano range is (21,108) for example
     :param float or tuple or list or None st_ed: start and end of range for used audio as a list or tuple
@@ -53,7 +63,6 @@ def pitch_detect(audio, sr, mode='pyin', resample=None, note_range=(20, 109), st
         kwargs = dict(zip(['fmin', 'fmax'], frange))
 
     if resample is not None:
-        # mono_audio = librosa.resample(mono_audio, orig_sr=sr, target_sr=resample)
         mono_audio = soxr.resample(mono_audio, in_rate=sr, out_rate=resample)
         sr = resample
 
@@ -71,17 +80,28 @@ def pitch_detect(audio, sr, mode='pyin', resample=None, note_range=(20, 109), st
         data = mono_audio
 
     # Pitch detection
-    if mode == 'crepe' and has_crepe:
-        # 'crepe' algorithm, uses tensorFlow and slower to initialize, might work better in some cases
-        # Verbosity was set to 0 so script does not crash when executing with pythonw
-        time, freqs, probs, activation = crepe.predict(data, sr, viterbi=False, model_capacity='full', verbose=0)
-    elif mode == 'pyin':
+    if mode == 'yin':
+        # 'yin' algorithm - no voicing or probabilities
+        # if has_librosa:
+        #     # Librosa implementation
+        #     freqs = librosa.yin(data, sr=sr, **kwargs)
+        # else:
+        #     # Refactored from librosa.yin
+        freqs = yin(data, sr=sr, **kwargs)
+        freqs = median_filter(freqs, size=3)
+        freqs = np.nanmedian(freqs)
+        probs = np.array(1.0)
+    elif mode == 'pyin' and has_librosa:
         # 'pyIn' algorithm
         freqs, flags, probs = librosa.pyin(data, sr=sr, **kwargs)
         # Exclude nan values from both frequency and probability arrays
         nans = np.isnan(freqs)
         freqs = freqs[~nans]
         probs = probs[~nans]
+    elif mode == 'crepe' and has_crepe:
+        # 'crepe' algorithm, uses tensorFlow and slower to initialize, might work better in some cases
+        # Verbosity was set to 0 so script does not crash when executing with pythonw
+        time, freqs, probs, activation = crepe.predict(data, sr, viterbi=False, model_capacity='full', verbose=0)
     else:
         freqs = pitch_autocorrelate(audio=mono_audio, sr=sr, pos=st_ed, length=8192)
         freqs = np.array(freqs)

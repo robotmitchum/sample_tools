@@ -65,6 +65,7 @@ Double-click to play</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -246,27 +247,20 @@ Right click for context menu</string>
         <widget class="QComboBox" name="pitch_mode_cmb">
          <property name="toolTip">
           <string>Pitch detection algorithm
+NOTE:	No algorithm is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis
+	Pitch detection does not work on bell-like sounds
 
-'corr'	auto-correlation, fastest method by far but can be wrong about octave
-'pyin'	pyin algorithm, good results with average speed
-'crepe'	deep learning, different results with longer overhead
-
-NOTE:	None is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis
-	Pitch detection does not work on bell-like sounds</string>
+'yin'	good results and rather fast, best combined with fine tuning
+'corr'	auto-correlation, fastest method but can be wrong about octave</string>
          </property>
          <item>
           <property name="text">
+           <string>yin</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>corr</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>pyin</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>crepe</string>
           </property>
          </item>
         </widget>
@@ -574,6 +568,7 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -795,6 +790,7 @@ Use wav or aif for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -826,6 +822,7 @@ color: rgb(255, 255, 255);}</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>

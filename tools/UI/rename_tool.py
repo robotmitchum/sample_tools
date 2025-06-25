@@ -42,6 +42,7 @@ class Ui_rename_tool_mw(object):
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.files_lyt.addWidget(self.set_files_tb)
@@ -103,6 +104,7 @@ class Ui_rename_tool_mw(object):
         self.src_pattern_pb.setMinimumSize(QtCore.QSize(128, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.src_pattern_pb.setFont(font)
         self.src_pattern_pb.setObjectName("src_pattern_pb")
         self.pattern_lyt.addWidget(self.src_pattern_pb)
@@ -121,6 +123,7 @@ class Ui_rename_tool_mw(object):
         self.tgt_pattern_pb.setMinimumSize(QtCore.QSize(128, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.tgt_pattern_pb.setFont(font)
         self.tgt_pattern_pb.setObjectName("tgt_pattern_pb")
         self.pattern_lyt.addWidget(self.tgt_pattern_pb)
@@ -210,7 +213,6 @@ class Ui_rename_tool_mw(object):
         self.pitch_fraction_cmb.addItem("")
         self.pitch_fraction_cmb.addItem("")
         self.pitch_fraction_cmb.addItem("")
-        self.pitch_fraction_cmb.addItem("")
         self.note_lyt.addWidget(self.pitch_fraction_cmb)
         self.pitchfraction_dsb = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.pitchfraction_dsb.setEnabled(False)
@@ -267,6 +269,7 @@ class Ui_rename_tool_mw(object):
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_path_lyt.addWidget(self.set_output_path_tb)
@@ -344,6 +347,7 @@ class Ui_rename_tool_mw(object):
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 0, 1, 1)
@@ -356,6 +360,7 @@ class Ui_rename_tool_mw(object):
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(159, 95, 95);\n"
 "color: rgb(255, 255, 255);}")
@@ -414,23 +419,21 @@ class Ui_rename_tool_mw(object):
         self.pitch_detect_cb.setToolTip(_translate("rename_tool_mw", "Override any existing pitch information"))
         self.pitch_detect_cb.setText(_translate("rename_tool_mw", "Pitch Detect"))
         self.pitch_mode_cmb.setToolTip(_translate("rename_tool_mw", "Pitch detection algorithm\n"
+"NOTE:    No algorithm is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis\n"
+"    Pitch detection does not work on bell-like sounds\n"
 "\n"
-"\'corr\'    auto-correlation, fastest method by far but can be wrong about octave\n"
-"\'pyin\'    pyin algorithm, good results with average speed\n"
-"\n"
-"NOTE:    None is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis\n"
-"    Pitch detection does not work on bell-like sounds"))
-        self.pitch_mode_cmb.setItemText(0, _translate("rename_tool_mw", "corr"))
-        self.pitch_mode_cmb.setItemText(1, _translate("rename_tool_mw", "pyin"))
+"\'yin\'    good results and rather fast, best combined with fine tuning\n"
+"\'corr\'    auto-correlation, fastest method but can be wrong about octave"))
+        self.pitch_mode_cmb.setItemText(0, _translate("rename_tool_mw", "yin"))
+        self.pitch_mode_cmb.setItemText(1, _translate("rename_tool_mw", "corr"))
         self.pitch_fraction_l.setText(_translate("rename_tool_mw", "Pitch Fraction"))
         self.pitch_fraction_cmb.setToolTip(_translate("rename_tool_mw", "keep: use embedded value (if applicable)\n"
 "override: replace with a given value\n"
 "fine_tune: Detect pitch fraction using autocorrelation\n"
-"fine_tune_lr: Detect pitch fraction using librosa"))
+""))
         self.pitch_fraction_cmb.setItemText(0, _translate("rename_tool_mw", "keep"))
         self.pitch_fraction_cmb.setItemText(1, _translate("rename_tool_mw", "override"))
         self.pitch_fraction_cmb.setItemText(2, _translate("rename_tool_mw", "fine_tune"))
-        self.pitch_fraction_cmb.setItemText(3, _translate("rename_tool_mw", "fine_tune_lr"))
         self.pitchfraction_dsb.setToolTip(_translate("rename_tool_mw", "Pitch fraction in semitone cents"))
         self.transpose_l.setText(_translate("rename_tool_mw", "Transpose"))
         self.transpose_sb.setToolTip(_translate("rename_tool_mw", "Transpose note in semitones"))

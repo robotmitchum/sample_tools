@@ -65,6 +65,7 @@ Double-click to play</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -201,6 +202,7 @@ The token is then available using {repstr} in the target pattern</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -246,6 +248,7 @@ Attributes names enclosed in curly braces {}</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -420,21 +423,20 @@ Might work even when the name is badly formatted</string>
         </property>
         <property name="toolTip">
          <string>Pitch detection algorithm
+NOTE:	No algorithm is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis
+	Pitch detection does not work on bell-like sounds
 
-'corr'	auto-correlation, fastest method by far but can be wrong about octave
-'pyin'	pyin algorithm, good results with average speed
-
-NOTE:	None is perfect so always double-check results in an audio editor such as Audacity or RX using spectrum/frequency analysis
-	Pitch detection does not work on bell-like sounds</string>
+'yin'	good results and rather fast, best combined with fine tuning
+'corr'	auto-correlation, fastest method but can be wrong about octave</string>
         </property>
         <item>
          <property name="text">
-          <string>corr</string>
+          <string>yin</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>pyin</string>
+          <string>corr</string>
          </property>
         </item>
        </widget>
@@ -471,7 +473,7 @@ NOTE:	None is perfect so always double-check results in an audio editor such as 
          <string>keep: use embedded value (if applicable)
 override: replace with a given value
 fine_tune: Detect pitch fraction using autocorrelation
-fine_tune_lr: Detect pitch fraction using librosa</string>
+</string>
         </property>
         <property name="currentIndex">
          <number>0</number>
@@ -492,11 +494,6 @@ fine_tune_lr: Detect pitch fraction using librosa</string>
         <item>
          <property name="text">
           <string>fine_tune</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>fine_tune_lr</string>
          </property>
         </item>
        </widget>
@@ -642,6 +639,7 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -818,6 +816,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -845,6 +844,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
