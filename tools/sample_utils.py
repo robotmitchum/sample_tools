@@ -19,8 +19,10 @@ from pathlib import Path
 import mutagen
 import numpy as np
 import soundfile as sf
+from soxr import resample
 
 from common_math_utils import clamp
+from file_utils import resolve_overwriting
 from parseAttrString import parse_string, compose_string
 from pitch_detect import fine_tune, fine_tune_lr, pitch_detect
 from utils import (append_metadata, set_md_tags,
@@ -239,7 +241,8 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
                   extra_tags=None,
                   transpose=0, force_pitch_from_name=True,
                   detect_pitch=None, pitch_fraction_mode='keep', pitch_fraction_override=None,
-                  use_loop=True, test_run=False):
+                  use_loop=True, bake_pf=None,
+                  test_run=False):
     """
     Rename sample while updating its metadata accordingly
 
@@ -270,6 +273,8 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
     :param float or None pitch_fraction_override: Pitch fraction in semitone cents
 
     :param bool use_loop: Clear loop if False
+
+    :param bake_pf: add_suffix, value
 
     :param bool test_run: Simulate process without doing anything
 
@@ -403,6 +408,13 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
         os.remove(input_file)
         os.rename(tmp_name, output_file)
 
+    if not test_run and bake_pf is not None:
+        p = Path(output_file)
+        baked_output_file = p.parent / f'{p.stem}{bake_pf[0]}{p.suffix}'
+        baked_output_file = baked_output_file.resolve()
+        apply_finetuning(input_file=output_file, output_file=baked_output_file, value=bake_pf[1],
+                         no_overwriting=bake_pf[-1])
+
     return output_file
 
 
@@ -428,6 +440,82 @@ def rename_samples(root_dir, sub_dir='Samples', smp_fmt=('wav', 'flac'), **kwarg
         result.append(new_name)
 
     return result
+
+
+def apply_finetuning(input_file: Path | str, output_file: Path | str, value: float | bool = True,
+                     no_overwriting: bool = True,
+                     bit_depth: int | None = None, extra_tags: dict | None = None) -> Path | str:
+    """
+    Apply fine-tuning to given audio file by resampling
+    metadata are updated accordingly
+    :param no_overwriting:
+    :param input_file:
+    :param output_file:
+    :param value: Fine-tuning to apply, if True apply embedded pitch fraction
+    :param bit_depth: explicitly change the bit depth
+    :param extra_tags: For FLAC only
+    :return:
+    """
+    smp = info_from_name(str(input_file), extra_tags=extra_tags)
+    p = Path(output_file)
+    output_ext = p.suffix[1:]
+
+    if value is True:
+        value = smp.pitchFraction
+
+    data, sr = sf.read(input_file)
+    factor = 2 ** (value / 1200)
+
+    print(f'value: {value} -> resample factor: {factor}')
+    result = resample(data, sr, sr * factor, quality='VHQ')
+
+    # Apply the pitch fraction to metadata
+    smp.pitchFraction -= value
+    if abs(smp.pitchFraction) < 1e-3:
+        smp.pitchFraction = None
+
+    # Adjust loops and cues with resampling factor
+    if hasattr(smp, 'loops'):
+        if len(smp.loops) > 0:
+            smp.loops = [[int(round(val * factor)) for val in loop] for loop in smp.loops]
+            smp.loopStart, smp.loopEnd = smp.loops[0]
+    if hasattr(smp, 'cues'):
+        smp.cues = [int(round(cue * factor)) for cue in smp.cues]
+
+    bit_depth = bit_depth or smp.params.sampwidth * 8
+    if output_ext == 'flac':
+        bit_depth = min(bit_depth, 24)
+    subtypes = {16: 'PCM_16', 24: 'PCM_24', 32: 'FLOAT'}
+    subtype = subtypes[bit_depth]
+
+    # Temporary file name
+    output_dir = p.parent
+    with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{output_ext}', delete=False) as temp_file:
+        tmp_name = temp_file.name
+    sf.write(tmp_name, result, samplerate=sr, subtype=subtype)
+
+    # Write Metadata
+    if output_ext == 'wav':
+        append_metadata(tmp_name, note=smp.note, pitch_fraction=smp.pitchFraction,
+                        loop_start=smp.loopStart, loop_end=smp.loopEnd)
+        if hasattr(smp, 'cues'):
+            append_markers(tmp_name, markers=smp.cues)
+    elif output_ext == 'flac':
+        attrs = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']
+        if extra_tags:
+            attrs.append(extra_tags)
+        values = [getattr(smp, attr) for attr in attrs]
+        md = dict(zip(attrs, values))
+        set_md_tags(str(tmp_name), md=md)
+
+    if no_overwriting:
+        resolve_overwriting(output_file, mode='dir', dir_name='backup_', test_run=False)
+    else:
+        os.remove(output_file)
+
+    os.rename(tmp_name, output_file)
+
+    return output_file
 
 
 def is_stereo(audio, db=-48):

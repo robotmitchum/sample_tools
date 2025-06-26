@@ -58,7 +58,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
@@ -81,6 +81,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         self.get_defaults()
 
         self.setup_pitch_mode_cmb(use_librosa=has_librosa, use_crepe=has_crepe)
+        self.pf_mode_wid.setHidden(True)
 
         self.update_message("Rename audio files and update their 'smpl' chunk information")
 
@@ -129,6 +130,14 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         self.pitchfraction_dsb.setContextMenuPolicy(3)
 
         add_ctx(self.transpose_sb, [-12, 0, 12])
+
+        # Bake Pitch Fraction widgets
+        self.bake_pf_cb.stateChanged.connect(lambda state: self.pf_mode_wid.setEnabled(state == 2))
+        self.bake_pf_cb.stateChanged.connect(lambda state: self.bake_pf_options_wid.setEnabled(state == 2))
+        self.pf_mode_cmb.currentTextChanged.connect(lambda state: self.pf_th_dsb.setEnabled(state != 'on'))
+        add_ctx(self.pf_th_dsb, [0, 2.5, 5, 10])
+        self.add_suffix_cb.stateChanged.connect(lambda state: self.add_suffix_le.setEnabled(state == 2))
+        add_ctx(self.add_suffix_le, ['', '_tuned', '_baked'])
 
         # Process buttons
         self.process_sel_pb.clicked.connect(partial(self.do_process, mode='sel'))
@@ -204,6 +213,14 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         output_path = self.output_path_l.fullPath()
 
+        # Bake Pitch Fraction
+        add_suffix = ('', self.add_suffix_le.text())[self.add_suffix_cb.isChecked()]
+        no_overwrinting = self.no_overwriting_cb.isChecked()
+
+        bake_pf = None
+        if self.bake_pf_cb.isChecked():
+            bake_pf = (add_suffix, True, no_overwrinting)
+
         # File settings
         bit_depth = self.bitdepth_cmb.currentText()
         if bit_depth != 'same':
@@ -254,7 +271,8 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
                                             detect_pitch=pitch_detect,
                                             pitch_fraction_mode=pitch_fraction_mode,
                                             pitch_fraction_override=pitch_fraction_ovr,
-                                            use_loop=use_loop, test_run=test_run)
+                                            bake_pf=bake_pf, use_loop=use_loop,
+                                            test_run=test_run)
 
                 result.append(new_name)
                 if progress_callback is not None:

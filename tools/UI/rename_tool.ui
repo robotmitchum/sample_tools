@@ -598,6 +598,134 @@ Clear loop information when disabled</string>
      </layout>
     </item>
     <item>
+     <widget class="QLabel" name="bake_pf_title">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>64</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(159, 95, 95);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Bake Pitch Fraction</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="bake_pf_lyt">
+      <item>
+       <widget class="QCheckBox" name="bake_pf_cb">
+        <property name="toolTip">
+         <string>Apply pitch fraction to the samples by resampling
+Allow to use tuned samples with samplers not supporting pitch fraction information
+SoX resamping library with VHQ preset is used for optimal quality
+
+NOTE: As opposed to just adding pitch fraction information, this is a destructive process</string>
+        </property>
+        <property name="text">
+         <string>Bake Pitch Fraction</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="pf_mode_wid" native="true">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="pf_mode_l">
+           <property name="text">
+            <string>Pitch Fraction Mode</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="pf_mode_cmb">
+           <property name="toolTip">
+            <string>Control pitch fraction usage
+
+'on'	Use pitch fraction
+
+'mean_scale'	Scale deviation from mean to given value
+(results will vary depending on the number of processed samples)</string>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>on</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>mean_scale</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="pf_th_dsb">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Pitch fraction deviation scale in semitone cents</string>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <widget class="QLabel" name="output_path_title_l">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -777,7 +905,7 @@ Use wav for 32 bits float</string>
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_2">
+       <spacer name="horizontalSpacer_5">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -788,6 +916,94 @@ Use wav for 32 bits float</string>
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QWidget" name="bake_pf_options_wid" native="true">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="add_suffix_cb">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Add suffix</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="add_suffix_le">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Suffix added to the base name</string>
+           </property>
+           <property name="text">
+            <string>_tuned</string>
+           </property>
+           <property name="maxLength">
+            <number>16</number>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>116</width>
+             <height>17</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="no_overwriting_cb">
+           <property name="toolTip">
+            <string>Avoid overwriting original files by moving them to a backup directory</string>
+           </property>
+           <property name="text">
+            <string>Avoid Overwriting</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>

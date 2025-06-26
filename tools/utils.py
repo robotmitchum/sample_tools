@@ -26,7 +26,7 @@ def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
 
     The data is simply appended, so it's meant to be used once on a wav without any note/loop metadata
 
-    :param float pitch_fraction:
+    :param float or None pitch_fraction:
     :param int note:
     :param str input_file:
     :param int or None loop_start:

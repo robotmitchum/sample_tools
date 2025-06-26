@@ -125,7 +125,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
     :param rr_offset: Fake Round-Robin offsets
     :param rr_bounds: Steal notes further to make fake RR work on bounding notes
 
-    :param pf_mode: Pitch fraction mode, 'off', 'on', 'on_rand', 'on_threshold', 'on_threshold_rand'
+    :param pf_mode: Pitch fraction mode, 'off', 'on', 'mean_scale', 'on_rand', 'on_threshold', 'on_threshold_rand'
     :param pf_th: Pitch fraction threshold/random value
 
     :param crossfade_mode: 'linear' 'equal_power' or 'off'

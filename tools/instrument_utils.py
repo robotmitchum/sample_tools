@@ -24,8 +24,20 @@ class Instrument:
     Instrument class
     """
 
-    def __init__(self, root_dir, smp_subdir='Samples', smp_fmt=('wav', 'flac'), files=None,
-                 pattern='{group}_{note}_{vel}', transpose=0, **kwargs):
+    def __init__(self, root_dir: Path | str, smp_subdir: str = 'Samples', smp_fmt=('wav', 'flac'),
+                 files: list | None = None, pattern: str = '{group}_{note}_{vel}', transpose: int = 0,
+                 **kwargs):
+
+        """
+        Create a class to retrieve and manipulate a sample set information as a whole
+        :param root_dir: Instrument root directory
+        :param smp_subdir: Samples subdirectory
+        :param smp_fmt: File types to consider
+        :param files: Override root_dir and smp_subdir by giving a list of samples directly
+        :param pattern: Pattern used to extract info from file names
+        :param transpose: Root notes transposition value in semitones
+        :param kwargs: Extra arguments used to build pandas dataframe, see samples_to_df and audio_files_to_df
+        """
 
         self.root_dir = root_dir
         self.smp_subdir = smp_subdir
@@ -227,12 +239,15 @@ class Instrument:
 
         :param mode: 
         'off'	Ignore pitch fraction, setting it to 0
-        'on'	Use pitch fraction, may sound 'sterile' because tuning can be too perfect
+        'on'	Use pitch fraction, may sound 'sanitized' because tuning can be too perfect
+
         'on_rand'	Use and add given random
-        'on_threshold'	Use over given threshold
-        'on_threshold_rand'	Use over given threshold and add given random
+        'on_threshold'  Use over given threshold
+        'on_threshold_rand' Use over given threshold and add given random
+
         'mean_threshold'	Use pitch fraction over threshold and mean under threshold
         'mean_blend'	Blend between mean and pitch fraction (0-100)
+        'mean_scale'    Scale deviation from mean to given value (semitone cents)
         
         :param value: Threshold / Value
         
@@ -593,6 +608,12 @@ def mean_pf(pf_values, mode='blend', x=1.0):
 
     result = lerp(result, pf_values, x)
     return result
+
+
+def process_pf(files: list = (), pattern: str = '{group}_{note}', pf_mode: str = 'mean_scale', pf_th: float = 2.5):
+    instr = Instrument(root_dir='', smp_subdir='', files=files, pattern=pattern)
+    instr.pitch_fraction(mode=pf_mode, value=pf_th, seed='', apply=True)
+    return instr.pitch_fraction().tolist()
 
 
 # Unused / deprecated
