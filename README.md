@@ -15,7 +15,6 @@ This project was developed and tested with Python 3.12.8
 Additional required packages all listed in provided requirements.txt
 
 - chunkmuncher
-- librosa
 - matplotlib
 - mutagen
 - noisereduce
@@ -36,6 +35,12 @@ Clone repository and install required packages
 ```
 git clone https://github.com/robotmitchum/sample_tools.git
 cd sample_tools
+pip install -r requirements.txt
+```
+
+or on MacOs
+
+```
 pip3 install -r requirements.txt
 ```
 
