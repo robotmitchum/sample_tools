@@ -667,12 +667,13 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples', data:
             print(f'\tSample: {smp_path.name}')
             smp_attrib['path'] = smp_path.as_posix()
 
-            ratio = pow(2, -tuning / 12)
-            duration = round(info.params.nframes / info.params.framerate * ratio, 3)
-
             # ADSR
-            for a, v in zip(['attack', 'decay', 'sustain', 'release'], [0, duration, 1, duration]):
-                smp_attrib[a] = str(v)
+            # ratio = pow(2, -tuning / 12)
+            # duration = round(info.params.nframes / info.params.framerate * ratio, 3)
+            # for a, v in zip(['attack', 'decay', 'sustain', 'release'], [0, duration, 1, duration]):
+            #     smp_attrib[a] = str(v)
+
+            smp_attrib['ampEnvEnabled'] = "false"  # This the proper way do have one-shot samples play entirely
 
             # - Velocity and round-robin mapping -
             vel, seq = info.vel or 127, info.seqPosition or 1

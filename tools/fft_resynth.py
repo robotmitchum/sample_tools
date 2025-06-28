@@ -140,7 +140,7 @@ def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
         out_data /= mx / db_to_lin(normalize)
     elif mx >= 1:
         # Prevent clipping
-        out_data /= mx / db_to_lin(-.5)
+        out_data /= mx / db_to_lin(-.1)
 
     if output_file and out_data is not None:
         sf.write(output_file, out_data, samplerate=sr)

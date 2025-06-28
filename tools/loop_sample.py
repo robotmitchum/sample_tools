@@ -240,7 +240,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
     mx = np.max(np.abs(audio))
     if mx > 1:
-        audio /= mx / db_to_lin(-.5)
+        audio /= mx / db_to_lin(-.1)
 
     result = namedtuple('_result', ('audio', 'info', 'output_file'))
 
