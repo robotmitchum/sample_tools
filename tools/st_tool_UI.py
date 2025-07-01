@@ -43,7 +43,10 @@ __version__ = '1.1.1'
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle(f'Stereo Tool v{__version__}')
+        self.tool_name = 'Stereo Tool'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/st_tool_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         self.ir_path_l = cast(FilePathLabel, self.ir_path_l)  # For auto-completion
 
@@ -61,8 +64,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.suffix_le.setText('_st')
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/st_tool_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.get_defaults()

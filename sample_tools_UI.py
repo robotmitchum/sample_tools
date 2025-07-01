@@ -49,16 +49,20 @@ def resource_path(relative_path, as_str=True):
 class SampleToolsUi(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.confirm_close = False
-
         self.setObjectName('sample_tools_ui')
         self.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.setWindowTitle(f'Sample Tools v{__version__}')
-
-        self.running = {}
+        self.confirm_close = False
 
         self.current_dir = Path(__file__).parent
         self.tools_path = self.current_dir / 'tools'
+        self.icons_path = 'tools/UI/icons/'
+
+        self.tool_name = 'Sample Tools'
+        self.tool_version = __version__
+        self.icon_file = resource_path(Path(self.icons_path).joinpath('sample_tools_64.png'))
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
+
+        self.running = {}
 
         if self.tools_path.exists():
             print(f'tools sub-directory successfully found: {str(self.tools_path)}')
@@ -83,8 +87,6 @@ class SampleToolsUi(QtWidgets.QMainWindow):
 
         self.tool_modules = {}
         self.import_tools()
-
-        self.icons_path = 'tools/UI/icons/'
 
         self.icons = {
             'SMP2ds': 'smp2ds_64.png',
@@ -151,8 +153,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         self.centralwidget.setLayout(self.lyt)
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(Path(self.icons_path).joinpath('sample_tools_64.png'))
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.setFixedSize(576, 112)

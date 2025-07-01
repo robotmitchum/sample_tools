@@ -530,3 +530,48 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
         ss += f'\n{wid_class}:pressed {{color: {text_color.name()}; background-color: rgb{pressed_bg_color};}}'
 
     widget.setStyleSheet(ss)
+
+
+class AboutDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(400, 160)
+        self.title = 'About'
+        self.text = ''
+        self.url = ''
+        self.icon_file = ''
+
+    def setup_ui(self):
+        self.setWindowTitle(self.title)
+
+        # Icon
+        self.icon_l = QtWidgets.QLabel()
+        if self.icon_file:
+            self.icon_pixmap = QtGui.QPixmap(self.icon_file)
+        else:
+            self.icon_pixmap = QtGui.QPixmap(64, 64)
+            self.icon_pixmap.fill(Qt.Qt.green)
+        self.icon_l.setPixmap(self.icon_pixmap)
+
+        # Message with clickable URL
+        self.msg_l = QtWidgets.QLabel()
+        self.msg_l.setTextFormat(Qt.Qt.RichText)
+        self.msg_l.setTextInteractionFlags(Qt.Qt.TextBrowserInteraction)
+        self.msg_l.setText(f'{self.text}<a href="{self.url}">{self.url}</a>')
+        self.msg_l.setAlignment(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
+        self.msg_l.linkActivated.connect(self.handle_link_clicked)
+
+        self.content_lyt = QtWidgets.QHBoxLayout()
+        self.content_lyt.addWidget(self.icon_l)
+        self.content_lyt.addWidget(self.msg_l)
+
+        # Main layout
+        self.lyt = QtWidgets.QVBoxLayout()
+        self.lyt.addLayout(self.content_lyt)
+        self.lyt.addStretch()
+
+        self.setLayout(self.lyt)
+
+    def handle_link_clicked(self, url: str):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
+        self.accept()

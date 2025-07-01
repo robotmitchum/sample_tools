@@ -40,7 +40,11 @@ __version__ = '1.2.0'
 class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle(f'Loop Tool v{__version__}')
+
+        self.tool_name = 'Loop Tool'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/loop_tool_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         # log_path = self.base_dir / 'loop_tool_log.txt'
         # self.logger = SimpleLogger(log_path)
@@ -48,8 +52,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         self.suffix_le.setText('_looped')
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/loop_tool_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.loop_min_length_dsb.setValue(100)

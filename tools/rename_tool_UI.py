@@ -64,7 +64,11 @@ __version__ = '1.2.0'
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle(f'Rename Sample Tool v{__version__}')
+
+        self.tool_name = 'Rename Sample Tool'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/rename_tool_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         # log_path = self.base_dir / 'rename_tool_log.txt'
         # self.logger = SimpleLogger(log_path)
@@ -74,8 +78,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         self.tgt_pattern_le.setText('{group}_{noteName}_v{vel}')
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/rename_tool_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.get_defaults()

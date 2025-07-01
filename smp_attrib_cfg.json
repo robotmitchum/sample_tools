@@ -27,6 +27,7 @@
     "loopEnabled",
     "loopCrossfade",
     "loopCrossfadeMode",
+    "ampEnvEnabled",
     "attackCurve",
     "decayCurve",
     "releaseCurve",

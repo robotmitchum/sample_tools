@@ -35,9 +35,9 @@ from UI import smp_to_ds as gui
 from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font, style_widget
-from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path
+from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path, AboutDialog
 from jsonFile import read_json
-from smp_to_dspreset import __version__
+from smp_to_dspreset import __version__, __ds_version__
 from tools.worker import Worker
 from dark_fusion_style import apply_dark_theme
 
@@ -46,8 +46,15 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.setWindowTitle(f'SMP2ds v{__version__}')
         self.setAttribute(Qt.Qt.WA_DeleteOnClose)
+
+        self.current_dir = Path(__file__).parent
+        self.base_dir = self.current_dir.parent
+
+        self.tool_name = 'SMP2ds'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/smp2ds_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         self.options = Node()
 
@@ -109,8 +116,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.crossfade_cmb.setCurrentText('linear')
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/smp2ds_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         custom_font = get_custom_font(self.current_dir / 'RobotoMono-Medium.ttf')
@@ -145,6 +151,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         add_ctx(self.pf_th_dsb, values=[0, 2.5, 5, 10, 50, 100])
 
         # Envelope widgets
+        self.adsr_enable_cb.stateChanged.connect(lambda state: self.set_adsr_wid_style(value=state))
+
         self.ADSR_pb.clicked.connect(self.adsr_ctx)
         add_ctx(self.A_dsb, values=[0, .001, .25, .5, 1])
         add_ctx(self.D_dsb, values=[.25, .375, .5, 1, 2])
@@ -225,6 +233,10 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
         self.get_defaults()
 
+        # Help
+        self.visit_github_a.triggered.connect(self.visit_github)
+        self.about_a.triggered.connect(self.about_dialog)
+
     def as_worker(self, cmd):
         if not any(worker.running for worker in self.active_workers):
             self.worker = Worker(cmd)
@@ -250,9 +262,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
+        # Settings Menu
         self.settings_menu = QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
-        self.setMenuBar(self.menu_bar)
 
         self.save_settings_a = QAction(self)
         self.save_settings_a.setText('Save settings')
@@ -265,7 +277,24 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.settings_menu.addAction(self.save_settings_a)
         self.settings_menu.addSeparator()
         self.settings_menu.addAction(self.restore_defaults_a)
+
         self.menu_bar.addAction(self.settings_menu.menuAction())
+
+        # Help Menu
+        self.help_menu = QMenu(self.menu_bar)
+        self.help_menu.setTitle('?')
+        self.visit_github_a = QAction(self)
+        self.visit_github_a.setText('Visit repository on github')
+        self.about_a = QAction(self)
+        self.about_a.setText('About')
+
+        self.help_menu.addAction(self.visit_github_a)
+        self.help_menu.addAction(self.about_a)
+
+        self.menu_bar.addAction(self.help_menu.menuAction())
+
+        # Add menu bar
+        self.setMenuBar(self.menu_bar)
 
     def get_options(self):
         self.options.root_dir = self.root_dir
@@ -282,6 +311,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.options.override = self.override_cb.isChecked()
         self.options.loop = self.loop_cb.isChecked()
 
+        self.options.amp_env_enabled = self.adsr_enable_cb.isChecked()
         self.options.adsr = self.A_dsb.value(), self.D_dsb.value(), self.S_dsb.value(), self.R_dsb.value()
         self.options.adr_curve = self.Ar_dsb.value(), self.Dr_dsb.value(), self.Rr_dsb.value()
 
@@ -530,6 +560,18 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                    for name, value in zip(names, values)]
         popup_menu(content=content, parent=self.fk_ADRr_pb)
 
+    def set_adsr_wid_style(self, value: int):
+        """
+        Alter ADSR widgets style to indicate full or limited effect
+        :param value:
+        :return:
+        """
+        if value == 0:
+            style = 'color: rgb(95, 127, 159);'
+        else:
+            style = ''
+        self.adsr_wid.setStyleSheet(style)
+
     def set_adsr(self, value):
         values = [eval(v) for v in value.split()]
         widgets = [self.A_dsb, self.D_dsb, self.S_dsb, self.R_dsb]
@@ -668,6 +710,27 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.move(x, y)
 
         return self
+
+    def about_dialog(self):
+        try:
+            about_dlg = AboutDialog(parent=self)
+            about_dlg.icon_file = self.icon_file
+            about_dlg.title = f'About {self.tool_name}'
+            about_dlg.text = f'{self.tool_name}<br>Version {self.tool_version}<br><br>'
+            about_dlg.text += 'MIT License<br>'
+            about_dlg.text += "Copyright © 2024 Michel 'Mitch' Pecqueur<br><br>"
+            about_dlg.url = 'https://github.com/robotmitchum/sample_tools'
+            about_dlg.setup_ui()
+            about_dlg.exec_()
+        except Exception as e:
+            print(e)
+            pass
+
+    @staticmethod
+    def visit_github():
+        url = 'https://github.com/robotmitchum/sample_tools'
+        qurl = QtCore.QUrl(url)
+        QtGui.QDesktopServices.openUrl(qurl)
 
 
 def run(mw=Smp2dsUi, parent=None):

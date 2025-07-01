@@ -70,11 +70,11 @@ python3 ir_tool_UI.py
 
 **These tools use custom ID3 tags to handle metadata for the FLAC format which is recommended to get the most features**
 
-## SMP2Ds
+## SMP2ds
 
-![SMP2Ds](tools/UI/icons/smp2ds_64.png)
+![SMP2ds](tools/UI/icons/smp2ds_64.png)
 
-![SMP2Ds_UI](screencaps/smp2ds_ui.png)
+![SMP2ds_UI](screencaps/smp2ds_ui.png)
 
 Create Decent Sampler presets from samples in wav or flac format (limited support of aif)
 

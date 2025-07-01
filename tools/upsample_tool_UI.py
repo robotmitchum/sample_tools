@@ -38,14 +38,16 @@ __version__ = '1.1.1'
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle(f'Upsample Tool v{__version__}')
+        self.tool_name = 'Upsample Tool'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/upsample_tool_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         self.suffix_le.setText('_up')
         self.denoise_mix_dsb.setValue(1.0)
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/upsample_tool_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.get_defaults()

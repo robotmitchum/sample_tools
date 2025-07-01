@@ -31,7 +31,7 @@ from common_audio_utils import pitch_audio, balance_audio, db_to_lin
 from common_math_utils import lerp, np_to_rgbint
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import (FilePathLabel, style_widget, resource_path, get_custom_font, resource_path_alt)
-from common_ui_utils import Node, KeyPressHandler, shorten_path
+from common_ui_utils import Node, KeyPressHandler, shorten_path, AboutDialog
 from common_ui_utils import add_ctx, add_insert_ctx, shorten_str, beautify_str, popup_menu
 from dark_fusion_style import apply_dark_theme
 from drums_to_dspreset import __version__
@@ -55,7 +55,14 @@ class DrDsUi(QMainWindow):
         super().__init__(parent=parent)
         self.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.setObjectName('dr_ds_ui')
-        self.setWindowTitle(f'DR-DS v{__version__}')
+
+        self.current_dir = Path(__file__).parent
+        self.base_dir = self.current_dir.parent
+
+        self.tool_name = 'DR-DS'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/drds_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         self.cw = QWidget(self)
         self.cw.setContentsMargins(0, 0, 0, 0)
@@ -74,9 +81,6 @@ class DrDsUi(QMainWindow):
         self.active_workers = []
         self.worker_result = None
         self.event_loop = QEventLoop(parent=self)
-
-        self.current_dir = Path(__file__).parent
-        self.base_dir = self.current_dir.parent
 
         if getattr(sys, 'frozen', False):
             self.app_dir = Path(sys.executable).parent
@@ -461,8 +465,7 @@ class DrDsUi(QMainWindow):
         self.update_message('Create a Decent Sampler drum preset from samples')
 
         app_icon = QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/drds_64.png')
-        app_icon.addFile(img_file, QSize(64, 64))
+        app_icon.addFile(self.icon_file, QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.setFixedSize(1024 + margin * 2, 768)
@@ -473,6 +476,10 @@ class DrDsUi(QMainWindow):
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
         self.get_defaults()
 
+        # Help
+        self.visit_github_a.triggered.connect(self.visit_github)
+        self.about_a.triggered.connect(self.about_dialog)
+
         self.output_path_l.pathChanged.connect(self.load_settings_from_rootdir)
 
     def update_drumpads(self):
@@ -482,16 +489,16 @@ class DrDsUi(QMainWindow):
             pad.update_note(note)
 
     def setup_menu_bar(self):
-        self.menu_bar = QMenuBar(parent=self)
+        self.menu_bar = QMenuBar(self)
         self.menu_bar.setNativeMenuBar(False)
 
         plt = self.menu_bar.palette()
         plt.setColor(QPalette.Background, QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
+        # Settings Menu
         self.settings_menu = QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
-        self.setMenuBar(self.menu_bar)
 
         self.save_settings_a = QAction(self)
         self.save_settings_a.setText('Save settings')
@@ -504,7 +511,24 @@ class DrDsUi(QMainWindow):
         self.settings_menu.addAction(self.save_settings_a)
         self.settings_menu.addSeparator()
         self.settings_menu.addAction(self.restore_defaults_a)
+
         self.menu_bar.addAction(self.settings_menu.menuAction())
+
+        # Help Menu
+        self.help_menu = QMenu(self.menu_bar)
+        self.help_menu.setTitle('?')
+        self.visit_github_a = QAction(self)
+        self.visit_github_a.setText('Visit repository on github')
+        self.about_a = QAction(self)
+        self.about_a.setText('About')
+
+        self.help_menu.addAction(self.visit_github_a)
+        self.help_menu.addAction(self.about_a)
+
+        self.menu_bar.addAction(self.help_menu.menuAction())
+
+        # Add menu bar
+        self.setMenuBar(self.menu_bar)
 
     def get_options(self):
         self.options.smp_attrib_cfg = self.smp_attrib_cfg
@@ -824,6 +848,27 @@ class DrDsUi(QMainWindow):
         self.move(x, y)
 
         return self
+
+    def about_dialog(self):
+        try:
+            about_dlg = AboutDialog(parent=self)
+            about_dlg.icon_file = self.icon_file
+            about_dlg.title = f'About {self.tool_name}'
+            about_dlg.text = f'{self.tool_name}<br>Version {self.tool_version}<br><br>'
+            about_dlg.text += 'MIT License<br>'
+            about_dlg.text += "Copyright © 2024 Michel 'Mitch' Pecqueur<br><br>"
+            about_dlg.url = 'https://github.com/robotmitchum/sample_tools'
+            about_dlg.setup_ui()
+            about_dlg.exec_()
+        except Exception as e:
+            print(e)
+            pass
+
+    @staticmethod
+    def visit_github():
+        url = 'https://github.com/robotmitchum/sample_tools'
+        qurl = QUrl(url)
+        QDesktopServices.openUrl(qurl)
 
 
 # Custom widgets

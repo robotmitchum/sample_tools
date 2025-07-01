@@ -26,7 +26,7 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 
 __ds_version__ = '1.12.16'
-__version__ = '1.4.2'
+__version__ = '1.4.3'
 
 
 def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
@@ -39,6 +39,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                     transpose: int = 0, tuning: float = 0, seq_mode: str = 'random',
                     pad_vel: bool = False,
 
+                    amp_env_enabled: bool = True,
                     adsr: tuple[float, float, float, float] = (0.001, 0, 1, .25),
                     adr_curve: tuple[float | None, float | None, float | None] = (None, None, None),
 
@@ -101,6 +102,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
     :param pad_vel: Re-use/duplicate note samples for velocity layers with fewer note samples
 
+    :param amp_env_enabled: Enable/disable amplitude envelope
     :param adsr: ADSR envelope (in s, except sustain)
     :param adr_curve: ADR Curve (-100 log, 0 lin, 100 exp)
 
@@ -1049,6 +1051,11 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                     crosslen = (loop_end - loop_start) * crossfade
                     smp_attrib['loopCrossfade'] = str(int(crosslen))
 
+                # Envelope off
+                # Disabling envelope is allowed only if the sample is not looped
+                if amp_env_enabled is False and smp_attrib['loopEnabled'] == "0":
+                    smp_attrib['ampEnvEnabled'] = 'false'
+
                 # Note Pan
                 if note_pan != 0:
                     pan = linstep(mn, mx, (lo_note + hi_note) / 2)
@@ -1075,6 +1082,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                 if fake_release and trg == 'attack':
                     fk_rls_smp_attrib = smp_attrib.copy()
                     fk_rls_smp_tuning = (smp_tuning, 0)[smp_tuning is None]
+                    fk_rls_smp_attrib.pop('ampEnvEnabled', None)  # fake releases always use envelope
 
                     match fk_rls_mode:
                         case 'start':
@@ -1100,6 +1108,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
                 # Most attributes are copied from source sample
                 if fake_legato and trg == 'attack':
                     fk_leg_smp_attrib = smp_attrib.copy()
+                    fk_leg_smp_attrib.pop('ampEnvEnabled', None)  # fake legatos always use envelope
 
                     # Trim start of the sample
                     smp_start = min(int(sr * fk_leg_start), smp_len - 1)

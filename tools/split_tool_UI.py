@@ -52,11 +52,13 @@ __version__ = '1.1.2'
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle(f'Split Audio Tool v{__version__}')
+        self.tool_name = 'Split Audio Tool'
+        self.tool_version = __version__
+        self.icon_file = resource_path(self.current_dir / 'UI/icons/split_tool_64.png')
+        self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         app_icon = QtGui.QIcon()
-        img_file = resource_path(self.current_dir / 'UI/icons/split_tool_64.png')
-        app_icon.addFile(img_file, QtCore.QSize(64, 64))
+        app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
         self.setup_pitch_mode_cmb(use_librosa=has_librosa, use_crepe=has_crepe)

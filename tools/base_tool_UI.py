@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtGui, Qt, QtCore
 
 from audio_player import AudioPlayer
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import FilePathLabel, replace_widget, get_custom_font
+from common_ui_utils import FilePathLabel, replace_widget, get_custom_font, AboutDialog
 from common_ui_utils import Node, KeyPressHandler, sample_to_name
 from dark_fusion_style import apply_dark_theme
 from sample_utils import Sample
@@ -93,6 +93,10 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
         self.progress_pb.setFont(custom_font)
 
+        self.icon_file = ''
+        self.tool_name = ''
+        self.tool_version = ''
+
     def setup_connections(self):
         # Files widgets
         self.set_files_tb.clicked.connect(self.browse_files)
@@ -121,6 +125,10 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.restore_defaults_a.triggered.connect(self.restore_defaults)
         # self.get_defaults()
 
+        # Help
+        self.visit_github_a.triggered.connect(self.visit_github)
+        self.about_a.triggered.connect(self.about_dialog)
+
         self.disable_focus()
 
     def setup_menu_bar(self):
@@ -131,9 +139,9 @@ class BaseToolUi(QtWidgets.QMainWindow):
         plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
+        # Settings Menu
         self.settings_menu = QtWidgets.QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
-        self.setMenuBar(self.menu_bar)
 
         self.save_settings_a = QtWidgets.QAction(self)
         self.save_settings_a.setText('Save settings')
@@ -146,7 +154,24 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.settings_menu.addAction(self.save_settings_a)
         self.settings_menu.addSeparator()
         self.settings_menu.addAction(self.restore_defaults_a)
+
         self.menu_bar.addAction(self.settings_menu.menuAction())
+
+        # Help Menu
+        self.help_menu = QtWidgets.QMenu(self.menu_bar)
+        self.help_menu.setTitle('?')
+        self.visit_github_a = QtWidgets.QAction(self)
+        self.visit_github_a.setText('Visit repository on github')
+        self.about_a = QtWidgets.QAction(self)
+        self.about_a.setText('About')
+
+        self.help_menu.addAction(self.visit_github_a)
+        self.help_menu.addAction(self.about_a)
+
+        self.menu_bar.addAction(self.help_menu.menuAction())
+
+        # Add menu bar
+        self.setMenuBar(self.menu_bar)
 
     def get_options(self):
         self.options.no_overwriting = self.no_overwriting_cb.isChecked()
@@ -439,6 +464,27 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def cleanup_worker(self, worker):
         if worker in self.active_workers:
             self.active_workers.remove(worker)
+
+    def about_dialog(self):
+        try:
+            about_dlg = AboutDialog(parent=self)
+            about_dlg.icon_file = self.icon_file
+            about_dlg.title = f'About {self.tool_name}'
+            about_dlg.text = f'{self.tool_name}<br>Version {self.tool_version}<br><br>'
+            about_dlg.text += 'MIT License<br>'
+            about_dlg.text += "Copyright © 2024 Michel 'Mitch' Pecqueur<br><br>"
+            about_dlg.url = 'https://github.com/robotmitchum/sample_tools'
+            about_dlg.setup_ui()
+            about_dlg.exec_()
+        except Exception as e:
+            print(e)
+            pass
+
+    @staticmethod
+    def visit_github():
+        url = 'https://github.com/robotmitchum/sample_tools'
+        qurl = QtCore.QUrl(url)
+        QtGui.QDesktopServices.openUrl(qurl)
 
 
 def launch(mw, app_id=''):
