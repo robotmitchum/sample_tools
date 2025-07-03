@@ -22,7 +22,7 @@ from utils import append_metadata, set_md_tags
 from utils import note_to_name, hz_to_note
 from common_math_utils import q_log, q_exp
 
-importlib.reload(pd)
+# importlib.reload(pd)
 
 
 def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | None = None,

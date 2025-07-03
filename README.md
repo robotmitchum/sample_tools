@@ -4,7 +4,8 @@
 
 ![SampleTools_UI](screencaps/sample_tools_ui.png)
 
-Tools for creating and editing virtual sampled instruments, optimized for DecentSampler
+Tools for creating and editing virtual sampled instruments, optimized for DecentSampler by David Hilowitz
+https://www.decentsamples.com/product/decent-sampler-plugin/
 
 ## Installation
 
