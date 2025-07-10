@@ -201,7 +201,7 @@ Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 
 ## Mutate Tool
 
-![MutateTool](tools\UI\icons\mutate_tool_64.png)
+![MutateTool](tools/UI/icons/mutate_tool_64.png)
 
 ![MutateTool_UI](screencaps/mutate_tool_ui.png)
 
@@ -218,7 +218,7 @@ Typical usages: generate round-robins samples, sound design
 
 ## Upsample Tool
 
-![UpsampleTool](tools\UI\icons\upsample_tool_64.png)
+![UpsampleTool](tools/UI/icons/upsample_tool_64.png)
 
 ![UpsampleTool_UI](screencaps/upsample_tool_ui.png)
 
