@@ -425,6 +425,9 @@ NOTE: envelope won't be turned off for looped samples so they don't play forever
          <string notr="true"/>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>0</number>
+         </property>
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -1382,7 +1385,7 @@ In many case, release sounds sound &quot;muffled&quot;, this can be simulated he
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <property name="spacing">
-        <number>4</number>
+        <number>0</number>
        </property>
        <property name="leftMargin">
         <number>0</number>
@@ -2906,7 +2909,7 @@ color: rgb(255, 255, 255);</string>
     <item>
      <layout class="QHBoxLayout" name="bg_text_lyt">
       <property name="spacing">
-       <number>4</number>
+       <number>0</number>
       </property>
       <item>
        <spacer name="horizontalSpacer_5">
@@ -3005,7 +3008,7 @@ custom: Type a custom text</string>
     <item>
      <layout class="QHBoxLayout" name="palette_lyt">
       <property name="spacing">
-       <number>4</number>
+       <number>0</number>
       </property>
       <item>
        <spacer name="horizontalSpacer_4">
@@ -3089,6 +3092,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="hue_dsb">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="contextMenuPolicy">
          <enum>Qt::NoContextMenu</enum>
         </property>
@@ -3120,6 +3129,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="sat_dsb">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="contextMenuPolicy">
          <enum>Qt::NoContextMenu</enum>
         </property>
@@ -3151,6 +3166,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="val_dsb">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="contextMenuPolicy">
          <enum>Qt::NoContextMenu</enum>
         </property>
@@ -3201,7 +3222,7 @@ custom: Type a custom text</string>
     <item>
      <layout class="QHBoxLayout" name="grp_ui_lyt">
       <property name="spacing">
-       <number>4</number>
+       <number>0</number>
       </property>
       <item>
        <spacer name="horizontalSpacer_8">
@@ -3314,6 +3335,12 @@ custom: Type a custom text</string>
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="max_adsr_dsb">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="contextMenuPolicy">
          <enum>Qt::NoContextMenu</enum>
         </property>
@@ -3364,7 +3391,7 @@ custom: Type a custom text</string>
     <item>
      <layout class="QHBoxLayout" name="reverb_lyt">
       <property name="spacing">
-       <number>4</number>
+       <number>0</number>
       </property>
       <item>
        <spacer name="spacer_20">

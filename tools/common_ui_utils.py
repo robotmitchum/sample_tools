@@ -520,7 +520,8 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
     hover_bg_color = tuple(np.round(lerp(bg_rgb, 255, .3)).astype(np.uint8).tolist())
 
     disabled_text_color = tuple(np.round(lerp(max(text_rgb), np.array([127] * 3), .3)).astype(np.uint8).tolist())
-    disabled_bg_color = tuple(np.round(lerp(max(bg_rgb), np.array([127] * 3), .3)).astype(np.uint8).tolist())
+    disabled_bg_color = tuple(
+        np.round(lerp(max(bg_rgb), np.array([max(bg_rgb) * .5] * 3), .3)).astype(np.uint8).tolist())
 
     ss += f'\n{wid_class}:hover {{color: {text_color.name()}; background-color: rgb{hover_bg_color};}}'
     ss += f'\n{wid_class}:disabled {{color: rgb{disabled_text_color}; background-color: rgb{disabled_bg_color};}}'

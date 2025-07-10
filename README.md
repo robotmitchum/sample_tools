@@ -29,8 +29,11 @@ Additional required packages all listed in provided requirements.txt
 - sounddevice
 - soundfile
 - webcolors
-- pyrubberband (only for upsample, requires [rubberband executable](https://breakfastquay.com/rubberband/) to be copied
-  in the program directory)
+
+
+- pyrubberband (for Mutate and Upsample tools only)<br/>
+  pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
+  program directory)
 
 Clone repository and install required packages
 
@@ -196,9 +199,26 @@ Apply pseudo-stereo/stereo imaging effects to mono audio file(s)
 - Haas, Velvet, Convolution, Side Convolution
 - wav, flac output
 
+## Mutate Tool
+
+![MutateTool](tools\UI\icons\mutate_tool_64.png)
+
+![MutateTool_UI](screencaps/mutate_tool_ui.png)
+
+Generate randomized mutants/variants from single samples
+
+- Detect transient cues from input samples
+- Separate noise and tonal content
+- randomize amplitude, time rate and pitch differently for tone and noise using found cues
+
+Typical usages: generate round-robins samples, sound design
+
+- wav, aif, flac as input
+- wav and flac output
+
 ## Upsample Tool
 
-![UpsampleTool](tools/UI/icons/upsample_tool_64.png)
+![UpsampleTool](tools\UI\icons\upsample_tool_64.png)
 
 ![UpsampleTool_UI](screencaps/upsample_tool_ui.png)
 

@@ -97,6 +97,7 @@ class DrDsUi(QMainWindow):
         # lbl_size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         # lbl_size_policy.setHeightForWidth(True)
         self.drumpad_count = 32
+        self.channel_count = 16
 
         self.player = AudioPlayer()
         self.player.signals.message.connect(self.update_message)
@@ -309,7 +310,7 @@ class DrDsUi(QMainWindow):
         # Background palette
         self.bg_plt_lyt = QHBoxLayout()
         self.bg_plt_lyt.setContentsMargins(0, 0, 0, 0)
-        self.bg_plt_lyt.setSpacing(4)
+        self.bg_plt_lyt.setSpacing(0)
         self.bg_plt_lyt.addWidget(QLabel('Palette'))
         self.palette_cmb = QComboBox(self.cw)
         self.palette_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
@@ -548,6 +549,8 @@ class DrDsUi(QMainWindow):
         active_drums = [drum_prop for drum_prop in self.drum_props if drum_prop.is_active()]
         active_number = {item.pad_idx + 1: i for i, item in enumerate(active_drums)}
 
+        aux_out = self.get_aux_out()
+
         for drum_prop in active_drums:
             choke = [active_number.get(item, None) for item in drum_prop.choke_cpd.value()]
             choke = [c for c in choke if c is not None]
@@ -557,6 +560,7 @@ class DrDsUi(QMainWindow):
                 'samples': drum_prop.get_samples(),
                 'note': drum_prop.note(),
                 'choke': choke,
+                'aux_out': aux_out[drum_prop.pad_idx],
                 'tuning': drum_prop.tuning_dsb.value(),
                 'volume': drum_prop.volume_dsb.value(),
                 'pan': drum_prop.pan_dsb.value()
@@ -801,6 +805,26 @@ class DrDsUi(QMainWindow):
     def cleanup_drum_prop(self):
         for item in self.drum_props:
             item.cleanup_lw()
+
+    def get_aux_out(self) -> dict:
+        """
+        Get auxiliary output channels values as a dict with drum_pad index as key and list of channels as value
+        :return:
+        """
+        result = dict()
+        used_chn = set()
+        all_chn = set(range(1, self.channel_count + 1))
+        for item in self.drum_props:
+            idx = item.pad_idx
+            if item.is_active():
+                chn = item.aux_out_cpd.value()
+                if item.auto_aux_out_cb.isChecked() or not chn:
+                    chn = [min(all_chn.difference(used_chn) or [self.channel_count])]
+            else:
+                chn = []
+            result[idx] = chn
+            used_chn |= set(chn)
+        return result
 
     def populate_palette_cmb(self):
         plt_cfg_files = [str(item) for item in self.plt_cfg_dir.glob(f'*{self.plt_cfg_suffix}.json')]
@@ -1256,7 +1280,7 @@ class DrumpadProperties(QWidget):
         self.choke_lyt.addWidget(self.choke_l)
 
         drumpad_count = self.parent_window.drumpad_count
-        choke_items = {k: v for k, v in zip(range(1, drumpad_count + 1), [False] * (drumpad_count + 1))}
+        choke_items = {k: v for k, v in zip(range(1, drumpad_count + 1), [False] * drumpad_count)}
         self.choke_cpd = CheckPullDown(parent=self, items=choke_items)
 
         self.choke_cpd.setObjectName(f'choke_cpd_{index + 1:02d}')
@@ -1270,6 +1294,34 @@ class DrumpadProperties(QWidget):
 
         self.attrib_lyt.addLayout(self.choke_lyt)
 
+        # - Aux Output widgets -
+        self.aux_out_lyt = QHBoxLayout()
+        self.aux_out_lyt.setContentsMargins(4, 0, 4, 0)
+        self.aux_out_lyt.setSpacing(8)
+        self.aux_out_l = QLabel('AuxOut', self)
+        lbl_size_policy.setHeightForWidth(self.aux_out_l.sizePolicy().hasHeightForWidth())
+        self.aux_out_l.setSizePolicy(lbl_size_policy)
+        self.aux_out_lyt.addWidget(self.aux_out_l)
+
+        aux_out_count = 16
+        aux_out_items = {k: v for k, v in zip(range(1, aux_out_count + 1), [False] * aux_out_count)}
+        self.aux_out_cpd = CheckPullDown(parent=self, items=aux_out_items)
+        self.aux_out_cpd.ctx_menu_names = ['First Available', 'Clear']
+        self.aux_out_cpd.ctx_menu_cmds = [self.set_first_free_aux_out, self.aux_out_cpd.clear_items]
+
+        self.aux_out_cpd.setObjectName(f'aux_output_cpd_{index + 1:02d}')
+        self.aux_out_cpd.setToolTip('Select aux output channel(s) for the current drum pad\n'
+                                    'This allows to send multiple pads to the same channel (HiHats, Toms...)\n'
+                                    'Empty is equivalent to Auto\n\nRight-click for context menu')
+        self.aux_out_lyt.addWidget(self.aux_out_cpd)
+
+        self.auto_aux_out_cb = QCheckBox('Auto', self)
+        self.auto_aux_out_cb.setObjectName(f'auto_aux_out_cb_{index + 1:02d}')
+        self.auto_aux_out_cb.setToolTip('Assign drum pad to the first available aux out (default)')
+        self.aux_out_lyt.addWidget(self.auto_aux_out_cb)
+
+        self.attrib_lyt.addLayout(self.aux_out_lyt)
+
         # Function Aliases
         self.get_samples = self.files_lw.get_lw_items
         self.current_sample = self.files_lw.current_lw_item
@@ -1277,6 +1329,9 @@ class DrumpadProperties(QWidget):
         # Connect updates
         self.self_choke_cb.stateChanged.connect(self.choke_cb_update)
         self.self_choke_cb.setChecked(True)
+
+        self.auto_aux_out_cb.stateChanged.connect(lambda state: self.aux_out_cpd.setEnabled(not state))
+        self.auto_aux_out_cb.setChecked(True)
 
         self.files_lw.model().dataChanged.connect(partial(self.update_pad, clear_pad=False))
         self.files_lw.model().rowsRemoved.connect(partial(self.update_pad, clear_pad=False))
@@ -1302,6 +1357,29 @@ class DrumpadProperties(QWidget):
 
     def is_active(self):
         return self.files_lw.count() > 0
+
+    def get_first_free_aux_out(self) -> int:
+        active_drums = [drum_prop for drum_prop in self.parent_window.drum_props[:self.pad_idx + 1] if
+                        drum_prop.is_active()]
+
+        used_chn = set()
+        chn_count = self.parent_window.channel_count
+
+        chn = [chn_count]
+        all_chn = set(range(1, chn_count + 1))
+        for item in active_drums:
+            chn = item.aux_out_cpd.value()
+            if item.auto_aux_out_cb.isChecked() or not chn:
+                chn = [min(all_chn.difference(used_chn) or [chn_count])]
+            used_chn |= set(chn)
+
+        return chn[0]
+
+    def set_first_free_aux_out(self):
+        chn = self.get_first_free_aux_out()
+        chn_count = self.parent_window.channel_count
+        values = {k: k == chn for k in range(1, chn_count + 1)}
+        self.aux_out_cpd.set_items(values)
 
     def name(self):
         """
@@ -1387,8 +1465,11 @@ class CheckPullDown(QPushButton):
         self.setFont(font)
 
         self.clicked.connect(self.pulldown_menu)
-        self.ctx_menu()
 
+        self.ctx_menu_names = ['Clear']
+        self.ctx_menu_cmds = [self.clear_items]
+
+        self.ctx_menu()
         self.update_text()
 
     def toggle_item(self, key):
@@ -1404,23 +1485,42 @@ class CheckPullDown(QPushButton):
     def get_items(self):
         return self.items
 
-    def set_items(self, items):
+    def set_items(self, items: dict):
+        """
+        Set items from a dict with drum pad index as key and value as a list of bool or None
+        :param items:
+        :return:
+        """
         self.items = items or dict()
         self.update_text()
 
-    def value(self):
+    def value(self) -> list[int]:
+        """
+        Return items as a list
+        """
         result = [k for k, v in self.items.items() if bool(v)]
         return result
 
-    def get_prefs(self):
+    def get_prefs(self) -> list[any]:
+        """
+        Get items as a list of values
+        """
+
         result = [k for k, v in self.items.items() if bool(v) and isinstance(v, bool)]
         return result
 
-    def set_prefs(self, value):
+    def set_prefs(self, value: list[any]):
+        """
+        Set items from a list of values
+        :param value:
+        """
         self.items = {k: (v, k in value)[isinstance(v, bool)] for k, v in self.items.items()}
         self.update_text()
 
     def update_text(self):
+        """
+        Update button text
+        """
         text = ' '.join([str(k) for k, v in self.items.items() if bool(v)])
         self.setText(text)
 
@@ -1455,8 +1555,8 @@ class CheckPullDown(QPushButton):
 
     def ctx_menu(self):
         def show_context_menu():
-            names = ['Clear Items']
-            cmds = [self.clear_items]
+            names = self.ctx_menu_names
+            cmds = self.ctx_menu_cmds
 
             menu = QMenu(self)
 

@@ -84,6 +84,11 @@ def random_from_string(name):
     return np.random.random()
 
 
+def string_to_seed(name):
+    seed = int(hashlib.sha256(name.encode('utf-8')).hexdigest(), 16) % (10 ** 8)
+    return seed
+
+
 def np_to_rgbint(arr):
     """
     Convert numpy array to 8-bit unsigned integer tuple

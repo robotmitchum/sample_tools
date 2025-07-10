@@ -25,7 +25,7 @@ from estimate_offset import sampleset_offset
 from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 
-__ds_version__ = '1.12.16'
+__ds_version__ = '1.12.17'
 __version__ = '1.4.3'
 
 

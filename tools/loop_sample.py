@@ -24,8 +24,9 @@ from sample_utils import Sample
 from split_audio import envelope_transform
 from utils import append_metadata, set_md_tags, name_to_note, note_to_hz, hz_to_period
 
-importlib.reload(fftr)
-importlib.reload(cu)
+
+# importlib.reload(fftr)
+# importlib.reload(cu)
 
 
 def loop_sample(input_file='', output_file='', bit_depth=None,

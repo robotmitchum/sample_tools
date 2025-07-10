@@ -38,7 +38,7 @@ class ScreenCap(QMainWindow):
             sys.path.append(str(self.tools_path))
 
         self.scripts = ['sample_tools_UI.py', 'smp2ds_UI.py', 'drds_UI.py', 'split_tool_UI.py', 'rename_tool_UI.py',
-                        'loop_tool_UI.py', 'st_tool_UI.py', 'upsample_tool_UI.py']
+                        'loop_tool_UI.py', 'st_tool_UI.py', 'mutate_tool_UI.py', 'upsample_tool_UI.py']
 
         self.script_modules = {}
 

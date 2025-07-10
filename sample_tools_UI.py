@@ -82,6 +82,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             'Rename Sample Tool': 'rename_tool_UI.py',
             'Loop Tool': 'loop_tool_UI.py',
             'Stereo Tool': 'st_tool_UI.py',
+            'Mutate Tool': 'mutate_tool_UI.py',
             'Upsample Tool': 'upsample_tool_UI.py',
         }
 
@@ -95,6 +96,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             'Rename Sample Tool': 'rename_tool_64.png',
             'Loop Tool': 'loop_tool_64.png',
             'Stereo Tool': 'st_tool_64.png',
+            'Mutate Tool': 'mutate_tool_64.png',
             'Upsample Tool': 'upsample_tool_64.png',
         }
 
@@ -105,6 +107,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
             'Rename Sample Tool': "Rename audio files and update their 'smpl' chunk/metadata",
             'Loop Tool': 'Detect loop points or modify audio files to make them loop',
             'Stereo Tool': 'Apply pseudo-stereo/stereo imaging effect to audio file(s)',
+            'Mutate Tool': 'Generate randomized mutants/variants from single samples',
             'Upsample Tool': 'Up-sample audio file(s) using spectral band replication',
         }
 
@@ -156,7 +159,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
         app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
         self.setWindowIcon(app_icon)
 
-        self.setFixedSize(576, 112)
+        self.setFixedSize(640, 112)
 
     def launch_tool(self, name):
         """

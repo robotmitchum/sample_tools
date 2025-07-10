@@ -20,8 +20,8 @@ from file_utils import recursive_search, resolve_overwriting
 from jsonFile import read_json
 from smp_to_dspreset import write_xml_to_file
 
-__ds_version__ = '1.12.16'
-__version__ = '1.1.1'
+__ds_version__ = '1.12.17'
+__version__ = '1.1.2'
 
 
 def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples', data: dict = None,
@@ -563,10 +563,15 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples', data:
 
         # Multi-Output
         if multi_out:
+            aux_out = grp.get('aux_out') or [g + 1]
+            print(f'\tAux Stereo Output: {' '.join([str(ao) for ao in aux_out])}')
+
             grp_attrib['output1Target'] = 'MAIN_OUTPUT'
             grp_attrib['output1Volume'] = '1.0'
-            grp_attrib['output2Target'] = f'AUX_STEREO_OUTPUT_{g + 1}'
-            grp_attrib['output2Volume'] = '1.0'
+
+            for ot, ao in enumerate(aux_out):
+                grp_attrib[f'output{ot + 2}Target'] = f'AUX_STEREO_OUTPUT_{ao}'
+                grp_attrib[f'output{ot + 2}Volume'] = '1.0'
 
         # Tuning, Volume, Pan
         tuning = grp.get('tuning', 0)
