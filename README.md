@@ -12,7 +12,7 @@ https://www.decentsamples.com/product/decent-sampler-plugin/
 
 **For Windows users, an executable is available on this page, you don't need to install Python to use it**
 
-This project was developed and tested with Python 3.12.8
+This project was developed and tested with Python 3.12.10
 
 Additional required packages all listed in provided requirements.txt
 
