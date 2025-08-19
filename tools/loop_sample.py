@@ -7,7 +7,6 @@
     :date: 2024.06
 """
 
-import importlib
 import os
 from collections import namedtuple
 from pathlib import Path
@@ -22,24 +21,22 @@ from common_math_utils import lerp, clamp, smoothstep, q_exp, q_log
 from file_utils import resolve_overwriting
 from sample_utils import Sample
 from split_audio import envelope_transform
-from utils import append_metadata, set_md_tags, name_to_note, note_to_hz, hz_to_period
+from utils import append_metadata, set_md_tags, note_to_hz
 
 
-# importlib.reload(fftr)
-# importlib.reload(cu)
-
-
-def loop_sample(input_file='', output_file='', bit_depth=None,
-                env_window=50,
-                shape_env={'env_threshold': -6, 'env_min': -30, 'env_mode': 'loop'},
-                detect_loop={'n_cues': 90000, 'min_len': 100, 'window_size': 10, 'window_offset': .5,
-                             'start_range': 1, 'end_range': 0, 'hash_search': False},
-                crossfade={'fade_in': .5, 'fade_out': .5, 'mode': 'linear'},
-                resynth={'fft_range': 'custom', 'fft_start': 0.25, 'fft_end': 1.0, 'duration': 2.0,
-                         'atonal_mix': 1, 'freq_mode': 'note_pf', 'freqs': None,
-                         'resynth_mix': 'loop_tail', 'fade_in': .5, 'fade_out': .5, 'width': .5},
-                trim_after=False, no_overwriting=True, progress_bar=None,
-                worker=None, progress_callback=None, message_callback=None):
+def loop_sample(input_file: str | Path | None = '', output_file: str | Path | None = '', bit_depth: int | None = None,
+                env_window: int = 50,
+                shape_env: dict | None | bool = {'env_threshold': -6, 'env_min': -30, 'env_mode': 'loop'},
+                detect_loop: dict | None | bool = {'n_cues': 90000, 'min_len': 100, 'window_size': 10,
+                                                   'window_offset': .5, 'start_range': 1, 'end_range': 0,
+                                                   'hash_search': False},
+                crossfade: dict | None | bool = {'fade_in': .5, 'fade_out': .5, 'mode': 'linear'},
+                resynth: dict | None | bool = {'fft_range': 'custom', 'fft_start': 0.25, 'fft_end': 1.0,
+                                               'duration': 2.0, 'atonal_mix': 1, 'freq_mode': 'note_pf', 'freqs': None,
+                                               'resynth_mix': 'loop_tail', 'fade_in': .5, 'fade_out': .5, 'width': .5},
+                trim_after: bool = False, no_overwriting: bool = True, progress_bar: object | None = None,
+                worker: object | None = None, progress_callback: object | None = None,
+                message_callback: object | None = None) -> namedtuple:
     """
     Loop an audio sample
 
@@ -47,27 +44,27 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
     - Detect and set a loop region for a given audio file (keep current loop info if disabled)
     - Apply a cross-fade to loop
 
-    :param str input_file:
-    :param str or None output_file: if None return resulting data
-    :param int bit_depth:
+    :param input_file:
+    :param output_file: if None return resulting data
+    :param bit_depth: Target bit-depth
 
-    :param int env_window: Envelope window length in ms, also used loop detection target in 'db' mode
+    :param env_window: Envelope window length in ms, also used loop detection target in 'db' mode
 
-    :param dict or None or bool shape_env: Envelope shaping settings
+    :param shape_env: Envelope shaping settings
     {'env_threshold': -6, 'env_min': -30, 'env_mode': 'loop'}
 
-    :param dict or None or bool detect_loop: Loop detection settings
+    :param detect_loop: Loop detection settings
     {'tgt_mode': str ('percent', 'db' or 'samples'),
     'target': float or int,
     'min_len': int (minimum loop length ms),
     'window_size': int (self-correlation window length in ms)}
 
-    :param dict or None or bool crossfade: Cross-fade settings
+    :param crossfade: Cross-fade settings
     {'fade_in': float (% of loop length),
     'fade_out': float (% of loop length),
     'mode': str (fade mode 'linear', 'smoothstep' or 'exp')}
 
-    :param dict or None or bool resynth: FFT Re-Synth settings
+    :param resynth: FFT Re-Synth settings
     {'fft_range': str (fft analysis audio range mode 'custom' or 'from_loop'),
     'fft_start': float (fft custom start as % of audio length),
     'fft_end': float (fft custom end as % of audio length),
@@ -79,17 +76,19 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
     'fade_in': float (fade-in length as % of audio length), 'fade_out': float (fade-out length as % of audio length),
      'width': float stereo effect mix with resynth_mix=='all' (0-1)}
 
-    :param bool trim_after: Trim file after loop end
+    :param trim_after: Trim file after loop end
 
-    :param bool no_overwriting:
+    :param no_overwriting:
 
-    :param object progress_bar: optional QProgressBar
+    :param progress_bar: optional QProgressBar for querying values only
+    :param worker: Optional worker class, to query info about process or interrupt it
+    :param progress_callback: Optional callback to update progress bar percentage
+    :param message_callback: Optional callback to update progress bar message
 
     :return: output result, sample info, output file path
-    :rtype: namedtuple
     """
 
-    audio, sr = sf.read(input_file)
+    audio, sr = sf.read(str(input_file))
     orig_audio = np.copy(audio)
     info = Sample(input_file)
     loop = info.loopStart, info.loopEnd
@@ -98,6 +97,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
         print(f'{input_file} does not have loop information, nothing done')
         return None
 
+    ext = 'wav'
     if output_file:
         p = Path(output_file)
         name, ext = p.stem, p.suffix[1:]
@@ -264,7 +264,7 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 
     # Write file
     sf_path = (output_file, f'{output_file}f')[ext == 'aif']
-    sf.write(sf_path, audio, samplerate=sr, subtype=bd_dict[bit_depth])
+    sf.write(str(sf_path), audio, samplerate=sr, subtype=bd_dict[bit_depth])
     if sf_path != output_file:
         os.rename(sf_path, output_file)
 
@@ -287,23 +287,28 @@ def loop_sample(input_file='', output_file='', bit_depth=None,
 # Loop detection
 
 
-def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=.5,
-                start_range=1, end_range=0, progress_bar=None,
-                worker=None, progress_callback=None, message_callback=None):
+def search_loop(audio: np.ndarray, n_cues: int = 768, min_len: int = 2048, window_size: int = 512,
+                window_offset: float = .5, start_range: float = 1, end_range: float = 0,
+                progress_bar: object | None = None, worker: object | None = None,
+                progress_callback: object | None = None, message_callback: object | None = None) -> list | None:
     """
     Search Loop by auto-correlation, find both start and end points
 
-    :param np.array audio: Input array
-    :param float window_offset: search direction, 0 backward, .5 centered, 1 forward
-    :param int n_cues: Nax number of cues to consider
+    :param audio: Input array
+    :param n_cues: Nax number of cues to consider
     :param min_len: Minimum loop length (in samples)
     :param window_size: (in samples)
-    :return: loop_start, loop_end
-    :param float start_range:
-    :param float end_range:
-    :param function progress_callback:
 
-    :rtype: list
+    :param window_offset: search direction, 0 backward, .5 centered, 1 forward
+    :param start_range: Constraint search after this value
+    :param end_range: Constraint search before this value
+
+    :param progress_bar: optional QProgressBar for querying values only
+    :param worker: optional Worker class, to query info about process or interrupt it
+    :param progress_callback: Optional callback to update progress bar percentage
+    :param message_callback: Optional callback to update progress bar message
+
+    :return: loop_start, loop_end
     """
     if audio.ndim > 1:
         mono_audio = np.mean(audio, axis=-1)
@@ -375,7 +380,7 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
             return None
 
         # Loop end search
-        end_pos = zc_cues[end_idx]
+        end_pos = int(zc_cues[end_idx])
 
         # Throttle progress updates
         pr = (i + 1) / len(end_idx_range)
@@ -427,14 +432,13 @@ def search_loop(audio, n_cues=768, min_len=2048, window_size=512, window_offset=
     return [int(loop_start), int(loop_end - 1)]
 
 
-def search_loop_hashing(audio, window_size=64, tol=1e-5):
+def search_loop_hashing(audio: np.ndarray, window_size: int = 64, tol: float = 1e-5) -> list | None:
     """
     Search for a perfect loop if applicable, typically in already processed audio (baked in cross-fade loop)
     :param audio:
-    :param int window_size: Used for comparison
-    :param float tol: tolerance for comparison
+    :param window_size: Used for comparison
+    :param tol: tolerance for comparison
     :return:
-    :rtype: list or None
     """
     hashes = {}
     for start in range(len(audio) - window_size):
@@ -454,17 +458,18 @@ def search_loop_hashing(audio, window_size=64, tol=1e-5):
 
 
 # Auxiliary function
-def apply_crossfade(audio, loop, fade_in=.5, fade_out=.25, mode='linear', au_b=None):
+def apply_crossfade(audio: np.ndarray, loop: tuple[int, int], fade_in: float = .5, fade_out: float = .25,
+                    mode: str | None = 'linear',
+                    au_b: np.ndarray | None = None) -> np.ndarray:
     """
     Applies cross-fade to audio to further smooth looped playback
-    :param np.array audio: Input Audio
-    :param list or tuple loop: Loop start/ End values
-    :param float fade_in: Crossfade, in percent of loop length
-    :param float fade_out: Post crossfade out, clamped, so it can't be longer than audio length
-    :param str or None mode: Interpolation type, 'linear' or 'smoothstep'
-    :param np.array au_b: Blend to optional signal outside of loop
-    :return: Crossfaded audio
-    :rtype: np.array
+    :param audio: Input Audio
+    :param loop: Loop start/ End values
+    :param fade_in: Cross-fade, in percent of loop length
+    :param fade_out: Post cross-fade out, clamped, so it can't be longer than audio length
+    :param mode: Interpolation type, 'linear' or 'smoothstep'
+    :param au_b: Blend to optional signal outside of loop
+    :return: Cross-faded audio
     """
 
     loop_start, loop_end = loop
@@ -518,13 +523,12 @@ def apply_crossfade(audio, loop, fade_in=.5, fade_out=.25, mode='linear', au_b=N
 
 
 # Utility functions
-def zero_crossing_idx(data, mode=1):
+def zero_crossing_idx(data: np.ndarray, mode: int = 1) -> np.ndarray:
     """
     Return zero crossing indices
-    :param np.array data:
-    :param int mode: Negative(-1), Positive(1) or Absolute (0)
-    :return:
-    :rtype: np.array
+    :param data: Audio array
+    :param mode: Negative(-1), Positive(1) or Absolute (0)
+    :return: Zero crossing indices
     """
     diff = np.diff(np.sign(data))
     if mode > 0:
@@ -535,13 +539,12 @@ def zero_crossing_idx(data, mode=1):
         return np.argwhere(np.abs(diff) > 0).reshape(-1) + 1
 
 
-def decimate_array(data, target_size):
+def decimate_array(data: np.ndarray | range, target_size: int) -> np.ndarray:
     """
     Reduce the number of items of a numpy array
-    :param np.array data: Input array
-    :param int target_size: Desired size of the array
+    :param data: Input array
+    :param target_size: Desired size of the array
     :return: Decimated array
-    :rtype: np.array
     """
     current_size = len(data)
     if target_size >= current_size:
@@ -550,14 +553,13 @@ def decimate_array(data, target_size):
     return np.array(data)[indices]
 
 
-def find_idx(data, x, direction=0):
+def find_idx(data: np.ndarray, x: int, direction: int = 0) -> int:
     """
     Return closest index to target value in input array
-    :param np.array data: input array
+    :param data: Source array
     :param int x: Target value
-    :param int direction: Search direction, previous -1, closest 0, next 1
-    :return:
-    :rtype: int
+    :param direction: Search direction, previous -1, closest 0, next 1
+    :return: index from source array
     """
     idx = np.argmin(np.abs(data - x))
     zc = data[idx]
@@ -567,64 +569,3 @@ def find_idx(data, x, direction=0):
         idx += 1
     idx = clamp(idx, 0, len(data) - 1)
     return np.clip(idx, 0, len(data))
-
-
-# Extra functions
-
-def ms_to_smp(ms, sr):
-    return int(sr * ms / 1000)
-
-
-def pitch_correction_from_loop(note, loop_start, loop_end, sr):
-    """
-    Calculate pitch correction from loop
-    Only works when loop cues match periods of the signal
-    Typical usage : correct pitch for very short loops (a few periods)
-    :param int or str note:
-    :param loop_start:
-    :param loop_end:
-    :param int sr:
-    :return: Pitch correction in semitone cents
-    """
-    if isinstance(note, str):
-        pitch = name_to_note(note)
-    else:
-        pitch = note
-    period = hz_to_period(note_to_hz(pitch), sr)
-
-    loop_len = loop_end - loop_start
-    pitch = sr / (loop_len / round(loop_len / period))
-    pitch_correction = round((round(pitch) - pitch) * 100)
-
-    return int(pitch_correction)
-
-
-def gen_intervals(seed=123456, step=567, mn=0, mx=123456):
-    """
-    Return an array of evenly spaced integers given a seed in the array
-    :param seed: Seed value
-    :param step: Gap between values
-    :param int mn: Min value
-    :param int mx: Max value
-    :return:
-    :rtype: np.array
-    """
-    offset = seed % step
-    start = mn - (mn % step) + offset
-    return np.arange(start, mx + 1, step)
-
-
-def filter_array(data, tgt, md=16):
-    """
-    Filter values of an array with values of another keeping only value within a given radius
-    :param np.array data: Source array
-    :param np.array tgt: Target array
-    :param int md: Radius or max distance
-    :return:
-    :rtype: np.array
-    """
-    result = np.array([], dtype=np.int32)
-    for item in tgt:
-        idx = np.argwhere(np.abs(data - item) < md).reshape(-1)
-        result = np.append(result, data[idx])
-    return result

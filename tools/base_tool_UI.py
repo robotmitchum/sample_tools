@@ -234,6 +234,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()
+        menu.deleteLater()
 
     def waveform_dlg(self):
         items = self.get_sel_lw_items()
@@ -244,6 +245,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
             dialog = WaveformDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                     cues=info.cues, parent=self)
             dialog.exec_()
+            dialog.deleteLater()
 
     def loop_point_dlg(self):
         items = self.get_sel_lw_items()
@@ -255,6 +257,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                 dialog = LoopPointDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                          disp_len=200, parent=self)
                 dialog.exec_()
+                dialog.deleteLater()
 
     def get_lw_items(self):
         return [self.files_lw.item(i).data(Qt.Qt.UserRole) for i in range(self.files_lw.count())]
@@ -288,7 +291,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                 item.setText(sample_to_name(f))
             else:
                 self.files_lw.takeItem(self.files_lw.row(item))
-        self.files_lw.update()
+        self.files_lw.viewport().update()
 
     def play_lw_item(self, *args):
         self.player.stop()

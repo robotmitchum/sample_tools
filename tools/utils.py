@@ -9,6 +9,7 @@
 import math
 import os
 import re
+from pathlib import Path
 
 import mutagen
 import numpy as np
@@ -16,7 +17,8 @@ import soundfile as sf
 
 
 # Set/Append Tags / Metadata functions
-def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
+def append_metadata(input_file: str | Path, note: int, pitch_fraction: float | None,
+                    loop_start: int | None, loop_end: int | None):
     """
     Simplistic note and region loop appending, properly recognized by Kontakt and other software
 
@@ -26,42 +28,43 @@ def append_metadata(input_file, note, pitch_fraction, loop_start, loop_end):
 
     The data is simply appended, so it's meant to be used once on a wav without any note/loop metadata
 
-    :param float or None pitch_fraction:
-    :param int note:
-    :param str input_file:
-    :param int or None loop_start:
-    :param int or None loop_end:
+    :param pitch_fraction:
+    :param note:
+    :param input_file:
+    :param loop_start:
+    :param loop_end:
     """
 
     # Get sample rate and RIFF size
-    info = sf.info(input_file)
+    info = sf.info(str(input_file))
     sr = info.samplerate
     riff_size = os.path.getsize(input_file) - 8  # File size minus header header chunks
     riff_size += 68  # Metadata Size
 
     # Update RIFF size to make the file valid after appending metadata
-    with open(input_file, 'r+b') as wf:
+    with open(str(input_file), 'r+b') as wf:
         wf.seek(4)
         wf.write(as_chunk(riff_size, 4))
     wf.close()
 
     bin_data = metadata_to_bin(sr, note, pitch_fraction, loop_start, loop_end)
 
-    with open(input_file, 'ab') as f:
+    with open(str(input_file), 'ab') as f:
         f.write(bin_data)
     f.close()
 
 
-def metadata_to_bin(sr, note, pitch_fraction, loop_start, loop_end):
+def metadata_to_bin(sr: int, note: int | None, pitch_fraction: float | None,
+                    loop_start: int | None, loop_end: int | None) -> bin:
     """
     Note / Loop metadata to riff bin chunk data
 
-    :param int sr: Sampling Rate, necessary to set 'sample period' info correctly
-    :param int or None note: MIDI note number in semitones, integer between 0 and 127
+    :param sr: Sampling Rate, necessary to set 'sample period' info correctly
+    :param note: MIDI note number in semitones, integer between 0 and 127
     For example, 60 is the default note (C4) 69 is A4
-    :param float or None pitch_fraction: In semitone cents
-    :param int or None loop_start: Use None to disable looping, only one forever loop is supported
-    :param int or None loop_end:
+    :param pitch_fraction: In semitone cents
+    :param loop_start: Use None to disable looping, only one forever loop is supported
+    :param loop_end:
 
     :return: Binary data
     """
@@ -109,16 +112,16 @@ def metadata_to_bin(sr, note, pitch_fraction, loop_start, loop_end):
     return bin_data
 
 
-def set_metadata_tags(input_file, note, pitch_fraction, loop_start, loop_end):
+def set_metadata_tags(input_file: str | Path, note: int | None, pitch_fraction: float | None,
+                      loop_start: int | None, loop_end: int | None):
     """
     Set sample metadata as tags using mutagen
     Currently only supports FLAC format
-    :param str input_file:
-    :param int note:
-    :param float pitch_fraction:
-    :param int loop_start:
-    :param int loop_end:
-    :return:
+    :param input_file:
+    :param note:
+    :param pitch_fraction:
+    :param loop_start:
+    :param loop_end:
     """
     audio = mutagen.File(input_file)
     tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd']
@@ -129,17 +132,16 @@ def set_metadata_tags(input_file, note, pitch_fraction, loop_start, loop_end):
     audio.save()
 
 
-def set_md_tags(input_file, md=None):
+def set_md_tags(input_file: str | Path, md: dict | None = None):
     """
     Set ID3 tags from dict
     Currently only supports FLAC format
-    :param str input_file:
-    :param dict md:
-    :return:
+    :param input_file:
+    :param md: Metadata dictionary
     """
     if not md:
         return None
-    audio = mutagen.File(input_file)
+    audio = mutagen.File(str(input_file))
     for tag, value in md.items():
         if value is not None:
             audio[tag] = str(value)
@@ -147,19 +149,19 @@ def set_md_tags(input_file, md=None):
 
 
 # String Manipulation
-def rep_word_from_name(name='', word='', repstr='', idx=-1, min_count=1, ignore_case=False):
+def rep_word_from_name(name: str = '', word: str = '', repstr: str = '', idx: int = -1, min_count: int = 1,
+                       ignore_case: bool = False) -> str:
     """
     Replace word from name
 
-    :param bool ignore_case:
-    :param str name:
-    :param str word:
-    :param str repstr:
-    :param int idx:
-    :param int min_count:
+    :param name:
+    :param word:
+    :param repstr:
+    :param idx:
+    :param min_count:
+    :param ignore_case:
 
     :return:
-    :rtype: str
     """
     words = re.findall(word, name)
     kwargs = {}
@@ -175,40 +177,33 @@ def rep_word_from_name(name='', word='', repstr='', idx=-1, min_count=1, ignore_
 
 
 # Note/Pitch Conversion
-def hz_to_note(freq, ref_freq=440, ref_note=69):
+def hz_to_note(freq: float | int, ref_freq: float = 440, ref_note: int = 69) -> float:
     """
     Return MIDI note number from frequency in Hz
-    :param float or int freq:
-    :param float ref_freq:
-    :param int ref_note:
-    :return:
-    :rtype: float
+    :param freq: Given frequency (Hz)
+    :param ref_freq: Reference frequency (Hz)
+    :param ref_note: Reference note number
+    :return: MIDI note number
     """
     return ref_note + 12 * math.log2(freq / ref_freq)
 
 
-def note_to_hz(note, ref_freq=440, ref_note=69):
+def note_to_hz(note: int | float, ref_freq: float = 440, ref_note: int = 69) -> float:
     """
     Return frequency from MIDI note
-    :param int or float note: MIDI note number
-    :param float ref_freq:
-    :param int ref_note:
-    :return: frequency
-    :rtype: float
+    :param note: MIDI note number
+    :param ref_freq: Reference frequency (Hz)
+    :param ref_note: Reference note number
+    :return: frequency (Hz)
     """
     return ref_freq * 2 ** ((note - ref_note) / 12)
 
 
-def hz_to_period(f, sr=48000):
-    return int(round(sr / f))
-
-
-def note_to_name(note):
+def note_to_name(note: int) -> tuple[str, int]:
     """
     Return note name and octave number from MIDI note
-    :param int note: MIDI note number
+    :param note: MIDI note number
     :return: Note name, Octave number
-    :rtype: list
     """
     note_names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
     note_name = note_names[note % 12]
@@ -216,43 +211,25 @@ def note_to_name(note):
     return note_name, octave
 
 
-def rm_digit_words(name, sep='-_ '):
-    """
-    Conform name by removing digits only words in a name
-
-    :param str name: Name string to process
-    :param str sep: Separators
-
-    :return: Processed string
-    :rtype: str
-    """
-    pattern = f'[{sep}]'
-    splits = re.split(pattern, name)
-    splits = [s for s in splits if not s.isdigit()]
-    return '_'.join(splits)
-
-
-def name_to_note(name):
+def name_to_note(name: str) -> int:
     """
     Return MIDI note number from note name following this pattern "C#3"
-    :param str name:
-    :return:
-    :rtype: int
+    :param name: Note name
+    :return: MIDI note number
     """
     note = dict(zip('CDEFGAB', [0, 2, 4, 5, 7, 9, 11]))[name.upper()[0]]
     if '#' in name:
         note += 1
-    octave = int(name[-1])
+    octave = int((re.findall('(-?\\d+)$', name) or [4])[0])
     note = note + (octave + 1) * 12
     return note
 
 
-def is_note_name(name):
+def is_note_name(name: str) -> bool:
     """
     Identify if a string is likely to be a note name
-    :param str name:
+    :param name:
     :return:
-    :rtyoe: bool
     """
     if 2 <= len(name) <= 3:
         if name[0].upper() in 'CDEFGAB':
@@ -261,24 +238,41 @@ def is_note_name(name):
     return False
 
 
-def find_notes_from_name(name):
+def hz_to_period(f: float, sr: int = 48000) -> int:
+    return int(round(sr / f))
+
+
+def rm_digit_words(name: str, sep: str = '-_ ') -> str:
+    """
+    Conform name by removing digits only words in a name
+
+    :param name: Name string to process
+    :param sep: Separators
+
+    :return: Processed string
+    """
+    pattern = f'[{sep}]'
+    splits = re.split(pattern, name)
+    splits = [s for s in splits if not s.isdigit()]
+    return '_'.join(splits)
+
+
+def find_notes_from_name(name: str) -> list:
     """
     Extract note from string
-    :param str name:
+    :param name:
     :return:
-    :rtype: str
     """
     pattern = r"[A-G][#bN]?\d"
     note_names = re.findall(pattern, name, re.IGNORECASE)
     return note_names
 
 
-def pitch_fraction_to_bin(value):
+def pitch_fraction_to_bin(value: int | float) -> bin:
     """
     Convert pitch fraction (semitone cents) to a binary chunk (4 bytes integer in Intel "little endian" format)
-    :param int or float value: Pitch fraction in semitone cents, can only be positive
+    :param value: Pitch fraction in semitone cents, can only be positive
     :return: Pitch fraction as unsigned 32 bits value little-endian
-    :rtyoe: binary
     """
     return int(value * 0xFFFFFFFF / 100).to_bytes(4, byteorder='little')
 
@@ -286,37 +280,36 @@ def pitch_fraction_to_bin(value):
 # Velocity/Dynamic Conversion
 
 
-def dyn_table(names=('ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff'), mn=15, mx=127):
+def dyn_table(names: tuple[str] = ('ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff'),
+              mn: int = 15, mx: int = 127) -> dict:
     """
     Conversion table from dynamic name to velocity
-    :param str names: Dynamics names in increasing order
-    :param int mn: Min velocity
-    :param int mx: Max velocity
-    :return:
-    :rtype: dict
+    :param names: Dynamics names in increasing order
+    :param mn: Min velocity
+    :param mx: Max velocity (typically 127)
+    :return: Table as a dict
     """
     # Generate values using a simple linear interpolation between min and max
     values = np.linspace(mn, mx, len(names), endpoint=True, dtype=np.dtype(np.int16))
     return dict(zip(names, values.tolist()))
 
 
-def is_dyn_name(name):
+def is_dyn_name(name: str) -> bool:
     """
     Identify if a string is likely to be a dynamic name
-    :param str name:
+    :param name:
     :return:
-    :rtyoe: bool
     """
     if name.lower() in dyn_table():
         return True
     return False
 
 
-def dyn_to_vel(name):
+def dyn_to_vel(name: str) -> int:
     """
     Convert a dynamic name to its corresponding velocity value
-    :param str name:
-    :return:
+    :param name: Dynamic name
+    :return: Velocity value (0-127)
     """
     dyn_vel = dyn_table()
     key = name.lower()
@@ -326,12 +319,11 @@ def dyn_to_vel(name):
         return 127
 
 
-def vel_to_dyn(value):
+def vel_to_dyn(value: int | None) -> str:
     """
     Convert a velocity value to the closest dynamic name
-    :param int or None value: Velocity value (0-127)
+    :param value: Velocity value (0-127)
     :return: Dynamic name
-    :rtype: str
     """
     if value is None:
         return 'fff'
@@ -344,14 +336,11 @@ def vel_to_dyn(value):
 
 # Utility
 
-def as_chunk(value, length):
+def as_chunk(value: int, length: int) -> bin:
     """
     Encode a given value as a "little endian" chunk
-    :param int value:
-    :param int length: Chunk length in bytes
-    :return:
-    :rtype: binary
+    :param value: Integer value
+    :param length: Chunk length in bytes
+    :return: Binary chunk
     """
     return int(value).to_bytes(length, byteorder='little')
-
-# print(round(44100 * note_to_hz(68.5) / 440))

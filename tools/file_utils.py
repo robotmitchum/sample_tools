@@ -8,6 +8,7 @@
 
 import tempfile
 from pathlib import Path
+from xml.etree import ElementTree as Et
 
 
 def resolve_overwriting(input_path, mode='dir', dir_name='backup_', test_run=False):
@@ -93,3 +94,38 @@ def move_to_subdir(files, sub_dir=None, test_run=False):
             Path(d).rmdir()
 
     return result
+
+
+def read_txt(filepath: Path | str) -> str:
+    """
+    Read content of a given text file and return a string
+    :param filepath:
+    :return:
+    """
+    result = ''
+    if filepath.exists():
+        with open(filepath, mode='r', encoding='utf-8') as fr:
+            for line in fr.readlines():
+                line = line.strip()
+                if line:
+                    result += f'{line}\n'
+    return result
+
+
+def read_xml_data(filepath: Path | str | None = None, xml_tree: Et.Element | None = None,
+                  elem='sample_tools_metadata') -> tuple[dict] or None:
+    """
+    Quick and dirty retrieval of xml items from a xml file or directly from a xml element
+    :param filepath:
+    :param xml_tree:
+    :param elem:
+    :return:
+    """
+    if filepath:
+        tree = Et.parse(str(filepath))
+        root = tree.getroot()
+    elif xml_tree:
+        root = xml_tree
+    else:
+        return None
+    return [dict(item.items()) for item in root.iter(elem)]

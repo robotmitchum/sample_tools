@@ -1,7 +1,8 @@
 # coding:utf-8
 """
     :module: yin_pitch.py
-    :description: Drop-in replacement for librosa.yin, more compact and doesn't require numba
+    :description: Drop-in replacement for librosa.yin
+    more compact and doesn't require numba
     Made from code extracted from librosa
     This does not give the exact same output, but it's close enough
     :author: Michel 'Mitch' Pecqueur

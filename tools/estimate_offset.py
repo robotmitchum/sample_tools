@@ -13,10 +13,9 @@ from pathlib import Path
 
 import numpy as np
 import soundfile as sf
+from scipy.signal import fftconvolve
 
 from split_audio import envelope_transform
-
-from scipy.signal import fftconvolve
 
 
 def sampleset_offset(input_path: str | list, smp_fmt: tuple[str, ...] = ('wav', 'flac', 'aif'),
@@ -30,6 +29,8 @@ def sampleset_offset(input_path: str | list, smp_fmt: tuple[str, ...] = ('wav', 
     :param kwargs: Optional keyword arguments supported by sub-function estimate offset
     :return: Average offset
     """
+    if verbose:
+        print('Sample offset estimation:')
 
     if isinstance(input_path, str):
         input_path = [input_path]

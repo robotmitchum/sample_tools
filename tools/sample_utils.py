@@ -101,6 +101,11 @@ class Sample:
         self.vel = None
         self.dyn = None
 
+        # Sanitize loops and cues
+        if not self.check_loops():
+            self.sanitize_loops()
+            self.sanitize_cues()
+
     def __str__(self):
         return self.name
 
@@ -161,6 +166,38 @@ class Sample:
         else:
             self.vel, self.dyn = None, None
 
+    def check_loops(self):
+        """
+        Get info about invalid loops
+        """
+        if self.loops:
+            mx = self.params.nframes - 1
+            for i, loop in enumerate(self.loops):
+                for c, cue in enumerate(loop):
+                    if cue < 0 or cue > self.params.nframes - 1:
+                        print(f'{self.name}{self.ext} loop {i} invalid {('start', 'end')[c]} : {cue} outside 0-{mx}')
+                        return False
+        return True
+
+    def sanitize_loops(self):
+        """
+        Fix invalid loop information written by some programs
+        typically loop end off by 1 as loop end is inclusive
+        https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+        Page 18 ('smpl' chunk section)
+        dwEnd Specifies the endpoint of the loop in samples (this sample will also be played)
+        """
+        if self.loops:
+            self.loops = [[clamp(cue, 0, self.params.nframes - 1) for cue in loop] for loop in self.loops]
+            self.loopStart, self.loopEnd = self.loops[0]
+
+    def sanitize_cues(self):
+        """
+        Fix invalid cue information written by some programs
+        """
+        if self.cues:
+            self.cues = [clamp(cue, 0, self.params.nframes - 1) for cue in self.cues]
+
 
 def info_from_name(path, pattern='{group}_{note}', override=True, force_pitch_from_name=False,
                    extra_tags=None, num_attrib=('vel', 'note', 'seqPosition')):
@@ -201,7 +238,7 @@ def info_from_name(path, pattern='{group}_{note}', override=True, force_pitch_fr
                     # Remove alpha characters from numeric attributes
                     if attr in num_attrib:
                         try:
-                            num_value = eval(rm_alpha_chr(value).lstrip('0'))
+                            num_value = eval(rm_zero_pad(rm_alpha_chr(value)))
                         except Exception as e:
                             num_value = None
                             pass
@@ -230,6 +267,11 @@ def info_from_name(path, pattern='{group}_{note}', override=True, force_pitch_fr
             note_name = found[-1]  # If more than one result, favor the last one
             if is_note_name(note_name):
                 smp.set_notename(note_name)
+
+    # Sanitize loops and cues
+    if not smp.check_loops():
+        smp.sanitize_loops()
+        smp.sanitize_cues()
 
     return smp
 
@@ -753,7 +795,7 @@ def as_chunk(value, length):
     return value.to_bytes(length, byteorder='little')
 
 
-def rm_alpha_chr(word):
+def rm_alpha_chr(word: str):
     """
     Remove alpha character from string
     :param str word:
@@ -761,6 +803,17 @@ def rm_alpha_chr(word):
     :rtype: str
     """
     return re.sub(r'[^0-9+\-.\n]', '', word)
+
+
+def rm_zero_pad(word: str):
+    """
+    Remove zero padding from string
+    Proper handling of '0'
+    :param str word:
+    :return:
+    :rtype: str
+    """
+    return (word.lstrip('0'), word)[word == '0']
 
 
 # Unused / Deprecated

@@ -8,13 +8,14 @@
 
 import os
 import threading
+from pathlib import Path
 
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-from common_ui_utils import resource_path
-
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from common_ui_utils import resource_path
 
 
 class AudioPlayerSignals(QObject):
@@ -30,7 +31,7 @@ class AudioPlayer:
         self.pan = 0
         self.volume = 1
 
-    def play(self, data, sr, loop_start, loop_end):
+    def play(self, data: np.ndarray, sr: int, loop_start: int, loop_end: int):
         if not self.is_playing.is_set():
             callback = AudioCallback(data, loop_start, loop_end, player=self)
             self.stream = sd.OutputStream(samplerate=sr, channels=data.ndim, callback=callback)
@@ -65,23 +66,23 @@ class AudioCallback:
     Audio callback supporting looping with sounddevice
     """
 
-    def __init__(self, audio_data, loop_start, loop_end, player):
+    def __init__(self, audio_data: np.ndarray, loop_start: int, loop_end: int, player: AudioPlayer) -> None:
         self.player = player
         if loop_start is None or loop_end is None:
             self.loop_size = 0
             self.loop_start = 0
             self.loop_end = len(audio_data) - 1
         else:
-            self.loop_start = loop_start
-            self.loop_end = loop_end
-            self.loop_size = loop_end - loop_start + 1
+            self.loop_start = max(loop_start, 0)
+            self.loop_end = min(loop_end, len(audio_data) - 1)  # Sanitize incorrect loop end
+            self.loop_size = self.loop_end - self.loop_start + 1
 
         self.buffer = audio_data.reshape(-1, audio_data.ndim)[:self.loop_end + 1]
         self.buffer_size = self.loop_end + 1
 
         self.current_pos = 0
 
-    def __call__(self, outdata, frames, time, status):
+    def __call__(self, outdata: np.ndarray, frames: int, time, status) -> None:
         if status:
             print(status)
 
@@ -118,11 +119,10 @@ class AudioCallback:
                 raise sd.CallbackStop
 
 
-def play_notification(audio_file):
+def play_notification(audio_file: str | Path):
     """
     Simple sound playback
-    :param str or Path audio_file:
-    :return:
+    :param audio_file:
     """
     if os.path.isfile(resource_path(audio_file)):
         data, sr = sf.read(audio_file)

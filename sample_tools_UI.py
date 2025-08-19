@@ -14,13 +14,12 @@ import sys
 from functools import partial
 from pathlib import Path
 
-from dark_fusion_style import apply_dark_theme
-
 from PyQt5 import QtWidgets, QtCore, QtGui, Qt
 
 from __init__ import __version__  # noqa
+from dark_fusion_style import apply_dark_theme
 
-from tools.simple_logger import SimpleLogger
+# from tools.simple_logger import SimpleLogger
 
 if getattr(sys, 'frozen', False):
     import pyi_splash  # noqa

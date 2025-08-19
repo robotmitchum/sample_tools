@@ -284,7 +284,7 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
             else:
                 if alignment is not None:
                     # Custom alignment
-                    action_label = QtWidgets.QLabel(f'{name}', parent=widget)
+                    action_label = QtWidgets.QLabel(f'{name}', menu)
                     action_label.setAlignment(alignment)
                     action_label.setAttribute(QtCore.Qt.WA_Hover, True)
                     action_label.setMouseTracking(True)
@@ -294,11 +294,11 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
                     style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                               f'color: {plt.highlightedText().color().name()};}}')
                     action_label.setStyleSheet(style)
-                    action = QtWidgets.QWidgetAction(widget)
+                    action = menu.addAction('')
                     action.setDefaultWidget(action_label)
                 else:
                     # Default alignment (left)
-                    action = QtWidgets.QAction(f'{name}', widget)
+                    action = menu.addAction(f'{name}')
 
                 if hasattr(widget, 'setValue'):
                     action.triggered.connect(lambda checked, v=value: widget.setValue(v))
@@ -307,13 +307,12 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
                 elif hasattr(widget, 'setText'):
                     action.triggered.connect(lambda checked, v=value: widget.setText(v))
 
-                menu.addAction(action)
-
         pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
         menu.setMinimumWidth(widget.width())
         menu.exec_(pos)
+        menu.deleteLater()
 
-    widget.setContextMenuPolicy(3)
+    widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
     if trigger is None:
         widget.customContextMenuRequested.connect(show_context_menu)
     else:
@@ -334,12 +333,12 @@ def add_insert_ctx(widget, values=(), names=None):
     def show_context_menu(event):
         menu = QtWidgets.QMenu(widget)
         for name, value in zip(names, values):
-            action = QtWidgets.QAction(f"{name}", widget)
+            action = menu.addAction(f'{name}')
             action.triggered.connect(lambda _, v=value: widget.insert(v))
-            menu.addAction(action)
         menu.exec_(QtGui.QCursor.pos())
+        menu.deleteLater()
 
-    widget.setContextMenuPolicy(3)
+    widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
     widget.customContextMenuRequested.connect(show_context_menu)
 
 
@@ -374,6 +373,7 @@ def popup_menu(content, parent=None):
     pos = parent.mapToGlobal(parent.rect().bottomLeft())
     pos.setX(cur_pos.x() - menu.width() // 4)
     menu.exec_(pos)
+    menu.deleteLater()
 
 
 # Name formatting
@@ -533,6 +533,7 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
     widget.setStyleSheet(ss)
 
 
+# Misc
 class AboutDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)

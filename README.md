@@ -4,9 +4,17 @@
 
 ![SampleTools_UI](screencaps/sample_tools_ui.png)
 
-Tools for creating and editing virtual sampled instruments, optimized for DecentSampler by David Hilowitz
+Tools for creating and editing virtual sampled instruments
 
-https://www.decentsamples.com/product/decent-sampler-plugin/
+- Optimized for DecentSampler by David Hilowitz<br/>
+  free and available for Linux, Mac and Windows<br/>
+  https://www.decentsamples.com/product/decent-sampler-plugin/
+
+- Sfz output is converted from the generated dspreset<br/>
+  Sfizz recommended for cross-fade loop feature<br/>
+  free, opensource and available for Linux, Mac and Windows<br/>
+  https://github.com/sfztools/sfizz-ui<br/>
+  (v1.2.2 strongly recommended, v1.2.3 currently has important bugs such as note hanging)
 
 ## Installation
 
@@ -81,15 +89,18 @@ python3 ir_tool_UI.py
 
 ![SMP2ds_UI](screencaps/smp2ds_ui.png)
 
-Create Decent Sampler presets from samples in wav or flac format (limited support of aif)
+Create Decent Sampler and SFZ presets from samples in wav or flac format (limited support of aif)
 
-Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspreset file
+Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspreset and a sfz file
 
 - wav, flac (recommended) and aif (limited support, not recommended) as input for samples
-- Samples are added and set according to their 'smpl' chunk/metadata (wav and flac only) and file name pattern matching
-
+- Samples are added and set according to their 'smpl' chunk/metadata (wav and flac only) and file name pattern
+  matching</br>
   Respect for pitch, pitch fraction, loop points
 - Fake release, fake legato and fake round-robin features
+
+#### dspreset options
+
 - Automatic creation of a working UI with a customisable color theme
 - wav, flac and aif IR files are supported for the convolution reverb, they must be located in an 'IR' subdirectory
 - dslibrary file generation from a dspreset directory ready to use or distribute
@@ -124,7 +135,7 @@ Use instrument names as keys with min and max MIDI note number provided as a lis
 
 ![DR-DS_UI](screencaps/drds_ui.png)
 
-Create Decent Sampler drum presets from samples in wav, flac or aif
+Create Decent Sampler and SFZ drum presets from samples in wav, flac or aif
 
 Similar to SMP2Ds but specialized for drum sets
 
@@ -136,9 +147,10 @@ Assign samples to drum pads by dropping one or several files (for velocity and r
 
 - Each drum pad can choke itself and any other pad
 - Support for velocity and round-robin according to file names with pattern matching
+
+#### dspreset options
+
 - Automatic creation of a working UI with a customisable color theme
-
-
 - wav, flac and aif IR files are supported for the convolution reverb, they must be located in an 'IR' subdirectory
 - dslibrary file generation from a dspreset directory ready to use or distribute
 

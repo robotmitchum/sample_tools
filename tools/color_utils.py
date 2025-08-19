@@ -15,34 +15,35 @@ import webcolors
 from PIL import Image, ImageDraw, ImageFont
 from scipy.interpolate import interp1d
 
-from common_math_utils import lerp, clamp, linstep
+from common_math_utils import lerp, clamp
 
 
-def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=2.2,
-                     text=None, text_xy=(0, 0),
-                     text_font=('HelveticaNeueThin.otf', 16), text_color=(1, 1, 1, 1), scl=1,
-                     overwrite=True):
+def basic_background(filepath: str | Path | None, w: int = 812, h: int = 375,
+                     colors: tuple[list, ...] = ([.1] * 3, [.3] * 3), gamma: float = 2.2,
+                     text: str | None = None, text_xy: tuple[float, float] = (0, 0),
+                     text_font: tuple[str, float] = ('HelveticaNeueThin.otf', 16),
+                     text_color: tuple[float, float, float, float] = (1, 1, 1, 1), scl: float = 1,
+                     overwrite: bool = True) -> str | Path or Image:
     """
     Create basic background image (vertical gradient)
 
-    :param str or Path or None filepath: Return PIL image if no path provided
-    :param int w: Width
-    :param int h: Height
+    :param filepath: Return PIL image if no path provided
+    :param w: Width
+    :param h: Height
 
-    :param tuple or list colors: list of RGB colors as 3 floats
-    :param float gamma: Gamma to compensate when interpolating colors
+    :param colors: list of RGB colors as 3 floats
+    :param gamma: Gamma to compensate when interpolating colors
 
-    :param str or None text: Title to write in the top-left corner of the image
-    :param tuple[float, float] text_xy: Text coordinates
+    :param text: Title to write in the top-left corner of the image
+    :param text_xy: Text coordinates
 
     :param tuple text_font: Font name, Font size
     :param list or tuple text_color: RGBA color
     :param float scl: Font scaling
 
-    :param bool overwrite: Overwrite background if present
+    :param overwrite: Overwrite background if present
 
     :return: Created image path or PIL Image object
-    :rtype: str or Image
     """
     if filepath is not None:
         if not overwrite and Path(filepath).is_file():
@@ -84,25 +85,26 @@ def basic_background(filepath, w=812, h=375, colors=([.1] * 3, [.3] * 3), gamma=
         return im
 
 
-def write_text(im, text=None, text_xy=(0, 0),
-               text_font=('HelveticaNeueThin.otf', 16), text_color=(1, 1, 1, 1), max_length=None,
-               align='left', anchor=None, stroke_width=0, scl=1):
+def write_text(im: Image, text: str | None = None, text_xy: tuple[float, float] = (0, 0),
+               text_font: tuple[str, float] = ('HelveticaNeueThin.otf', 16),
+               text_color: tuple[float, float, float, float] = (1, 1, 1, 1), max_length: float | None = None,
+               align: str = 'left', anchor: str | None = None, stroke_width: float = 0, scl: float = 1) -> Image:
     """
     Write text to a PIL Image
 
-    :param Image im: PIL Image
+    :param im: PIL Image
     :param str or None text: Title to write in the top-left corner of the image
-    :param tuple[float, float] text_xy: Text coordinates
-    :param str align: 'left', 'right', 'center'
-    :param str or None anchor: To use in combination of align
+    :param text_xy: Text coordinates
+    :param align: 'left', 'right', 'center'
+    :param anchor: To use in combination of align
     https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html
-    :param float stroke_width:
+    :param stroke_width:
 
-    :param tuple text_font: Font name, Font size
-    :param list or tuple text_color: RGBA color
-    :param float or None max_length:
-    :param float scl: Overall scaling
-    :return:
+    :param text_font: Font name, Font size
+    :param text_color: RGBA color
+    :param max_length:
+    :param scl: Overall scaling
+    :return: Image
     """
     if text:
         bg_color = list(text_color)[:-1] + [0]
@@ -142,34 +144,42 @@ def write_text(im, text=None, text_xy=(0, 0),
     return im
 
 
-def limit_font_size(texts=(), text_font=('HelveticaNeueThin.otf', 16), max_length=64):
+def limit_font_size(texts: list[str] = (), text_font: tuple[str, float] = ('HelveticaNeueThin.otf', 16),
+                    max_length: float | None = 64) -> float:
     """
     Get optimal font size required to match a minimum text length given a list of text
-    :param list texts: List of texts
-    :param tuple[str,float] text_font:
-    :param float max_length:
+    :param texts: List of texts
+    :param text_font:
+    :param max_length:
     :return: Adjusted size
-    :rtype: float
     """
     try:
         font = ImageFont.truetype(text_font[0], text_font[1])
     except Exception:
         try:
-            # Seemingly supplied by default with PIL
             print(f'{text_font[0]} could not be found')
+            # Seemingly supplied by default with PIL
             font = ImageFont.truetype('DejaVuSans.ttf', text_font[1])
         except Exception:
             print('No suitable font found')
             return text_font[1]
 
     result = []
+    mx = 0
     for text in texts:
         tl = font.getlength(text)
-        if tl > max_length:
-            new_size = text_font[1] * max_length / tl
-            result.append(new_size)
+        if max_length is None:
+            if tl > mx:
+                mx = tl
         else:
-            result.append(text_font[1])
+            if tl > max_length:
+                new_size = text_font[1] * max_length / tl
+                result.append(new_size)
+            else:
+                result.append(text_font[1])
+
+    if max_length is None:
+        return mx
 
     return min(result)
 
@@ -196,32 +206,30 @@ def apply_symbol(im: Image, symbol_path: str | Path = '',
     overlay = Image.new('RGBA', im.size, bg_color)
     symbol_fill = Image.new('RGBA', symbol.size, symbol_color)
     overlay.paste(im=symbol_fill, box=scl_pos_xy, mask=symbol)
+
     return Image.alpha_composite(im.convert('RGBA'), overlay).convert('RGB')
 
 
-def write_pil_image(filepath, im, quality=95):
+def write_pil_image(filepath: str | Path, im: Image, quality: int = 95) -> str | Path:
     """
-    :param str or Path filepath:
-    :param Image im:
-    :param int quality:
+    :param filepath:
+    :param im:
+    :param quality:
     :return: Image path
-    :rtype sr: str
     """
     im.save(str(filepath), subsampling=0, quality=quality)
     return filepath
 
 
-def blank_button(filepath, size=32, overwrite=True):
+def blank_button(filepath: str | Path, size: int = 32, overwrite: bool = True) -> str | Path:
     """
     Write a blank square image
 
-    :param str filepath:
-    :param int size:
-    :param list or tuple rgba:
-    :param bool overwrite:
+    :param filepath:
+    :param size:
+    :param overwrite:
 
-    :return:
-    :rtype: str
+    :return: File path
     """
     if not overwrite and Path(filepath).is_file():
         return filepath
@@ -230,17 +238,17 @@ def blank_button(filepath, size=32, overwrite=True):
 
     wh = (size, size)
     im = Image.new(mode='RGBA', size=wh, color=(0, 0, 0, 0))
-    im.save(filepath)
+    im.save(str(filepath))
 
     return filepath
 
 
-def adjust_palette(plt_data, adjust=(0, 1, 1)):
+def adjust_palette(plt_data: dict, adjust: tuple[float, float, float] = (0, 1, 1)) -> dict:
     """
     Recursively modify palette data
-    :param dict or OrderedDict plt_data:
+    :param plt_data: Source palette data
     :param adjust: HSV adjust
-    :return:
+    :return: Adjusted palette data
     """
     for key, value in plt_data.items():
         if isinstance(value, dict):
@@ -252,7 +260,7 @@ def adjust_palette(plt_data, adjust=(0, 1, 1)):
     return plt_data
 
 
-def hex_to_rgba(hexcolor: str = 'ff808080', shift: int = 0) -> tuple[float, float, float, float]:
+def hex_to_rgba(hexcolor: str = 'ff808080', shift: int = 0) -> tuple:
     """
     NOTE : Decent Sampler uses argb and not rgba
     :param str hexcolor:
@@ -264,7 +272,7 @@ def hex_to_rgba(hexcolor: str = 'ff808080', shift: int = 0) -> tuple[float, floa
     return values
 
 
-def rgba_to_hex(rgba: tuple[float, float, float, float] = (1, 1, 1, 1), shift: int = 0) -> str:
+def rgba_to_hex(rgba: tuple[float, ...] = (1, 1, 1, 1), shift: int = 0) -> str:
     """
     NOTE : Decent Sampler uses argb and not rgba
     :param rgba: list of float values
@@ -276,7 +284,8 @@ def rgba_to_hex(rgba: tuple[float, float, float, float] = (1, 1, 1, 1), shift: i
     return ''.join(hexcolor).upper()
 
 
-def hsv_adjust(rgb=(1, 0, 0), adjust=(0, 1, 1)):
+def hsv_adjust(rgb: tuple[float] = (1, 0, 0),
+               adjust: tuple[float, float, float] = (0, 1, 1)) -> list[float]:
     """
     Adjust RGB color using HSV conversion
     :param list or tuple rgb:
@@ -306,12 +315,11 @@ def plt_to_rgba(plt: str, rgba: tuple[float, float, float, float] = (1, 1, 1, 1)
     return m * np.array(hex_to_rgba(plt, -1)).tolist()
 
 
-def get_color_name(hexcolor='929edf'):
+def get_color_name(hexcolor: str = '929edf') -> str:
     """
     Translate a color hex value to the closest named web color
-    :param str hexcolor:
+    :param hexcolor:
     :return: Name
-    :rtype: str
     """
     rgb = [int(hexcolor[i * 2:i * 2 + 2], 16) / 255 for i in range(len(hexcolor) // 2)]
     rgb = np.array(colorsys.rgb_to_hsv(*rgb))

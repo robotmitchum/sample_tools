@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_smp_to_ds_ui(object):
     def setupUi(self, smp_to_ds_ui):
         smp_to_ds_ui.setObjectName("smp_to_ds_ui")
-        smp_to_ds_ui.resize(800, 776)
+        smp_to_ds_ui.resize(800, 800)
         smp_to_ds_ui.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(smp_to_ds_ui)
         self.centralwidget.setObjectName("centralwidget")
@@ -22,27 +22,27 @@ class Ui_smp_to_ds_ui(object):
         self.centralwidget_lyt.setContentsMargins(8, 8, 8, 8)
         self.centralwidget_lyt.setSpacing(4)
         self.centralwidget_lyt.setObjectName("centralwidget_lyt")
-        self.directory_lyt = QtWidgets.QHBoxLayout()
-        self.directory_lyt.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.directory_lyt.setSpacing(4)
-        self.directory_lyt.setObjectName("directory_lyt")
-        self.path_l = QtWidgets.QLabel(self.centralwidget)
+        self.output_path_lyt = QtWidgets.QHBoxLayout()
+        self.output_path_lyt.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.output_path_lyt.setSpacing(4)
+        self.output_path_lyt.setObjectName("output_path_lyt")
+        self.output_path_l = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
-        self.path_l.setFont(font)
-        self.path_l.setStyleSheet("QLabel{color: rgb(30, 161, 205);}")
-        self.path_l.setAlignment(QtCore.Qt.AlignCenter)
-        self.path_l.setObjectName("path_l")
-        self.directory_lyt.addWidget(self.path_l)
-        self.setpath_tb = QtWidgets.QToolButton(self.centralwidget)
+        self.output_path_l.setFont(font)
+        self.output_path_l.setStyleSheet("QLabel{color: rgb(30, 161, 205);}")
+        self.output_path_l.setAlignment(QtCore.Qt.AlignCenter)
+        self.output_path_l.setObjectName("output_path_l")
+        self.output_path_lyt.addWidget(self.output_path_l)
+        self.output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
-        self.setpath_tb.setFont(font)
-        self.setpath_tb.setObjectName("setpath_tb")
-        self.directory_lyt.addWidget(self.setpath_tb)
-        self.centralwidget_lyt.addLayout(self.directory_lyt)
+        self.output_path_tb.setFont(font)
+        self.output_path_tb.setObjectName("output_path_tb")
+        self.output_path_lyt.addWidget(self.output_path_tb)
+        self.centralwidget_lyt.addLayout(self.output_path_lyt)
         self.sample_title_l = QtWidgets.QLabel(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -1009,7 +1009,7 @@ class Ui_smp_to_ds_ui(object):
         self.grp_knob_rows_l.setObjectName("grp_knob_rows_l")
         self.grp_ui_lyt.addWidget(self.grp_knob_rows_l)
         self.grp_knob_rows_sb = QtWidgets.QSpinBox(self.centralwidget)
-        self.grp_knob_rows_sb.setMinimumSize(QtCore.QSize(64, 0))
+        self.grp_knob_rows_sb.setMinimumSize(QtCore.QSize(48, 0))
         self.grp_knob_rows_sb.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.grp_knob_rows_sb.setFrame(False)
         self.grp_knob_rows_sb.setAlignment(QtCore.Qt.AlignCenter)
@@ -1019,12 +1019,32 @@ class Ui_smp_to_ds_ui(object):
         self.grp_knob_rows_sb.setProperty("value", 1)
         self.grp_knob_rows_sb.setObjectName("grp_knob_rows_sb")
         self.grp_ui_lyt.addWidget(self.grp_knob_rows_sb)
+        spacerItem56 = QtWidgets.QSpacerItem(8, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.grp_ui_lyt.addItem(spacerItem56)
+        self.group_mute_wid = QtWidgets.QWidget(self.centralwidget)
+        self.group_mute_wid.setObjectName("group_mute_wid")
+        self.horizontalLayout_9 = QtWidgets.QHBoxLayout(self.group_mute_wid)
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_9.setSpacing(0)
+        self.horizontalLayout_9.setObjectName("horizontalLayout_9")
+        self.group_mute_l = QtWidgets.QLabel(self.group_mute_wid)
+        self.group_mute_l.setObjectName("group_mute_l")
+        self.horizontalLayout_9.addWidget(self.group_mute_l)
+        self.group_mute_le = QtWidgets.QLineEdit(self.group_mute_wid)
+        self.group_mute_le.setText("")
+        self.group_mute_le.setFrame(False)
+        self.group_mute_le.setAlignment(QtCore.Qt.AlignCenter)
+        self.group_mute_le.setObjectName("group_mute_le")
+        self.horizontalLayout_9.addWidget(self.group_mute_le)
+        self.grp_ui_lyt.addWidget(self.group_mute_wid)
+        spacerItem57 = QtWidgets.QSpacerItem(8, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.grp_ui_lyt.addItem(spacerItem57)
         self.no_solo_grp_knob_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.no_solo_grp_knob_cb.setChecked(True)
         self.no_solo_grp_knob_cb.setObjectName("no_solo_grp_knob_cb")
         self.grp_ui_lyt.addWidget(self.no_solo_grp_knob_cb)
-        spacerItem56 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.grp_ui_lyt.addItem(spacerItem56)
+        spacerItem58 = QtWidgets.QSpacerItem(8, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.grp_ui_lyt.addItem(spacerItem58)
         self.adsr_knobs_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.adsr_knobs_cb.setChecked(True)
         self.adsr_knobs_cb.setObjectName("adsr_knobs_cb")
@@ -1044,21 +1064,25 @@ class Ui_smp_to_ds_ui(object):
         self.max_adsr_dsb.setProperty("value", 20.0)
         self.max_adsr_dsb.setObjectName("max_adsr_dsb")
         self.grp_ui_lyt.addWidget(self.max_adsr_dsb)
-        spacerItem57 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.grp_ui_lyt.addItem(spacerItem57)
+        spacerItem59 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.grp_ui_lyt.addItem(spacerItem59)
         self.centralwidget_lyt.addLayout(self.grp_ui_lyt)
         self.reverb_lyt = QtWidgets.QHBoxLayout()
         self.reverb_lyt.setSpacing(0)
         self.reverb_lyt.setObjectName("reverb_lyt")
-        spacerItem58 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.reverb_lyt.addItem(spacerItem58)
+        spacerItem60 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.reverb_lyt.addItem(spacerItem60)
+        self.use_cutoff_cb = QtWidgets.QCheckBox(self.centralwidget)
+        self.use_cutoff_cb.setMinimumSize(QtCore.QSize(128, 0))
+        self.use_cutoff_cb.setChecked(True)
+        self.use_cutoff_cb.setObjectName("use_cutoff_cb")
+        self.reverb_lyt.addWidget(self.use_cutoff_cb)
         self.use_reverb_cb = QtWidgets.QCheckBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.use_reverb_cb.sizePolicy().hasHeightForWidth())
         self.use_reverb_cb.setSizePolicy(sizePolicy)
-        self.use_reverb_cb.setMinimumSize(QtCore.QSize(128, 0))
         self.use_reverb_cb.setChecked(True)
         self.use_reverb_cb.setObjectName("use_reverb_cb")
         self.reverb_lyt.addWidget(self.use_reverb_cb)
@@ -1076,41 +1100,42 @@ class Ui_smp_to_ds_ui(object):
         self.reverb_wet_dsb.setMinimum(0.0)
         self.reverb_wet_dsb.setMaximum(1.0)
         self.reverb_wet_dsb.setSingleStep(0.1)
-        self.reverb_wet_dsb.setProperty("value", 0.2)
+        self.reverb_wet_dsb.setProperty("value", 0.0)
         self.reverb_wet_dsb.setObjectName("reverb_wet_dsb")
         self.reverb_lyt.addWidget(self.reverb_wet_dsb)
+        spacerItem61 = QtWidgets.QSpacerItem(8, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.reverb_lyt.addItem(spacerItem61)
         self.use_ir_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.use_ir_cb.setObjectName("use_ir_cb")
         self.reverb_lyt.addWidget(self.use_ir_cb)
-        spacerItem59 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.reverb_lyt.addItem(spacerItem59)
+        spacerItem62 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.reverb_lyt.addItem(spacerItem62)
         self.multi_out_cb = QtWidgets.QCheckBox(self.centralwidget)
-        self.multi_out_cb.setChecked(True)
         self.multi_out_cb.setObjectName("multi_out_cb")
         self.reverb_lyt.addWidget(self.multi_out_cb)
-        spacerItem60 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.reverb_lyt.addItem(spacerItem60)
+        spacerItem63 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.reverb_lyt.addItem(spacerItem63)
         self.hd_knobs_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.hd_knobs_cb.setObjectName("hd_knobs_cb")
         self.reverb_lyt.addWidget(self.hd_knobs_cb)
         self.estimate_delay_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.estimate_delay_cb.setObjectName("estimate_delay_cb")
         self.reverb_lyt.addWidget(self.estimate_delay_cb)
-        spacerItem61 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.reverb_lyt.addItem(spacerItem61)
+        spacerItem64 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.reverb_lyt.addItem(spacerItem64)
         self.centralwidget_lyt.addLayout(self.reverb_lyt)
-        spacerItem62 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.centralwidget_lyt.addItem(spacerItem62)
+        spacerItem65 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.centralwidget_lyt.addItem(spacerItem65)
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.centralwidget_lyt.addWidget(self.line)
         self.create_button_lyt = QtWidgets.QHBoxLayout()
-        self.create_button_lyt.setSpacing(0)
+        self.create_button_lyt.setSpacing(8)
         self.create_button_lyt.setObjectName("create_button_lyt")
-        spacerItem63 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.create_button_lyt.addItem(spacerItem63)
+        spacerItem66 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.create_button_lyt.addItem(spacerItem66)
         self.dsp_lyt = QtWidgets.QVBoxLayout()
         self.dsp_lyt.setSpacing(4)
         self.dsp_lyt.setObjectName("dsp_lyt")
@@ -1133,26 +1158,99 @@ class Ui_smp_to_ds_ui(object):
         self.auto_incr_cb = QtWidgets.QCheckBox(self.centralwidget)
         self.auto_incr_cb.setObjectName("auto_incr_cb")
         self.dsp_lyt.addWidget(self.auto_incr_cb)
-        self.create_dsp_pb = QtWidgets.QPushButton(self.centralwidget)
+        self.preset_fmt_lyt = QtWidgets.QHBoxLayout()
+        self.preset_fmt_lyt.setSpacing(0)
+        self.preset_fmt_lyt.setObjectName("preset_fmt_lyt")
+        self.preset_fmt_l = QtWidgets.QLabel(self.centralwidget)
+        self.preset_fmt_l.setMinimumSize(QtCore.QSize(96, 0))
+        self.preset_fmt_l.setMaximumSize(QtCore.QSize(96, 16777215))
+        self.preset_fmt_l.setObjectName("preset_fmt_l")
+        self.preset_fmt_lyt.addWidget(self.preset_fmt_l)
+        self.preset_fmt_cmb = QtWidgets.QComboBox(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.preset_fmt_cmb.sizePolicy().hasHeightForWidth())
+        self.preset_fmt_cmb.setSizePolicy(sizePolicy)
+        self.preset_fmt_cmb.setMinimumSize(QtCore.QSize(80, 0))
+        self.preset_fmt_cmb.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.preset_fmt_cmb.setObjectName("preset_fmt_cmb")
+        self.preset_fmt_cmb.addItem("")
+        self.preset_fmt_cmb.addItem("")
+        self.preset_fmt_cmb.addItem("")
+        self.preset_fmt_lyt.addWidget(self.preset_fmt_cmb)
+        self.sfz_engine_wid = QtWidgets.QWidget(self.centralwidget)
+        self.sfz_engine_wid.setObjectName("sfz_engine_wid")
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.sfz_engine_wid)
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_7.setSpacing(0)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.sfz_engine_l = QtWidgets.QLabel(self.sfz_engine_wid)
+        self.sfz_engine_l.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.sfz_engine_l.setObjectName("sfz_engine_l")
+        self.horizontalLayout_7.addWidget(self.sfz_engine_l)
+        self.sfz_engine_cmb = QtWidgets.QComboBox(self.sfz_engine_wid)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sfz_engine_cmb.sizePolicy().hasHeightForWidth())
+        self.sfz_engine_cmb.setSizePolicy(sizePolicy)
+        self.sfz_engine_cmb.setObjectName("sfz_engine_cmb")
+        self.sfz_engine_cmb.addItem("")
+        self.sfz_engine_cmb.addItem("")
+        self.sfz_engine_cmb.addItem("")
+        self.horizontalLayout_7.addWidget(self.sfz_engine_cmb)
+        self.preset_fmt_lyt.addWidget(self.sfz_engine_wid)
+        self.dsp_lyt.addLayout(self.preset_fmt_lyt)
+        self.sfz_options_wid = QtWidgets.QWidget(self.centralwidget)
+        self.sfz_options_wid.setObjectName("sfz_options_wid")
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.sfz_options_wid)
+        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_8.setSpacing(0)
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.use_eg_l = QtWidgets.QLabel(self.sfz_options_wid)
+        self.use_eg_l.setMinimumSize(QtCore.QSize(96, 0))
+        self.use_eg_l.setMaximumSize(QtCore.QSize(96, 16777215))
+        self.use_eg_l.setObjectName("use_eg_l")
+        self.horizontalLayout_8.addWidget(self.use_eg_l)
+        self.use_eg_cmb = QtWidgets.QComboBox(self.sfz_options_wid)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.use_eg_cmb.sizePolicy().hasHeightForWidth())
+        self.use_eg_cmb.setSizePolicy(sizePolicy)
+        self.use_eg_cmb.setMinimumSize(QtCore.QSize(80, 0))
+        self.use_eg_cmb.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.use_eg_cmb.setObjectName("use_eg_cmb")
+        self.use_eg_cmb.addItem("")
+        self.use_eg_cmb.addItem("")
+        self.use_eg_cmb.addItem("")
+        self.horizontalLayout_8.addWidget(self.use_eg_cmb)
+        self.release_off_by_attack_cb = QtWidgets.QCheckBox(self.sfz_options_wid)
+        self.release_off_by_attack_cb.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.release_off_by_attack_cb.setObjectName("release_off_by_attack_cb")
+        self.horizontalLayout_8.addWidget(self.release_off_by_attack_cb)
+        self.dsp_lyt.addWidget(self.sfz_options_wid)
+        self.create_preset_pb = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.create_dsp_pb.sizePolicy().hasHeightForWidth())
-        self.create_dsp_pb.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.create_preset_pb.sizePolicy().hasHeightForWidth())
+        self.create_preset_pb.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
-        self.create_dsp_pb.setFont(font)
-        self.create_dsp_pb.setStyleSheet("QPushButton{color: rgb(0, 0, 0);\n"
+        self.create_preset_pb.setFont(font)
+        self.create_preset_pb.setStyleSheet("QPushButton{color: rgb(0, 0, 0);\n"
 "background-color: rgb(128, 220, 213);}")
-        self.create_dsp_pb.setObjectName("create_dsp_pb")
-        self.dsp_lyt.addWidget(self.create_dsp_pb)
+        self.create_preset_pb.setObjectName("create_preset_pb")
+        self.dsp_lyt.addWidget(self.create_preset_pb)
         self.create_button_lyt.addLayout(self.dsp_lyt)
         self.dslib_lyt = QtWidgets.QVBoxLayout()
         self.dslib_lyt.setSpacing(4)
         self.dslib_lyt.setObjectName("dslib_lyt")
-        spacerItem64 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.dslib_lyt.addItem(spacerItem64)
+        spacerItem67 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.dslib_lyt.addItem(spacerItem67)
         self.create_dslib_pb = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -1166,8 +1264,8 @@ class Ui_smp_to_ds_ui(object):
         self.create_dslib_pb.setObjectName("create_dslib_pb")
         self.dslib_lyt.addWidget(self.create_dslib_pb)
         self.create_button_lyt.addLayout(self.dslib_lyt)
-        spacerItem65 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        self.create_button_lyt.addItem(spacerItem65)
+        spacerItem68 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.create_button_lyt.addItem(spacerItem68)
         self.centralwidget_lyt.addLayout(self.create_button_lyt)
         self.progress_pb = QtWidgets.QProgressBar(self.centralwidget)
         self.progress_pb.setStyleSheet("QProgressBar{border: none;}")
@@ -1194,20 +1292,22 @@ class Ui_smp_to_ds_ui(object):
         self.pf_mode_cmb.setCurrentIndex(0)
         self.crossfade_cmb.setCurrentIndex(1)
         self.bg_text_cmb.setCurrentIndex(1)
+        self.preset_fmt_cmb.setCurrentIndex(2)
+        self.use_eg_cmb.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(smp_to_ds_ui)
 
     def retranslateUi(self, smp_to_ds_ui):
         _translate = QtCore.QCoreApplication.translate
         smp_to_ds_ui.setWindowTitle(_translate("smp_to_ds_ui", "SMP2ds"))
-        self.path_l.setToolTip(_translate("smp_to_ds_ui", "Preset ROOT directory path\n"
+        self.output_path_l.setToolTip(_translate("smp_to_ds_ui", "Preset ROOT directory path\n"
 "\n"
 "Samples must be located in a subdirectory called \'Samples\' (case sensitive)\n"
 "Samples are retrieved recursively so they may be located in subdirectories inside \'Samples\'\n"
 "\n"
 "IR samples must be located in a separate subdirectory called \'IR\'"))
-        self.path_l.setText(_translate("smp_to_ds_ui", "Drag and drop a preset ROOT directory on the window"))
-        self.setpath_tb.setToolTip(_translate("smp_to_ds_ui", "Browse preset root directory"))
-        self.setpath_tb.setText(_translate("smp_to_ds_ui", "..."))
+        self.output_path_l.setText(_translate("smp_to_ds_ui", "Drag and drop a preset ROOT directory on the window"))
+        self.output_path_tb.setToolTip(_translate("smp_to_ds_ui", "Browse preset root directory"))
+        self.output_path_tb.setText(_translate("smp_to_ds_ui", "..."))
         self.sample_title_l.setText(_translate("smp_to_ds_ui", "Sample info"))
         self.pattern_pb.setToolTip(_translate("smp_to_ds_ui", "Pattern used to convert sample names to attribute values\n"
 "Click for context menu and some pattern examples"))
@@ -1219,14 +1319,15 @@ class Ui_smp_to_ds_ui(object):
 "\n"
 "ID3 tags matching Decent Sampler specifiation are also supported for flac\n"
 "when file naming feels impractical"))
+        self.pattern_le.setPlaceholderText(_translate("smp_to_ds_ui", "Click Pattern for examples, Right click to insert an attribute"))
         self.grpnaming_l.setText(_translate("smp_to_ds_ui", "Group Naming"))
         self.groupnaming_cmb.setToolTip(_translate("smp_to_ds_ui", "Naming style for group sliders\n"
 "\n"
-"\'keep\' directly use {group} attribute as is\n"
-"\'beautify\' Capitalize the names and insert spaces by detecting CamelCase and digits\n"
-"\'lower\' lowercase\n"
-"\'upper\' ALL CAPS :)\n"
-"\'shorten\' Abreviate the names keeping only first letters by detecting CamelCase and digits"))
+"keep    directly use {group} attribute as is\n"
+"beautify    Capitalize the names and insert spaces by detecting CamelCase and digits\n"
+"lower    lowercase\n"
+"upper    ALL CAPS :)\n"
+"shorten    Abreviate the names keeping only first letters by detecting CamelCase and digits"))
         self.groupnaming_cmb.setItemText(0, _translate("smp_to_ds_ui", "keep"))
         self.groupnaming_cmb.setItemText(1, _translate("smp_to_ds_ui", "beautify"))
         self.groupnaming_cmb.setItemText(2, _translate("smp_to_ds_ui", "upper"))
@@ -1285,9 +1386,9 @@ class Ui_smp_to_ds_ui(object):
         self.fk_rls_mode_l.setText(_translate("smp_to_ds_ui", "Mode"))
         self.fk_rls_mode_cmb.setToolTip(_translate("smp_to_ds_ui", "Fake release mode\n"
 "\n"
-"\'start\'    Direct reuse of attack sample (default)\n"
-"\'loop_end\'    Set start at loop_end (samples with tail after loop)\n"
-"\'cue\'    Set start at cue marker"))
+"start    Direct reuse of attack sample (default)\n"
+"loop_end    Set start at loop_end (samples with tail after loop)\n"
+"cue    Set start at cue marker"))
         self.fk_rls_mode_cmb.setItemText(0, _translate("smp_to_ds_ui", "start"))
         self.fk_rls_mode_cmb.setItemText(1, _translate("smp_to_ds_ui", "loop_end"))
         self.fk_rls_mode_cmb.setItemText(2, _translate("smp_to_ds_ui", "cue"))
@@ -1323,10 +1424,10 @@ class Ui_smp_to_ds_ui(object):
         self.notespread_l.setText(_translate("smp_to_ds_ui", "Note Spread"))
         self.spread_cmb.setToolTip(_translate("smp_to_ds_ui", "Note extension mode in relation with other notes\n"
 "\n"
-"\'up\'    extend to higher note\n"
-"\'mid\'    (default) extend both ways\n"
-"\'down\'    extend to lower note\n"
-"\'none\'     No extension (drums,sfx)"))
+"up    extend to higher note\n"
+"mid    (default) extend both ways\n"
+"down    extend to lower note\n"
+"none     No extension (drums,sfx)"))
         self.spread_cmb.setCurrentText(_translate("smp_to_ds_ui", "mid"))
         self.spread_cmb.setItemText(0, _translate("smp_to_ds_ui", "up"))
         self.spread_cmb.setItemText(1, _translate("smp_to_ds_ui", "mid"))
@@ -1356,10 +1457,11 @@ class Ui_smp_to_ds_ui(object):
 "\n"
 "\'auto\' sets bounds from average note gap\n"
 "\'autox2\' doubles this gap"))
+        self.limit_le.setPlaceholderText(_translate("smp_to_ds_ui", "MIDI note range"))
         self.note_limit_cmb.setToolTip(_translate("smp_to_ds_ui", "Note limit mode\n"
 "\n"
-"\'shared\' use all notes among all groups (default)\n"
-"\'group\' consider only notes within the same group (typically organs with one group per stop)"))
+"shared    use all notes among all groups (default)\n"
+"group    consider only notes within the same group (typically organs with one group per stop)"))
         self.note_limit_cmb.setItemText(0, _translate("smp_to_ds_ui", "shared"))
         self.note_limit_cmb.setItemText(1, _translate("smp_to_ds_ui", "group"))
         self.fake_rr_pb.setToolTip(_translate("smp_to_ds_ui", "Fake Round-Robin offsets\n"
@@ -1376,6 +1478,7 @@ class Ui_smp_to_ds_ui(object):
 "Leave a blank space to disable\n"
 "\n"
 "\'x3\' and \'x5\' for respectively 3 and 5 fake Round-Robins"))
+        self.rrofs_le.setPlaceholderText(_translate("smp_to_ds_ui", "xNUMBER"))
         self.rr_bounds_cb.setToolTip(_translate("smp_to_ds_ui", "Make fake RR robin work even with bounding notes\n"
 "by stealing notes further in reverse when reaching bounds\n"
 "\n"
@@ -1387,14 +1490,14 @@ class Ui_smp_to_ds_ui(object):
         self.pf_mode_cmb.setToolTip(_translate("smp_to_ds_ui", "Control pitch fraction usage\n"
 "Keep pitch fraction \"in check\" \n"
 "\n"
-"\'off\'    Ignore pitch fraction\n"
-"\'on\'    Use pitch fraction\n"
-"\'mean_scale\'    Scale deviation from mean to given value\n"
-"\'mean_blend\'    Blend between mean and pitch fraction (0-100)\n"
-"\'mean_threshold\'    Use  pitch fraction over threshold and mean under threshold\n"
-"\'on_rand\'    Use and add given random\n"
-"\'on_threshold\'    Use over given threshold\n"
-"\'on_threshold_rand\'    Use over given threshold and add random"))
+"off    Ignore pitch fraction\n"
+"on    Use pitch fraction\n"
+"mean_scale    Scale deviation from mean to given value\n"
+"mean_blend    Blend between mean and pitch fraction (0-100)\n"
+"mean_threshold    Use  pitch fraction over threshold and mean under threshold\n"
+"on_rand    Use and add given random\n"
+"on_threshold    Use over given threshold\n"
+"on_threshold_rand    Use over given threshold and add random"))
         self.pf_mode_cmb.setItemText(0, _translate("smp_to_ds_ui", "off"))
         self.pf_mode_cmb.setItemText(1, _translate("smp_to_ds_ui", "on"))
         self.pf_mode_cmb.setItemText(2, _translate("smp_to_ds_ui", "mean_scale"))
@@ -1429,9 +1532,9 @@ class Ui_smp_to_ds_ui(object):
         self.instr_ui_title_l.setText(_translate("smp_to_ds_ui", "Instrument UI"))
         self.bg_text_l.setText(_translate("smp_to_ds_ui", "Background Text"))
         self.bg_text_cmb.setToolTip(_translate("smp_to_ds_ui", "Write text to the background image\n"
-"none: No text\n"
-"rootdir: Use root directory name as text (default)\n"
-"custom: Type a custom text"))
+"none    No text\n"
+"rootdir    Use root directory name as text (default)\n"
+"custom    Type a custom text"))
         self.bg_text_cmb.setItemText(0, _translate("smp_to_ds_ui", "none"))
         self.bg_text_cmb.setItemText(1, _translate("smp_to_ds_ui", "root_dir"))
         self.bg_text_cmb.setItemText(2, _translate("smp_to_ds_ui", "custom"))
@@ -1444,18 +1547,34 @@ class Ui_smp_to_ds_ui(object):
         self.sat_dsb.setToolTip(_translate("smp_to_ds_ui", "Saturation multiplier"))
         self.val_dsb.setToolTip(_translate("smp_to_ds_ui", "Value multiplier"))
         self.grp_knob_rows_l.setText(_translate("smp_to_ds_ui", "Group Knob Rows"))
-        self.grp_knob_rows_sb.setToolTip(_translate("smp_to_ds_ui", "Transpose the whole sample mapping in semitones"))
+        self.grp_knob_rows_sb.setToolTip(_translate("smp_to_ds_ui", "Number of group knob rows for generated UI\n"
+"0 willl disable all group knobs"))
+        self.group_mute_l.setText(_translate("smp_to_ds_ui", "Mute"))
+        self.group_mute_le.setToolTip(_translate("smp_to_ds_ui", "Mute buttons default state\n"
+"Enter a binary sequence of 0 (muted) and 1 (enabled)\n"
+"\n"
+"The last value is repeated for the remaining buttons\n"
+"\n"
+"Right-click for examples"))
+        self.group_mute_le.setPlaceholderText(_translate("smp_to_ds_ui", "Binary Sequence"))
         self.no_solo_grp_knob_cb.setToolTip(_translate("smp_to_ds_ui", "Don\'t create volume knob for instrument with only one group"))
         self.no_solo_grp_knob_cb.setText(_translate("smp_to_ds_ui", "No Solo Group Knob"))
         self.adsr_knobs_cb.setToolTip(_translate("smp_to_ds_ui", "Create ADSR knobs in UI"))
         self.adsr_knobs_cb.setText(_translate("smp_to_ds_ui", "ADSR Knobs"))
         self.max_adsr_value_l.setText(_translate("smp_to_ds_ui", "Max Value"))
         self.max_adsr_dsb.setToolTip(_translate("smp_to_ds_ui", "Max ADR value for ADSR knobs in UI"))
-        self.use_reverb_cb.setToolTip(_translate("smp_to_ds_ui", "Create reverb knob"))
+        self.use_cutoff_cb.setToolTip(_translate("smp_to_ds_ui", "Create cutoff filter (LPF) as a modultation knob (CC1)"))
+        self.use_cutoff_cb.setText(_translate("smp_to_ds_ui", "Cutoff"))
+        self.use_reverb_cb.setToolTip(_translate("smp_to_ds_ui", "Create reverb knob (CC91)"))
         self.use_reverb_cb.setText(_translate("smp_to_ds_ui", " Reverb"))
         self.reverb_wet_dsb.setToolTip(_translate("smp_to_ds_ui", "Default wet value for reverb"))
         self.use_ir_cb.setToolTip(_translate("smp_to_ds_ui", "Use or ignore IR samples\n"
-"IR samples must be located in a separate subdirectory called \'IR\'"))
+"\n"
+"IR samples must be located in a separate subdirectory called \'IR\'\n"
+"\n"
+"NOTE: Decent Sampler applies a -12 dB volume attenuation to IR\n"
+"\'IR Tool\' also available on my github can perform accurate volume compensation for IRs\n"
+"so their volume match with each other"))
         self.use_ir_cb.setText(_translate("smp_to_ds_ui", "Use IR"))
         self.multi_out_cb.setToolTip(_translate("smp_to_ds_ui", "Enable separate group output to AUX channels\n"
 "\n"
@@ -1480,10 +1599,40 @@ class Ui_smp_to_ds_ui(object):
         self.suffix_le.setPlaceholderText(_translate("smp_to_ds_ui", "_suffix"))
         self.auto_incr_cb.setToolTip(_translate("smp_to_ds_ui", "Auto increment to avoid overwriting"))
         self.auto_incr_cb.setText(_translate("smp_to_ds_ui", "Auto Increment"))
-        self.create_dsp_pb.setToolTip(_translate("smp_to_ds_ui", "Create a dspreset file from input directory and current settings"))
-        self.create_dsp_pb.setText(_translate("smp_to_ds_ui", "Create dspreset"))
-        self.create_dslib_pb.setToolTip(_translate("smp_to_ds_ui", "Create dslibrary from root directory by archiving only required files\n"
-"At least one valid dspreset must exist in the directory"))
+        self.preset_fmt_l.setText(_translate("smp_to_ds_ui", "Preset Format"))
+        self.preset_fmt_cmb.setToolTip(_translate("smp_to_ds_ui", "Preset format(s) to generate"))
+        self.preset_fmt_cmb.setItemText(0, _translate("smp_to_ds_ui", "DS"))
+        self.preset_fmt_cmb.setItemText(1, _translate("smp_to_ds_ui", "SFZ"))
+        self.preset_fmt_cmb.setItemText(2, _translate("smp_to_ds_ui", "DS+SFZ"))
+        self.sfz_engine_l.setText(_translate("smp_to_ds_ui", "SFZ Engine"))
+        self.sfz_engine_cmb.setToolTip(_translate("smp_to_ds_ui", "Enable or disable opcodes or hacks depending on target engine\n"
+"\n"
+"generic    Recommended default\n"
+"sforzando    disable unsupported opcodes such as \'output\', \'loop_crossfade\' and \'sample_fadeout\'\n"
+"sfizz    EG last point hack to terminate release and avoid polyphony crash, should not be necessary"))
+        self.sfz_engine_cmb.setItemText(0, _translate("smp_to_ds_ui", "generic"))
+        self.sfz_engine_cmb.setItemText(1, _translate("smp_to_ds_ui", "sforzando"))
+        self.sfz_engine_cmb.setItemText(2, _translate("smp_to_ds_ui", "sfizz"))
+        self.use_eg_l.setText(_translate("smp_to_ds_ui", "Use EG"))
+        self.use_eg_cmb.setToolTip(_translate("smp_to_ds_ui", "Envelope Generatosr (EG) allow to better emulate DS envelopes with curve shaping\n"
+"Also limit decay/release durations and thus spare polyphony a bit more (fake exp/log fades)\n"
+"\n"
+"off    use SFZ1 default envelopes (linear attack, exp decay/release)\n"
+"attack    use envelope generator for attack trigger only\n"
+"on    use envelope generator for all trigger mode"))
+        self.use_eg_cmb.setItemText(0, _translate("smp_to_ds_ui", "off"))
+        self.use_eg_cmb.setItemText(1, _translate("smp_to_ds_ui", "attack"))
+        self.use_eg_cmb.setItemText(2, _translate("smp_to_ds_ui", "on"))
+        self.release_off_by_attack_cb.setToolTip(_translate("smp_to_ds_ui", "Spare polyphony by choking a release group by its corresponding attack group"))
+        self.release_off_by_attack_cb.setText(_translate("smp_to_ds_ui", "Release Off By Attack"))
+        self.create_preset_pb.setToolTip(_translate("smp_to_ds_ui", "Create a dspreset / SFZ file from input directory and current settings\n"
+"\n"
+"NOTE: SFZ is converted from dspreset data"))
+        self.create_preset_pb.setText(_translate("smp_to_ds_ui", "Create Preset"))
+        self.create_dslib_pb.setToolTip(_translate("smp_to_ds_ui", "Create dslibrary (which is a renamed zip file) from root directory by archiving only required files\n"
+"At least one valid dspreset must exist in the directory\n"
+"\n"
+"NOTE: txt, sfz and settings files are also included in the archive"))
         self.create_dslib_pb.setText(_translate("smp_to_ds_ui", "Create dslibrary"))
         self.actionSettings.setText(_translate("smp_to_ds_ui", "Settings"))
         self.save_settings_a.setText(_translate("smp_to_ds_ui", "Save settings"))

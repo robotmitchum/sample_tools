@@ -7,7 +7,6 @@
 """
 
 import ctypes
-import importlib
 import inspect
 import os
 import platform
@@ -30,13 +29,16 @@ from audio_player import AudioPlayer, play_notification
 from common_audio_utils import pitch_audio, balance_audio, db_to_lin
 from common_math_utils import lerp, np_to_rgbint
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
-from common_ui_utils import (FilePathLabel, style_widget, resource_path, get_custom_font, resource_path_alt)
+from common_ui_utils import FilePathLabel, style_widget, resource_path, get_custom_font, resource_path_alt
 from common_ui_utils import Node, KeyPressHandler, shorten_path, AboutDialog
 from common_ui_utils import add_ctx, add_insert_ctx, shorten_str, beautify_str, popup_menu
 from dark_fusion_style import apply_dark_theme
 from drums_to_dspreset import __version__
+from dspreset_to_sfz import dspreset_to_sfz
+from file_utils import resolve_overwriting, read_txt, read_xml_data
 from parseAttrString import parse_string
 from sample_utils import Sample
+from sfz_bg import sfz_bg
 from tools.worker import Worker
 from utils import note_to_name, is_note_name
 from waveform_widgets import WaveformDialog, LoopPointDialog
@@ -74,7 +76,9 @@ class DrDsUi(QMainWindow):
         self.cw.setLayout(self.lyt)
 
         self.setAttribute(Qt.WA_DeleteOnClose)
+
         self.options = Node()
+        self.sfz_options = Node()
 
         self.threadpool = QThreadPool(parent=self)
         self.worker = None
@@ -94,8 +98,6 @@ class DrDsUi(QMainWindow):
 
         custom_font = get_custom_font(self.current_dir / 'RobotoMono-Medium.ttf')
 
-        # lbl_size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        # lbl_size_policy.setHeightForWidth(True)
         self.drumpad_count = 32
         self.channel_count = 16
 
@@ -133,7 +135,7 @@ class DrDsUi(QMainWindow):
         self.output_path_l.setToolTip('Preset root directory')
         self.output_path_l.setMinimumHeight(40)
         self.output_path_lyt.addWidget(self.output_path_l)
-        self.output_path_l.setStyleSheet(f'QLabel{{color: rgb(95,191,143);}}')
+        self.output_path_l.setStyleSheet('QLabel{color: rgb(95,191,143);}')
         font = self.output_path_l.font()
         font.setBold(True)
         self.output_path_l.setFont(font)
@@ -299,7 +301,7 @@ class DrDsUi(QMainWindow):
         self.bg_text_le = QLineEdit(self.cw)
         self.bg_text_le.setObjectName('bg_text_le')
         self.bg_text_le.setPlaceholderText('Drum Kit Name')
-        add_ctx(self.bg_text_le, values=[''], names=['Clear'])
+        self.bg_text_ctx()
         self.bg_text_cmb.currentTextChanged.connect(lambda state: self.bg_text_le.setEnabled(state == 'custom'))
         self.bg_text_cmb.setCurrentIndex(1)
         self.bg_text_lyt.addWidget(self.bg_text_le)
@@ -382,7 +384,7 @@ class DrDsUi(QMainWindow):
         self.reverb_wet_dsb.setFrame(False)
         self.reverb_wet_dsb.setMaximum(1.0)
         self.reverb_wet_dsb.setSingleStep(.1)
-        self.reverb_wet_dsb.setValue(.2)
+        self.reverb_wet_dsb.setValue(0)
         self.reverb_wet_dsb.setToolTip('Default wet value for reverb')
         self.reverb_cb.stateChanged.connect(lambda state: self.reverb_wet_dsb.setEnabled(state))
         add_ctx(self.reverb_wet_dsb, values=[0, .2, .5, .8, 1])
@@ -430,6 +432,34 @@ class DrDsUi(QMainWindow):
         spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.output_options_lyt.addItem(spacer)
 
+        # Format widgets
+        self.output_options_lyt.addWidget(QLabel('Preset Format', parent=self))
+        self.preset_fmt_cmb = QComboBox(self)
+        self.preset_fmt_cmb.setObjectName('preset_fmt_cmb')
+        self.preset_fmt_cmb.addItems(['DS', 'SFZ', 'DS+SFZ'])
+        self.preset_fmt_cmb.setCurrentIndex(2)
+
+        self.preset_fmt_cmb.setToolTip('Preset format(s) to generate')
+        self.output_options_lyt.addWidget(self.preset_fmt_cmb)
+
+        self.sfz_engine_wid = QWidget(self)
+        self.output_options_lyt.addWidget(self.sfz_engine_wid)
+        self.output_options_lyt.setContentsMargins(0, 0, 0, 0)
+        self.output_options_lyt.setSpacing(0)
+        self.sfz_engine_lyt = QHBoxLayout(self.sfz_engine_wid)
+        self.sfz_engine_lyt.addWidget(QLabel('SFZ Engine', parent=self.sfz_engine_wid))
+
+        self.sfz_engine_cmb = QComboBox(parent=self.sfz_engine_wid)
+        self.sfz_engine_cmb.setObjectName('sfz_engine_cmb')
+        self.sfz_engine_lyt.addWidget(self.sfz_engine_cmb)
+
+        self.sfz_engine_cmb.addItems(['generic', 'sforzando', 'sfizz'])
+        self.sfz_engine_cmb.setToolTip('Enable or disable opcodes or hacks depending on target engine')
+
+        self.output_options_lyt.addWidget(self.sfz_engine_wid)
+        self.preset_fmt_cmb.currentTextChanged.connect(
+            lambda state: self.sfz_engine_wid.setEnabled(state.lower() != 'ds'))
+
         # - Process buttons -
         self.buttons_lyt = QHBoxLayout()
         self.buttons_lyt.setContentsMargins(0, 4, 0, 4)
@@ -438,17 +468,20 @@ class DrDsUi(QMainWindow):
         font.setBold(True)
         font.setPointSize(12)
 
-        self.dspreset_pb = QPushButton('Create dspreset', parent=self.cw)
-        self.dspreset_pb.setToolTip('Create a dspreset file in root directory and from current settings')
-        style_widget(self.dspreset_pb, properties={'background-color': 'rgb(63,127,95)', 'border-radius': 12})
-        self.dspreset_pb.setFixedSize(256, 32)
-        self.buttons_lyt.addWidget(self.dspreset_pb)
-        self.dspreset_pb.setFont(font)
-        self.dspreset_pb.clicked.connect(self.create_dspreset)
+        self.preset_pb = QPushButton('Create Preset', parent=self.cw)
+        self.preset_pb.setToolTip('Create a dspreset / SFZ file from input directory and current settings\n\n'
+                                  'NOTE: SFZ is converted from dspreset data')
+        style_widget(self.preset_pb, properties={'background-color': 'rgb(63,127,95)', 'border-radius': 12})
+        self.preset_pb.setFixedSize(256, 32)
+        self.buttons_lyt.addWidget(self.preset_pb)
+        self.preset_pb.setFont(font)
+        self.preset_pb.clicked.connect(self.create_preset)
 
         self.dslibrary_pb = QPushButton('Create dslibrary', parent=self.cw)
-        self.dslibrary_pb.setToolTip('Create dslibrary from root directory by archiving only required files\n'
-                                     'At least one valid dspreset must exist in the directory')
+        self.dslibrary_pb.setToolTip(
+            'Create dslibrary (which is a renamed zip file) from root directory by archiving only required files\n'
+            'At least one valid dspreset must exist in the directory\n\n'
+            'NOTE: txt, sfz and settings files are also included in the archive')
         style_widget(self.dslibrary_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 12})
         self.dslibrary_pb.setFixedSize(256, 32)
         self.buttons_lyt.addWidget(self.dslibrary_pb)
@@ -596,6 +629,15 @@ class DrDsUi(QMainWindow):
         self.options.color_plt_cfg = self.palette_cfg[self.palette_cmb.currentText()]
         self.options.plt_adjust = [wid.value() for wid in self.hsv_widgets]
 
+        # Preset Format
+        self.options.preset_format = self.preset_fmt_cmb.currentText().lower()
+        self.options.output_type = ('dspreset', 'xml_tree')[self.options.preset_format == 'sfz']
+
+        # SFZ options
+        self.sfz_options.engine = self.sfz_engine_cmb.currentText().lower()
+        # self.sfz_options.use_eg = self.use_eg_cmb.currentIndex()
+        # self.sfz_options.release_off_by_attack = self.release_off_by_attack_cb.isChecked()
+
     def as_worker(self, cmd):
         if not any(worker.running for worker in self.active_workers):
             self.worker = Worker(cmd)
@@ -630,34 +672,35 @@ class DrDsUi(QMainWindow):
             message_callback.emit(f'{shorten_path(result, 30)} successfully created')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
-    def create_dspreset(self):
+    def create_preset(self):
         self.root_dir = self.output_path_l.fullPath()
 
         if not self.root_dir:
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
-        add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+        fmt_ext = {'sfz': 'sfz', 'ds': 'dspreset'}
+        preset_fmt = [fmt_ext[v] for v in self.preset_fmt_cmb.currentText().lower().split('+')]
         auto_increment = self.auto_incr_cb.isChecked()
 
         # Confirm overwriting
-        basename = Path(self.root_dir).stem
-        if add_suffix:
-            basename += add_suffix
-        filepath = Path.joinpath(Path(self.root_dir), f'{basename}.dspreset')
+        p = Path(self.root_dir)
+        suffix = ('', self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+        preset_path = [p / f'{p.stem + suffix}.{ext}' for ext in preset_fmt]
+        existing_file = [pp.name for pp in preset_path if pp.is_file()]
 
-        if filepath.is_file() and not auto_increment:
+        if not auto_increment and existing_file:
             confirm_dlg = QMessageBox.question(self, 'Confirmation',
-                                               f'{filepath.name} already exists\nOverwrite?',
+                                               f'{' '.join(existing_file)} already exist'
+                                               f'{('s', '')[len(existing_file) > 1]}\nOverwrite?',
                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if not confirm_dlg == QMessageBox.Yes:
                 return False
 
         result = None
-        importlib.reload(drds)
 
         try:
-            self.as_worker(self.create_dspreset_process)
+            self.as_worker(self.create_preset_process)
             self.event_loop.exec_()  # Wait for result
             result = self.worker_result
             self.event_loop.quit()
@@ -674,21 +717,86 @@ class DrDsUi(QMainWindow):
             self.update_message(f'Error when processing: {e}')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
 
-        if result:
-            play_notification(audio_file=self.current_dir / 'process_complete.flac')
-        else:
+        if result is None:
             play_notification(audio_file=self.current_dir / 'process_error.flac')
+        else:
+            play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
-    def create_dspreset_process(self, worker, progress_callback, message_callback):
+    def create_preset_process(self, worker, progress_callback, message_callback):
         self.get_options()
 
         options = vars(self.options)
         func_args = inspect.getfullargspec(drds.create_drums_dspreset)[0]
         option_kwargs = {k: v for k, v in options.items() if k in func_args}
 
+        sfz_options = vars(self.sfz_options)
+        sfz_func_args = inspect.getfullargspec(dspreset_to_sfz)[0]
+        sfz_option_kwargs = {k: v for k, v in sfz_options.items() if k in sfz_func_args}
         print(option_kwargs)
-        result = drds.create_drums_dspreset(**option_kwargs, worker=worker, progress_callback=progress_callback,
-                                            message_callback=message_callback)
+
+        suffix = ('', self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+
+        ds_result = drds.create_drums_dspreset(**option_kwargs, worker=worker, progress_callback=progress_callback,
+                                               message_callback=message_callback)
+        result = ds_result
+
+        # Resolve SFZ path and version number
+        sfz_path, version, sample_tools_metadata = None, '', None
+        match options['preset_format']:
+            case 'ds+sfz':
+                sfz_path = Path(ds_result).with_suffix('.sfz')
+                version = (re.findall(r'_(\d+)', sfz_path.stem) or [''])[-1]
+                sample_tools_metadata = read_xml_data(filepath=ds_result, elem='sample_tools_metadata')
+            case 'sfz':
+                p = Path(self.root_dir)
+                sfz_path = p / f'{p.stem + suffix}.sfz'
+                if options['auto_increment']:
+                    sfz_path = resolve_overwriting(sfz_path, mode='file', test_run=True)
+                    version = (re.findall(r'_(\d+)', sfz_path.stem) or [''])[-1]
+                sample_tools_metadata = read_xml_data(xml_tree=ds_result, elem='sample_tools_metadata')
+
+        if sample_tools_metadata is not None:
+            sample_tools_metadata = sample_tools_metadata[0]
+
+        # - Generate SFZ bg images -
+        sfz_bg_path, sfz_bg_ctrl_path = None, None
+        if 'sfz' in options['preset_format']:
+            sfz_bg_path = Path(options['root_dir']) / f'resources/bg_sfz{suffix}'
+            sfz_bg_ctrl_path = Path(options['root_dir']) / f'resources/bg_ctrl_sfz{suffix}'
+            if version:
+                sfz_bg_path += f'_{version}'
+                sfz_bg_ctrl_path += f'_{version}'
+
+            info_text = read_txt(Path(options['root_dir']) / 'INFO.txt')
+            negative_delay = sample_tools_metadata.get('negativeDelay', None)
+
+            # Main bg images
+            bottom_text = (None, f'Negative Delay : {negative_delay} ms')[negative_delay is not None]
+            sfz_bg_path = sfz_bg(sfz_bg_path, text_font=options['text_font'], scl=2,
+                                 top_text=options['bg_text'], center_text=info_text, bottom_text=bottom_text,
+                                 color_plt_cfg=options['color_plt_cfg'], plt_adjust=options['plt_adjust'])
+            sfz_bg_path = Path(sfz_bg_path).relative_to(options['root_dir']).as_posix()
+
+            # Control bg images
+            bottom_text = (None,
+                           f'{options['bg_text']} - Negative Delay : {negative_delay} ms'
+                           )[negative_delay is not None]
+            sfz_bg_ctrl_path = sfz_bg(sfz_bg_ctrl_path, text_font=options['text_font'], scl=2,
+                                      bottom_text=bottom_text, color_plt_cfg=options['color_plt_cfg'],
+                                      plt_adjust=options['plt_adjust'])
+            sfz_bg_ctrl_path = Path(sfz_bg_ctrl_path).relative_to(options['root_dir']).as_posix()
+
+        match options['preset_format']:
+            case 'ds+sfz':
+                sfz_result = dspreset_to_sfz(input_file=ds_result, bg_img=sfz_bg_path,
+                                             bg_ctrl=sfz_bg_ctrl_path, **sfz_option_kwargs)
+                result = ds_result
+            case 'sfz':
+                sfz_result = dspreset_to_sfz(input_file=None, xml_tree=ds_result, output_file=sfz_path,
+                                             bg_img=sfz_bg_path, bg_ctrl=sfz_bg_ctrl_path, **sfz_option_kwargs)
+                result = sfz_result
+            case _:
+                pass
 
         return result
 
@@ -834,6 +942,28 @@ class DrDsUi(QMainWindow):
         if self.default_plt in plt_names:
             self.palette_cmb.setCurrentIndex(plt_names.index(self.default_plt))
 
+    def bg_text_ctx(self):
+        widget = self.bg_text_le
+
+        def show_context_menu():
+            items = ['']
+            if self.root_dir:
+                bg_text = beautify_str(Path(self.root_dir).stem)
+                items.append(bg_text)
+
+            menu = QMenu(widget)
+            for value in items:
+                action = menu.addAction(f'{value}')
+                action.triggered.connect(partial(widget.setText, value))
+
+            pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
+            menu.setMinimumWidth(widget.width())
+            menu.exec_(pos)
+            menu.deleteLater()
+
+        widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        widget.customContextMenuRequested.connect(show_context_menu)
+
     def hsv_adjust_ctx(self):
         names = ['Reset (Default)\t0 1 1',
                  'Hue Invert\t.5 1 1',
@@ -955,6 +1085,7 @@ class AudioFilesLw(QListWidget):
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()
+        menu.deleteLater()
 
     def waveform_dlg(self):
         items = self.get_sel_lw_items()
@@ -1735,7 +1866,7 @@ class DrumpadButton(QWidget):
             cmds = [self.drum_prop.clear_pad]
 
             for name, cmd in zip(names, cmds):
-                action = QAction(f'{name}', self)
+                action = QAction(f'{name}', menu)
                 action.triggered.connect(cmd)
                 menu.addAction(action)
 

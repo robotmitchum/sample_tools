@@ -349,6 +349,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()
+        menu.deleteLater()
 
 
 def run(mw=StToolUi, parent=None):

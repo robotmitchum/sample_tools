@@ -19,10 +19,10 @@ class WorkerSignals(QObject):
 class Worker(QRunnable):
     """
     Worker thread
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up
 
-    :param callback: The function callback to run on this worker thread. Supplied args and
-                     kwargs will be passed through to the runner.
+    :param callback: The function callback to run on this worker thread
+    Supplied args and kwargs will be passed through to the runner
     :type callback: function
     :param args: Arguments to pass to the callback function
     :param kwargs: Keywords to pass to the callback function
@@ -40,12 +40,12 @@ class Worker(QRunnable):
         # Add progress emitter to kwargs if absent
         if 'progress_callback' not in self.kwargs:
             self.kwargs['progress_callback'] = self.signals.progress
-        if "message_callback" not in self.kwargs:
-            self.kwargs["message_callback"] = self.signals.message
+        if 'message_callback' not in self.kwargs:
+            self.kwargs['message_callback'] = self.signals.message
 
     def run(self):
         """
-        Execute the function and emit progress updates.
+        Execute the function and emit progress updates
         """
         if not self.running:
             self.running = True
@@ -53,7 +53,7 @@ class Worker(QRunnable):
                 result = self.fn(self, *self.args, **self.kwargs)  # Execute the callback function
                 self.signals.result.emit(result)
             except Exception as e:
-                print(f"Error: {e}")
+                print(f'Error: {e}')
             finally:
                 self.running = False
                 self.signals.finished.emit()

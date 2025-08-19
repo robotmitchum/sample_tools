@@ -16,17 +16,17 @@ from PyQt5.QtWidgets import QFileDialog
 from jsonFile import read_json, write_json
 
 
-def get_settings(widget, node):
+def get_settings(widget: QtWidgets.QWidget, node: object | None) -> dict:
     """
     Get user widget values from a parent widget
-    :param QtWidgets.QWidget widget: Given parent widget, typically a QMainWindow instance
-    :param class or None node: Python object used to store settings
+    :param widget: Given parent widget, typically a QMainWindow instance
+    :param node: Python object used to store settings
     :return: Preferences with widget name as key
-    :rtype: dict
     """
     result = {}
     for child in widget.findChildren(QtWidgets.QWidget):
         name = child.objectName()
+        # Ignore widgets with empty objectName or starting with 'qt_' (Qt internal use)
         if not name or name.startswith('qt_'):
             continue
 
@@ -56,16 +56,16 @@ def get_settings(widget, node):
     return result
 
 
-def set_settings(widget, node):
+def set_settings(widget: QtWidgets.QWidget, node: object | None) -> bool:
     """
     Set user widget values
-    :param QtWidgets.QWidget widget: Given parent widget, typically a QMainWindow instance
+    :param widget: Given parent widget, typically a QMainWindow instance
     :param class or None node: Python object used to store attributes
-    :return: Preferences with widget name as key
-    :rtype: dict
+    :return:
     """
     for child in widget.findChildren(QtWidgets.QWidget):
         name = child.objectName()
+        # Ignore widgets with empty objectName or starting with 'qt_' (Qt internal use)
         if not name or name.startswith('qt_') or not hasattr(node, name):
             continue
 

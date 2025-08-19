@@ -18,7 +18,7 @@ def linear_slider(filepath: str | Path | None = 'linear_slider.png',
                   bg_r: float | None = 4, fg_r: float | None = 4, dot_r: float | None = None,
                   bg_move: bool = True, start_end_hide: bool = True,
                   bg_color: str = 'ff000000', fg_color: str = 'ff7f7f7f', dot_color: str | None = 'ffffffff',
-                  frames: int = 128) -> str | np.ndarray:
+                  frames: int = 128) -> str | Path | np.ndarray:
     """
     Render a linear slider
     horizontal or vertical direction is determined from shape (width, height)
@@ -106,7 +106,7 @@ def rotary_knob(filepath: str | Path | None = 'rotary_knob.png',
                 bg_r: float | None = 1.5, fg_r: float | None = 1.5, dot_r: float | None = 4,
                 bg_move: bool = True, start_end_hide: bool = True,
                 bg_color: str = 'ff000000', fg_color: str = 'ff7f7f7f', dot_color: str | None = 'ffffffff',
-                frames: int = 33, end: bool = True) -> str | np.ndarray:
+                frames: int = 33, end: bool = True) -> str | Path | np.ndarray:
     """
     Render a rotary knob
 
@@ -198,7 +198,7 @@ def dial_knob(filepath: str | Path | None = 'dial_knob.png',
               mark_p: tuple[float, float] = (16, 32),
               bg_r: float | None = None, bg_stroke_r: float = None, mark_r: float | None = 2,
               bg_color: str = 'ff000000', mark_color: str = 'ffffffff',
-              frames: int = 33, end: bool = True) -> str | np.ndarray:
+              frames: int = 33, end: bool = True) -> str | Path | np.ndarray:
     """
     Render a dial knob (Pan pot style)
 
@@ -275,7 +275,7 @@ def dial_knob(filepath: str | Path | None = 'dial_knob.png',
 def round_button(filepath: str | Path | None = 'round_button.png',
                  size: int = 64, margin: float = 1, scl: float = 1,
                  bg_r: float | None = None,
-                 bg_color: str = 'ffffffff'):
+                 bg_color: str = 'ffffffff') -> str | Path | np.ndarray:
     """
     Render a basic round button
 

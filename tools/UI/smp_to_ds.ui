@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>776</height>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
      <number>8</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="directory_lyt">
+     <layout class="QHBoxLayout" name="output_path_lyt">
       <property name="spacing">
        <number>4</number>
       </property>
@@ -42,7 +42,7 @@
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
       <item>
-       <widget class="QLabel" name="path_l">
+       <widget class="QLabel" name="output_path_l">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -69,7 +69,7 @@ IR samples must be located in a separate subdirectory called 'IR'</string>
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="setpath_tb">
+       <widget class="QToolButton" name="output_path_tb">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -192,6 +192,9 @@ when file naming feels impractical</string>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="placeholderText">
+         <string>Click Pattern for examples, Right click to insert an attribute</string>
+        </property>
        </widget>
       </item>
       <item>
@@ -212,11 +215,11 @@ when file naming feels impractical</string>
         <property name="toolTip">
          <string>Naming style for group sliders
 
-'keep' directly use {group} attribute as is
-'beautify' Capitalize the names and insert spaces by detecting CamelCase and digits
-'lower' lowercase
-'upper' ALL CAPS :)
-'shorten' Abreviate the names keeping only first letters by detecting CamelCase and digits</string>
+keep	directly use {group} attribute as is
+beautify	Capitalize the names and insert spaces by detecting CamelCase and digits
+lower	lowercase
+upper	ALL CAPS :)
+shorten	Abreviate the names keeping only first letters by detecting CamelCase and digits</string>
         </property>
         <property name="currentIndex">
          <number>1</number>
@@ -1144,9 +1147,9 @@ Great for keys, guitars...</string>
            <property name="toolTip">
             <string>Fake release mode
 
-'start'	Direct reuse of attack sample (default)
-'loop_end'	Set start at loop_end (samples with tail after loop)
-'cue'	Set start at cue marker</string>
+start	Direct reuse of attack sample (default)
+loop_end	Set start at loop_end (samples with tail after loop)
+cue	Set start at cue marker</string>
            </property>
            <property name="frame">
             <bool>false</bool>
@@ -1801,10 +1804,10 @@ color: rgb(255, 255, 255);</string>
         <property name="toolTip">
          <string>Note extension mode in relation with other notes
 
-'up'	extend to higher note
-'mid'	(default) extend both ways
-'down'	extend to lower note
-'none'	 No extension (drums,sfx)</string>
+up	extend to higher note
+mid	(default) extend both ways
+down	extend to lower note
+none	 No extension (drums,sfx)</string>
         </property>
         <property name="currentText">
          <string>mid</string>
@@ -2009,6 +2012,9 @@ Use - or + to offset from bounding notes
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="placeholderText">
+         <string>MIDI note range</string>
+        </property>
        </widget>
       </item>
       <item>
@@ -2016,8 +2022,8 @@ Use - or + to offset from bounding notes
         <property name="toolTip">
          <string>Note limit mode
 
-'shared' use all notes among all groups (default)
-'group' consider only notes within the same group (typically organs with one group per stop)</string>
+shared	use all notes among all groups (default)
+group	consider only notes within the same group (typically organs with one group per stop)</string>
         </property>
         <property name="currentIndex">
          <number>0</number>
@@ -2099,6 +2105,9 @@ Leave a blank space to disable
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="placeholderText">
+         <string>xNUMBER</string>
         </property>
        </widget>
       </item>
@@ -2238,14 +2247,14 @@ If bounding notes sound too unnatural/pitched, disable the option</string>
            <string>Control pitch fraction usage
 Keep pitch fraction &quot;in check&quot; 
 
-'off'	Ignore pitch fraction
-'on'	Use pitch fraction
-'mean_scale'	Scale deviation from mean to given value
-'mean_blend'	Blend between mean and pitch fraction (0-100)
-'mean_threshold'	Use  pitch fraction over threshold and mean under threshold
-'on_rand'	Use and add given random
-'on_threshold'	Use over given threshold
-'on_threshold_rand'	Use over given threshold and add random</string>
+off	Ignore pitch fraction
+on	Use pitch fraction
+mean_scale	Scale deviation from mean to given value
+mean_blend	Blend between mean and pitch fraction (0-100)
+mean_threshold	Use  pitch fraction over threshold and mean under threshold
+on_rand	Use and add given random
+on_threshold	Use over given threshold
+on_threshold_rand	Use over given threshold and add random</string>
           </property>
           <property name="currentIndex">
            <number>0</number>
@@ -2944,9 +2953,9 @@ color: rgb(255, 255, 255);</string>
        <widget class="QComboBox" name="bg_text_cmb">
         <property name="toolTip">
          <string>Write text to the background image
-none: No text
-rootdir: Use root directory name as text (default)
-custom: Type a custom text</string>
+none	No text
+rootdir	Use root directory name as text (default)
+custom	Type a custom text</string>
         </property>
         <property name="currentIndex">
          <number>1</number>
@@ -3257,7 +3266,7 @@ custom: Type a custom text</string>
        <widget class="QSpinBox" name="grp_knob_rows_sb">
         <property name="minimumSize">
          <size>
-          <width>64</width>
+          <width>48</width>
           <height>0</height>
          </size>
         </property>
@@ -3265,7 +3274,8 @@ custom: Type a custom text</string>
          <enum>Qt::NoContextMenu</enum>
         </property>
         <property name="toolTip">
-         <string>Transpose the whole sample mapping in semitones</string>
+         <string>Number of group knob rows for generated UI
+0 willl disable all group knobs</string>
         </property>
         <property name="frame">
          <bool>false</bool>
@@ -3288,6 +3298,90 @@ custom: Type a custom text</string>
        </widget>
       </item>
       <item>
+       <spacer name="horizontalSpacer_34">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>8</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QWidget" name="group_mute_wid" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="group_mute_l">
+           <property name="text">
+            <string>Mute</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="group_mute_le">
+           <property name="toolTip">
+            <string>Mute buttons default state
+Enter a binary sequence of 0 (muted) and 1 (enabled)
+
+The last value is repeated for the remaining buttons
+
+Right-click for examples</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="placeholderText">
+            <string>Binary Sequence</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_35">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>8</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QCheckBox" name="no_solo_grp_knob_cb">
         <property name="toolTip">
          <string>Don't create volume knob for instrument with only one group</string>
@@ -3305,9 +3399,12 @@ custom: Type a custom text</string>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>8</width>
           <height>20</height>
          </size>
         </property>
@@ -3410,13 +3507,7 @@ custom: Type a custom text</string>
        </spacer>
       </item>
       <item>
-       <widget class="QCheckBox" name="use_reverb_cb">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QCheckBox" name="use_cutoff_cb">
         <property name="minimumSize">
          <size>
           <width>128</width>
@@ -3424,7 +3515,26 @@ custom: Type a custom text</string>
          </size>
         </property>
         <property name="toolTip">
-         <string>Create reverb knob</string>
+         <string>Create cutoff filter (LPF) as a modultation knob (CC1)</string>
+        </property>
+        <property name="text">
+         <string>Cutoff</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="use_reverb_cb">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Create reverb knob (CC91)</string>
         </property>
         <property name="text">
          <string> Reverb</string>
@@ -3473,15 +3583,36 @@ custom: Type a custom text</string>
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>0.200000000000000</double>
+         <double>0.000000000000000</double>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_33">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>8</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item>
        <widget class="QCheckBox" name="use_ir_cb">
         <property name="toolTip">
          <string>Use or ignore IR samples
-IR samples must be located in a separate subdirectory called 'IR'</string>
+
+IR samples must be located in a separate subdirectory called 'IR'
+
+NOTE: Decent Sampler applies a -12 dB volume attenuation to IR
+'IR Tool' also available on my github can perform accurate volume compensation for IRs
+so their volume match with each other</string>
         </property>
         <property name="text">
          <string>Use IR</string>
@@ -3510,9 +3641,6 @@ NOTE: instrument level effects such as reverb and LPF are not present in the AUX
         </property>
         <property name="text">
          <string>Multi Output</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -3600,7 +3728,7 @@ Not required for tightly trimmed samples with sharp percussive attacks</string>
     <item>
      <layout class="QHBoxLayout" name="create_button_lyt">
       <property name="spacing">
-       <number>0</number>
+       <number>8</number>
       </property>
       <item>
        <spacer name="horizontalSpacer_29">
@@ -3667,7 +3795,240 @@ Not required for tightly trimmed samples with sharp percussive attacks</string>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="create_dsp_pb">
+         <layout class="QHBoxLayout" name="preset_fmt_lyt">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="preset_fmt_l">
+            <property name="minimumSize">
+             <size>
+              <width>96</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>96</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Preset Format</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="preset_fmt_cmb">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>80</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Preset format(s) to generate</string>
+            </property>
+            <property name="currentIndex">
+             <number>2</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>DS</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>SFZ</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>DS+SFZ</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QWidget" name="sfz_engine_wid" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="sfz_engine_l">
+               <property name="text">
+                <string>SFZ Engine</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="sfz_engine_cmb">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Enable or disable opcodes or hacks depending on target engine
+
+generic	Recommended default
+sforzando	disable unsupported opcodes such as 'output', 'loop_crossfade' and 'sample_fadeout'
+sfizz	EG last point hack to terminate release and avoid polyphony crash, should not be necessary</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>generic</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>sforzando</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>sfizz</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QWidget" name="sfz_options_wid" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="use_eg_l">
+             <property name="minimumSize">
+              <size>
+               <width>96</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>96</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Use EG</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="use_eg_cmb">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>80</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>80</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>Envelope Generatosr (EG) allow to better emulate DS envelopes with curve shaping
+Also limit decay/release durations and thus spare polyphony a bit more (fake exp/log fades)
+
+off	use SFZ1 default envelopes (linear attack, exp decay/release)
+attack	use envelope generator for attack trigger only
+on	use envelope generator for all trigger mode</string>
+             </property>
+             <property name="currentIndex">
+              <number>2</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>off</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>attack</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>on</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="release_off_by_attack_cb">
+             <property name="toolTip">
+              <string>Spare polyphony by choking a release group by its corresponding attack group</string>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>Release Off By Attack</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="create_preset_pb">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -3681,14 +4042,16 @@ Not required for tightly trimmed samples with sharp percussive attacks</string>
            </font>
           </property>
           <property name="toolTip">
-           <string>Create a dspreset file from input directory and current settings</string>
+           <string>Create a dspreset / SFZ file from input directory and current settings
+
+NOTE: SFZ is converted from dspreset data</string>
           </property>
           <property name="styleSheet">
            <string notr="true">QPushButton{color: rgb(0, 0, 0);
 background-color: rgb(128, 220, 213);}</string>
           </property>
           <property name="text">
-           <string>Create dspreset</string>
+           <string>Create Preset</string>
           </property>
          </widget>
         </item>
@@ -3727,8 +4090,10 @@ background-color: rgb(128, 220, 213);}</string>
            </font>
           </property>
           <property name="toolTip">
-           <string>Create dslibrary from root directory by archiving only required files
-At least one valid dspreset must exist in the directory</string>
+           <string>Create dslibrary (which is a renamed zip file) from root directory by archiving only required files
+At least one valid dspreset must exist in the directory
+
+NOTE: txt, sfz and settings files are also included in the archive</string>
           </property>
           <property name="text">
            <string>Create dslibrary</string>

@@ -12,6 +12,7 @@ from PyQt5 import QtWidgets, QtGui, Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
+from matplotlib.collections import LineCollection
 
 
 class WaveformDialog(QtWidgets.QDialog):
@@ -97,7 +98,21 @@ class WaveformDialog(QtWidgets.QDialog):
         subplt.xaxis.set_major_formatter(FuncFormatter(x_formatter))
         subplt.yaxis.set_major_formatter(FuncFormatter(db_formatter))
 
-        subplt.plot(data, label='Audio', color='#4080A0')
+        # Optimized waveform preview
+        size = int(self.geometry().width())  # Time definition of the preview
+        # Calculate chunk size
+        chunk_size = int(np.ceil(length / size))
+        t = np.arange(size) * chunk_size
+        pad = chunk_size * size - length
+        # Pad audio with 0 to fit chunk size
+        padded = np.pad(data, (0, pad), mode='constant', constant_values=0)
+        # Reshape and calculate min max for each chunk
+        chunks = padded.reshape(size, chunk_size)
+        y_max = np.max(chunks, axis=1)
+        y_min = np.min(chunks, axis=1)
+
+        subplt.fill_between(t, y_min, y_max, color='#4080A0')
+        # subplt.plot(data, label='Audio', color='#4080A0') # Direct unoptimized plotting
 
         for i in range(10):
             subplt.axvline(x=int(i * length / 10), ymin=-1, ymax=1, label=f'{i + 1:02}', color='#404040',
@@ -263,6 +278,8 @@ class TestWidgets(QtWidgets.QMainWindow):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
+    from dark_fusion_style import apply_dark_theme
+    apply_dark_theme(app)
     window = TestWidgets()
     window.show()
     sys.exit(app.exec_())

@@ -1,7 +1,7 @@
 # coding:utf-8
 """
     :module: Smp2Ds_UI.py
-    :description: Create a Decent Sampler preset (.dspreset) file from a collection of samples
+    :description: Create a preset file (dspreset/sfz) from a collection of samples
 
     Samples must be in flac or wav
 
@@ -16,7 +16,7 @@
 """
 
 import ctypes
-import importlib
+import inspect
 import os
 import platform
 import re
@@ -24,22 +24,26 @@ import sys
 import traceback
 from functools import partial
 from pathlib import Path
-import inspect
+from typing import cast
 
 from PyQt5 import QtGui, QtCore, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtWidgets import QMenu, QMenuBar, QAction
 
 import smp_to_dspreset as smp2ds
 from UI import smp_to_ds as gui
 from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
+from common_ui_utils import FilePathLabel, replace_widget
 from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font, style_widget
 from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path, AboutDialog
-from jsonFile import read_json
-from smp_to_dspreset import __version__, __ds_version__
-from tools.worker import Worker
 from dark_fusion_style import apply_dark_theme
+from dspreset_to_sfz import dspreset_to_sfz
+from file_utils import resolve_overwriting, read_txt, read_xml_data
+from jsonFile import read_json
+from sfz_bg import sfz_bg
+from smp_to_dspreset import __version__
+from tools.worker import Worker
 
 
 class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
@@ -47,6 +51,19 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         super().__init__(parent=parent)
         self.setupUi(self)
         self.setAttribute(Qt.Qt.WA_DeleteOnClose)
+
+        # - Replace output_path_l with custom widget (displaying shortened paths) -
+        self.output_path_l.setObjectName('')  # Clear objectName to prevent saving and loading of the widget state
+        self.output_path_l = replace_widget(self.output_path_l, FilePathLabel(parent=self.centralwidget))
+        self.output_path_l = cast(FilePathLabel, self.output_path_l)  # For auto-completion
+        self.output_path_l.setPlaceholderText('Drag and drop a preset ROOT directory on the window')
+        self.output_path_l.setStyleSheet('QLabel{color: rgb(30, 161, 205);}')
+        self.output_path_l.setAlignment(QtCore.Qt.AlignCenter)
+        font = self.output_path_l.font()
+        font.setBold(True)
+        self.output_path_l.setFont(font)
+        self.output_path_tb.clicked.connect(self.output_path_l.browse_path)
+        self.output_path_l.pathChanged.connect(lambda _: setattr(self, 'root_dir', self.output_path_l.fullPath()))
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
@@ -57,6 +74,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
         self.options = Node()
+        self.sfz_options = Node()
 
         self.root_dir = None  # Instrument root directory
         self.ir_subdir = None
@@ -127,10 +145,10 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.progress_pb.setTextVisible(True)
         self.progress_pb.setFont(custom_font)
         self.progress_pb.setValue(0)
-        self.update_message('Create a Decent Sampler preset from samples')
+        self.update_message('Create Decent Sampler and SFZ presets from samples')
 
     def setup_connections(self):
-        self.setpath_tb.clicked.connect(self.set_rootdir)
+        # self.output_path_tb.clicked.connect(self.set_rootdir)
 
         # Pattern widgets
         add_ctx(self.pattern_le,
@@ -206,10 +224,18 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         # UI cosmetics
         self.bg_text_cmb.currentTextChanged.connect(lambda state: self.bg_text_le.setEnabled(state == 'custom'))
-        add_ctx(self.bg_text_le, values=[''], names=['Clear'])
+        self.bg_text_ctx()
+
+        # Group Mute widget
+        self.grp_knob_rows_sb.valueChanged.connect(lambda state: self.group_mute_wid.setEnabled(state > 0))
+        validator = QtGui.QRegExpValidator(QtCore.QRegExp("[01]*"), self.group_mute_le)
+        self.group_mute_le.setValidator(validator)  # Prevent invalid user entry
+        add_ctx(self.group_mute_le, values=['', '0', '10', '01', '110'])
 
         self.hsv_pb.clicked.connect(self.hsv_adjust_ctx)
         add_ctx(self.reverb_wet_dsb, values=[0, .2, .5, .8, 1])
+        self.adsr_knobs_cb.stateChanged.connect(lambda state: self.max_adsr_value_l.setEnabled(state))
+        self.adsr_knobs_cb.stateChanged.connect(lambda state: self.max_adsr_dsb.setEnabled(state))
         add_ctx(self.max_adsr_dsb, values=[0, 5, 10, 20])
 
         self.use_reverb_cb.stateChanged.connect(lambda state: self.reverb_wet_dsb.setEnabled(state))
@@ -219,13 +245,19 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.add_suffix_cb.stateChanged.connect(lambda state: self.suffix_le.setEnabled(state))
         add_ctx(self.suffix_le, values=['', '_release', '_legato'])
 
-        self.create_dsp_pb.clicked.connect(self.create_dspreset)
-        self.create_dsp_pb.setFixedHeight(32)
-        style_widget(self.create_dsp_pb, properties={'border-radius': 12})
+        self.create_preset_pb.clicked.connect(self.create_preset)
+        self.create_preset_pb.setFixedHeight(32)
+        style_widget(self.create_preset_pb, properties={'border-radius': 12})
 
         self.create_dslib_pb.clicked.connect(partial(self.as_worker, self.create_dslibrary))
         self.create_dslib_pb.setFixedHeight(32)
         style_widget(self.create_dslib_pb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 12})
+
+        # Format widgets
+        self.preset_fmt_cmb.currentTextChanged.connect(
+            lambda state: self.sfz_engine_wid.setEnabled(state.lower() != 'ds'))
+        self.preset_fmt_cmb.currentTextChanged.connect(
+            lambda state: self.sfz_options_wid.setEnabled(state.lower() != 'ds'))
 
         # Settings
         self.load_settings_a.triggered.connect(self.load_settings)
@@ -236,6 +268,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         # Help
         self.visit_github_a.triggered.connect(self.visit_github)
         self.about_a.triggered.connect(self.about_dialog)
+
+        self.output_path_l.pathChanged.connect(self.load_settings_from_rootdir)
 
     def as_worker(self, cmd):
         if not any(worker.running for worker in self.active_workers):
@@ -297,7 +331,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.setMenuBar(self.menu_bar)
 
     def get_options(self):
-        self.options.root_dir = self.root_dir
+        self.options.root_dir = self.output_path_l.fullPath()
         self.options.smp_attrib_cfg = self.smp_attrib_cfg
 
         self.options.add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
@@ -388,8 +422,11 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.options.text_font = (font, 24)
 
         self.options.group_knobs_rows = self.grp_knob_rows_sb.value()
+        self.options.group_mute = self.group_mute_le.text()
         self.options.no_solo_grp_knob = self.no_solo_grp_knob_cb.isChecked()
         self.options.adsr_knobs = self.adsr_knobs_cb.isChecked()
+
+        self.options.use_cutoff = self.use_cutoff_cb.isChecked()
 
         self.options.use_reverb = self.use_reverb_cb.isChecked()
         self.options.reverb_wet = self.reverb_wet_dsb.value()
@@ -402,31 +439,44 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.options.estimate_delay = self.estimate_delay_cb.isChecked()
 
-    def create_dspreset(self):
+        # Preset Format
+        self.options.preset_format = self.preset_fmt_cmb.currentText().lower()
+        self.options.output_type = ('dspreset', 'xml_tree')[self.options.preset_format == 'sfz']
+
+        # SFZ options
+        self.sfz_options.engine = self.sfz_engine_cmb.currentText().lower()
+        self.sfz_options.use_eg = self.use_eg_cmb.currentIndex()
+        self.sfz_options.release_off_by_attack = self.release_off_by_attack_cb.isChecked()
+
+    def create_preset(self):
+        self.root_dir = self.output_path_l.fullPath()
+
         if not self.root_dir:
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
-        add_suffix = (None, self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+        fmt_ext = {'sfz': 'sfz', 'ds': 'dspreset'}
+        preset_fmt = [fmt_ext[v] for v in self.preset_fmt_cmb.currentText().lower().split('+')]
         auto_increment = self.auto_incr_cb.isChecked()
 
         # Confirm overwriting
-        basename = Path(self.root_dir).stem
-        if add_suffix:
-            basename += add_suffix
-        filepath = Path.joinpath(Path(self.root_dir), f'{basename}.dspreset')
+        p = Path(self.root_dir)
+        suffix = ('', self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+        preset_path = [p / f'{p.stem + suffix}.{ext}' for ext in preset_fmt]
+        existing_file = [pp.name for pp in preset_path if pp.is_file()]
 
-        if filepath.is_file() and not auto_increment:
-            confirm_dlg = QMessageBox.question(self, 'Confirmation', f'{filepath.name} already exists\nOverwrite?',
+        if not auto_increment and existing_file:
+            confirm_dlg = QMessageBox.question(self, 'Confirmation',
+                                               f'{' '.join(existing_file)} already exist'
+                                               f'{('s', '')[len(existing_file) > 1]}\nOverwrite?',
                                                Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
             if not confirm_dlg == Qt.QMessageBox.Yes:
                 return False
 
         result = None
-        importlib.reload(smp2ds)
 
         try:
-            self.as_worker(self.create_dspreset_process)
+            self.as_worker(self.create_preset_process)
             self.event_loop.exec_()  # Wait for result
             result = self.worker_result
             self.event_loop.quit()
@@ -443,25 +493,95 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             self.update_message(f'Error when processing: {e}')
             play_notification(audio_file=self.current_dir / 'process_error.flac')
 
-        if result:
-            play_notification(audio_file=self.current_dir / 'process_complete.flac')
-        else:
+        if result is None:
             play_notification(audio_file=self.current_dir / 'process_error.flac')
+        else:
+            play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
-    def create_dspreset_process(self, worker, progress_callback, message_callback):
+    def create_preset_process(self, worker, progress_callback, message_callback):
+        # importlib.reload(smp2ds)
         self.get_options()
 
         options = vars(self.options)
         func_args = inspect.getfullargspec(smp2ds.create_dspreset)[0]
         option_kwargs = {k: v for k, v in options.items() if k in func_args}
 
-        result = smp2ds.create_dspreset(**option_kwargs,
-                                        worker=worker, progress_callback=progress_callback,
-                                        message_callback=message_callback)
+        sfz_options = vars(self.sfz_options)
+        sfz_func_args = inspect.getfullargspec(dspreset_to_sfz)[0]
+        sfz_option_kwargs = {k: v for k, v in sfz_options.items() if k in sfz_func_args}
+
+        suffix = ('', self.suffix_le.text())[self.add_suffix_cb.isChecked()]
+
+        ds_result = smp2ds.create_dspreset(**option_kwargs, worker=worker, progress_callback=progress_callback,
+                                           message_callback=message_callback)
+        if ds_result is None:
+            return None
+
+        result = ds_result
+
+        # Resolve SFZ path and version number
+        sfz_path, version, sample_tools_metadata = None, '', None
+        match options['preset_format']:
+            case 'ds+sfz':
+                sfz_path = Path(ds_result).with_suffix('.sfz')
+                version = (re.findall(r'_(\d+)', sfz_path.stem) or [''])[-1]
+                sample_tools_metadata = read_xml_data(filepath=ds_result, elem='sample_tools_metadata')
+            case 'sfz':
+                p = Path(self.root_dir)
+                sfz_path = p / f'{p.stem + suffix}.sfz'
+                if options['auto_increment']:
+                    sfz_path = resolve_overwriting(sfz_path, mode='file', test_run=True)
+                    version = (re.findall(r'_(\d+)', sfz_path.stem) or [''])[-1]
+                sample_tools_metadata = read_xml_data(xml_tree=ds_result, elem='sample_tools_metadata')
+
+        if sample_tools_metadata is not None:
+            sample_tools_metadata = sample_tools_metadata[0]
+
+        # - Generate SFZ bg images -
+        sfz_bg_path, sfz_bg_ctrl_path = None, None
+        if 'sfz' in options['preset_format']:
+            sfz_bg_path = Path(options['root_dir']) / f'resources/bg_sfz{suffix}'
+            sfz_bg_ctrl_path = Path(options['root_dir']) / f'resources/bg_ctrl_sfz{suffix}'
+            if version:
+                sfz_bg_path += f'_{version}'
+                sfz_bg_ctrl_path += f'_{version}'
+
+            info_text = read_txt(Path(options['root_dir']) / 'INFO.txt')
+            negative_delay = sample_tools_metadata.get('negativeDelay', None)
+
+            # Main bg images
+            bottom_text = (None, f'Negative Delay : {negative_delay} ms')[negative_delay is not None]
+            sfz_bg_path = sfz_bg(sfz_bg_path, text_font=options['text_font'], scl=2,
+                                 top_text=options['bg_text'], center_text=info_text, bottom_text=bottom_text,
+                                 color_plt_cfg=options['color_plt_cfg'], plt_adjust=options['plt_adjust'])
+            sfz_bg_path = Path(sfz_bg_path).relative_to(options['root_dir']).as_posix()
+
+            # Control bg images
+            bottom_text = (None,
+                           f'{options['bg_text']} - Negative Delay : {negative_delay} ms'
+                           )[negative_delay is not None]
+            sfz_bg_ctrl_path = sfz_bg(sfz_bg_ctrl_path, text_font=options['text_font'], scl=2,
+                                      bottom_text=bottom_text, color_plt_cfg=options['color_plt_cfg'],
+                                      plt_adjust=options['plt_adjust'])
+            sfz_bg_ctrl_path = Path(sfz_bg_ctrl_path).relative_to(options['root_dir']).as_posix()
+
+        match options['preset_format']:
+            case 'ds+sfz':
+                sfz_result = dspreset_to_sfz(input_file=ds_result, bg_img=sfz_bg_path,
+                                             bg_ctrl=sfz_bg_ctrl_path, **sfz_option_kwargs)
+                result = ds_result
+            case 'sfz':
+                sfz_result = dspreset_to_sfz(input_file=None, xml_tree=ds_result, output_file=sfz_path,
+                                             bg_img=sfz_bg_path, bg_ctrl=sfz_bg_ctrl_path, **sfz_option_kwargs)
+                result = sfz_result
+            case _:
+                pass
 
         return result
 
     def create_dslibrary(self, worker, progress_callback, message_callback):
+        self.root_dir = self.output_path_l.fullPath()
+
         if not self.root_dir:
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
@@ -476,38 +596,21 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             message_callback.emit(f'{shorten_path(result, 30)} successfully created')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
-    def set_rootdir(self):
-        startdir = self.root_dir or os.getcwd()
-        flags = QFileDialog.DontResolveSymlinks | QFileDialog.ShowDirsOnly
-        path = QFileDialog.getExistingDirectory(self, "Select preset ROOT directory", startdir, flags)
-        if path:
-            self.root_dir = path
-            self.path_l.setText(path)
-            os.chdir(path)
-            self.set_settings_path()
-            self.load_settings_from_rootdir()
-
-    def set_settings_path(self):
-        if self.root_dir:
-            p = Path(self.root_dir)
-            self.settings_path = p / f'{p.stem}.{self.settings_ext}'
-        else:
-            p = Path(os.getcwd())
-            self.settings_path = p / f'settings.{self.settings_ext}'
-
     def limit_ctx(self):
         names = [f'{k}\t{v}' if k != v and not k.lower().startswith('auto') else f'{k}' for k, v in
                  self.instr_range_cfg.items()]
         add_ctx(self.limit_le, values=list(self.instr_range_cfg.values()), names=names, trigger=self.limit_pb)
 
     def set_instr_range_cfg(self, cfg_file='instr_range_cfg.json'):
+        # Basic options
         self.instr_range_cfg = {'Samples Notes': '',
                                 'Auto': 'auto',
                                 'AutoX2': 'autox2',
-                                '-3 +3': '-3 +3',
-                                '-6 +6': '-6 +6',
+                                '-12 +12': '-12 +12',
+                                '-24 +24': '-24 +24',
                                 'Full MIDI Range': '0 127'}
         if not Path(cfg_file).is_file():
+            # Add only a few examples
             cfg_data = {'Acoustic Guitar': '40 88',
                         'French Horn': '34 77',
                         'Clarinet': '50 94',
@@ -517,6 +620,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                         'Organ': '36 96',
                         'Piano': '21 108'}
         else:
+            # Add ranges from instr_range_cfg.json file
             cfg_data = read_json(cfg_file)
         self.instr_range_cfg.update(
             {k: ' '.join([f'{s}' for s in v]) if isinstance(v, list) else f'{v}' for k, v in cfg_data.items()})
@@ -596,6 +700,28 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         for wd, val in zip(widgets, values):
             wd.setValue(val)
 
+    def bg_text_ctx(self):
+        widget = self.bg_text_le
+
+        def show_context_menu():
+            items = ['']
+            if self.root_dir:
+                bg_text = beautify_str(Path(self.root_dir).stem)
+                items.append(bg_text)
+
+            menu = QMenu(widget)
+            for value in items:
+                action = QAction(f'{value}', widget)
+                action.triggered.connect(partial(widget.setText, value))
+                menu.addAction(action)
+
+            pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
+            menu.setMinimumWidth(widget.width())
+            menu.exec_(pos)
+
+        widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        widget.customContextMenuRequested.connect(show_context_menu)
+
     def populate_palette_cmb(self):
         plt_cfg_files = [str(item) for item in self.plt_cfg_dir.glob(f'*{self.plt_cfg_suffix}.json')]
         plt_names = [Path(item).stem.removesuffix(self.plt_cfg_suffix) for item in plt_cfg_files]
@@ -631,10 +757,17 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             file_path = event.mimeData().urls()[0].toLocalFile()
             if Path(file_path).is_dir():
                 self.root_dir = file_path
-                self.path_l.setText(file_path)
+                self.output_path_l.setFullPath(file_path)
                 os.chdir(file_path)
                 self.set_settings_path()
                 self.load_settings_from_rootdir()
+
+    def set_settings_path(self):
+        p = Path(os.getcwd())
+        output_path = self.output_path_l.fullPath()
+        if output_path:
+            p = Path(output_path)
+        self.settings_path = p / f'settings.{self.settings_ext}'
 
     def load_settings(self):
         self.update_progress(0)
@@ -644,14 +777,14 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         result = read_settings(widget=self, filepath=None, startdir=p, ext=self.settings_ext)
         if result:
             os.chdir(result.parent)
-            self.progress_pb.setFormat(f'{result.name} loaded')
+            self.update_message(f'{result.name} loaded')
 
     def save_settings(self):
         self.update_progress(0)
         result = write_settings(widget=self, filepath=None, startdir=self.settings_path, ext=self.settings_ext)
         if result:
             os.chdir(result.parent)
-            self.progress_pb.setFormat(f'{result.name} saved')
+            self.update_message(f'{result.name} saved')
 
     def get_defaults(self):
         get_settings(self, self.default_settings)
@@ -659,18 +792,18 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def restore_defaults(self):
         self.update_progress(0)
         set_settings(widget=self, node=self.default_settings)
-        self.progress_pb.setFormat(f'Default settings restored')
+        self.update_message(f'Default settings restored')
 
     def load_settings_from_rootdir(self):
         self.update_progress(0)
         self.set_settings_path()
-        settings_files = [f for f in Path(self.root_dir).glob(f'*.{self.settings_ext}')]
+        settings_files = [f for f in Path(self.output_path_l.fullPath()).glob(f'*.{self.settings_ext}')]
         if settings_files:
             settings_files = sorted(settings_files, key=lambda f: os.path.getmtime(f))
             read_settings(widget=self, filepath=settings_files[-1], startdir=None, ext=None)
-            self.progress_pb.setFormat(f'{settings_files[-1].name} found and loaded')
+            self.update_message(f'{settings_files[-1].name} found and loaded')
         else:
-            self.progress_pb.setFormat(f'No settings found')
+            self.update_message('No settings found')
 
     def update_progress(self, value):
         self.progress_pb.setValue(value)
@@ -742,6 +875,7 @@ if __name__ == "__main__":
     app_id = f'mitch.smp2Ds.{__version__}'
     if platform.system() == 'Windows':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
     app = QApplication(sys.argv)
 
     apply_dark_theme(app)
