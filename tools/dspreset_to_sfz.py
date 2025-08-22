@@ -5,7 +5,8 @@
     Designed to match dspreset files produced by SMP2ds as much as possible while remaining as simple as possible
 
     :author: Michel 'Mitch' Pecqueur
-    Thanks to kinwie and that_sfz_guy from sfz discord server for the insights, examples and help about sfz opcodes
+    Thanks to kinwie, that_sfz_guy, plgDavid and DSmolken from sfz discord server
+    for the insights, examples and help about sfz opcodes
 
     :date: 2025.07
 """
@@ -23,7 +24,7 @@ import soundfile as sf
 from common_audio_utils import lin_to_db
 from common_ui_utils import beautify_str, shorten_str
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 def dspreset_to_sfz(input_file: Path | str | None,
@@ -414,7 +415,7 @@ def dspreset_to_sfz(input_file: Path | str | None,
                    f'reverb_size=80 reverb_damp=75 reverb_wet=20 reverb_wet_oncc91=0\n')
 
     # Background images, optimized for Sfizz (775x335)
-    if bg_img:
+    if bg_img and engine != 'sforzando':
         result += f'image={bg_img}\n'
         result += f'image_controls={bg_ctrl or bg_img}\n'
 
@@ -499,6 +500,8 @@ def dspreset_to_sfz(input_file: Path | str | None,
             opcodes = {attrib_to_opcode.get(k, None): opcode_func.get(k, lambda x: x)(v) for k, v in src_attr.items() if
                        attrib_to_opcode.get(k, None) is not None}
 
+            # + Post conversion tweaks +
+
             # Global options
             if header == 'global':
                 opcodes['amp_veltrack'] = vel_track * 100  # 0-1 to %
@@ -527,8 +530,20 @@ def dspreset_to_sfz(input_file: Path | str | None,
                 if parent is not None and parent != root:
                     opcodes['cutoff2'] = src_attr.get('frequency', sr / 2)
 
-            # Release trigger polyphony fix
-            if header == 'region':
+            if header == 'group':
+                if group_triggers[grp_idx] == 'release':
+                    # Release triggered only when no key is pressed
+                    # (Kontakt "Unisono - Portamento" release last emulation)
+                    off_by = opcodes.get('off_by', None)
+                    off_trg = group_triggers.get(off_by, None)
+                    has_legato = (False, True)[off_trg == 'legato']
+                    # Sforzando only, does not work with Sfizz
+                    if has_legato and engine == 'sforzando':
+                        opcodes['lohdcc153'] = 0
+                        opcodes['hihdcc153'] = 1.1
+
+            # Release trigger polyphony fix - essentially for Sfizz
+            if header == 'region' and engine != 'sforzando':
                 disable_loop = False
                 smp_path = src_attr.get('path', '')
                 smp_sr = smp_rate.get(smp_path, sr)
@@ -536,6 +551,7 @@ def dspreset_to_sfz(input_file: Path | str | None,
 
                 if group_triggers[grp_idx] == 'release':
                     # Trim end of samples for release to spare polyphony
+                    # TODO: trim at closest quiet sample to reduce potential popping
                     if env_duration[grp_idx] < smp_info[smp_path].duration - smp_start:
                         opcodes['end'] = int(round((smp_start + env_duration[grp_idx]) * smp_sr))
                         disable_loop = True
@@ -555,9 +571,8 @@ def dspreset_to_sfz(input_file: Path | str | None,
                         opcodes['loop_mode'] = 'no_loop'
                         for oc in ['loopstart', 'loopend', 'loop_crossfade']:
                             opcodes.pop(oc, None)
-                        # sample_fadeout is unsupported by sforzando
-                        if engine != 'sforzando':
-                            opcodes['sample_fadeout'] = round(env_duration[grp_idx] / 9, 3)
+                        # sample_fadeout currently unsupported by both sfizz and sforzando
+                        opcodes['sample_fadeout'] = round(env_duration[grp_idx] / 9, 3)
 
             opcodes.update(xtra_opcodes)
 

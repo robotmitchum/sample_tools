@@ -539,7 +539,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         # - Generate SFZ bg images -
         sfz_bg_path, sfz_bg_ctrl_path = None, None
-        if 'sfz' in options['preset_format']:
+
+        if 'sfz' in options['preset_format'] and sfz_options['engine'] != 'sforzando':
             sfz_bg_path = Path(options['root_dir']) / f'resources/bg_sfz{suffix}'
             sfz_bg_ctrl_path = Path(options['root_dir']) / f'resources/bg_ctrl_sfz{suffix}'
             if version:
