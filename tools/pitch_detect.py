@@ -203,6 +203,9 @@ def fine_tune(audio, sr, note, period_factor=3, t=8000, d=50, os=16, graph=True)
     :return: Pitch fraction in semitone cents, confidence
     :rtype: tuple
     """
+    # Adjust window size if needed
+    min_d = min(d, min(t - len(audio), len(audio) - t) / sr * 1000)
+
     if audio.ndim > 1:
         mono_audio = audio.mean(axis=1)
     else:
@@ -211,12 +214,11 @@ def fine_tune(audio, sr, note, period_factor=3, t=8000, d=50, os=16, graph=True)
     max_confidence, pitch_fraction = -1, 0
     for factor in range(1, period_factor + 1):
         transpose = (1 - factor) * 12
-
         p = [hz_to_period(note_to_hz(note + transpose + o), sr=sr * os) for o in [-.51, 0, .51]]
         period = p[1]
         st, ed = p[1] - p[0], p[1] - p[2]
 
-        ds = sr * os * d / 1000  # duration in samples
+        ds = sr * os * min_d / 1000  # duration in samples
         nper = max(int(np.ceil(ds / period)), int(4 / period_factor))
         ws = period * nper
 
@@ -263,7 +265,7 @@ def fine_tune(audio, sr, note, period_factor=3, t=8000, d=50, os=16, graph=True)
         plt.plot(ref_audio, label='Reference')
         value_sign = ('', '+')[value > 0]
         plt.plot(window, label=f'Result: {value_sign}{value / os} ({period} {value_sign}{value} samples x{os})')
-        plt.plot(np.square(ref_audio - window), label=f'SE, Confidence {confidence}')
+        plt.plot(np.square(ref_audio - window), label=f'MSE, Confidence {confidence}')
 
         plt.xlabel('y')
         plt.ylabel('y')

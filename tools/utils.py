@@ -23,6 +23,10 @@ def append_metadata(input_file: str | Path, note: int, pitch_fraction: float | N
     Simplistic note and region loop appending, properly recognized by Kontakt and other software
 
     Based on information found here :
+
+    official WAV specification by Microsoft
+    https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/RIFFNEW.pdf
+
     https://www.recordingblogs.com/wiki/sample-chunk-of-a-wave-file
     and in wave_mod.py (enhanced version of the wave module)
 
@@ -57,7 +61,7 @@ def append_metadata(input_file: str | Path, note: int, pitch_fraction: float | N
 def metadata_to_bin(sr: int, note: int | None, pitch_fraction: float | None,
                     loop_start: int | None, loop_end: int | None) -> bin:
     """
-    Note / Loop metadata to riff bin chunk data
+    Minimal Note / Loop metadata to riff bin chunk data
 
     :param sr: Sampling Rate, necessary to set 'sample period' info correctly
     :param note: MIDI note number in semitones, integer between 0 and 127
@@ -96,18 +100,22 @@ def metadata_to_bin(sr: int, note: int | None, pitch_fraction: float | None,
     bin_data += as_chunk(0, 4)  # smpte offset
 
     bin_data += as_chunk(loops, 4)  # number of loops
-    bin_data += as_chunk(0, 4)  # "sampler data" ?
+    bin_data += as_chunk(0, 4)  # "sampler data" optional specific data (unused)
 
-    bin_data += as_chunk(loops, 4)  # "cuepointid" (set to 01 to make the loop valid)
-    bin_data += as_chunk(0, 4)  # "cuetype" ? (optional)
+    bin_data += as_chunk(loops, 4)  # "cuepointid" (set to 1 to make the loop valid)
+    bin_data += as_chunk(0, 4)  # Loop type: 0 is forward (1 ping-pong, 2 backward)
     bin_data += as_chunk(st, 4)  # loop start
     bin_data += as_chunk(ed, 4)  # loop end
-    bin_data += as_chunk(0, 8)  # "fraction" ?, "playcount" (0 is seemingly infinite loop)
 
-    # 28 bytes - Optional
-    bin_data += b'LIST' + as_chunk(20, 4)
-    bin_data += b'adtllabl' + as_chunk(8, 4)
-    bin_data += as_chunk(1, 8)  # ? (copied from a valid file)
+    bin_data += as_chunk(0, 4)  # fraction: loop fractional areas between samples (unused)
+    bin_data += as_chunk(0, 4)  # play count: 0 is infinite
+
+    # 28 bytes - Optional label (copied from a valid file)
+    bin_data += b'LIST' + as_chunk(20, 4)  # chunk name + size
+    bin_data += b'adtl'  # Associated Data List
+    bin_data += b'labl' + as_chunk(12, 4)  # label + size of following data
+    bin_data += as_chunk(1, 4)  # id
+    bin_data += b'Loop01' + as_chunk(0, 2)  # Loop label
 
     return bin_data
 
@@ -117,6 +125,7 @@ def set_metadata_tags(input_file: str | Path, note: int | None, pitch_fraction: 
     """
     Set sample metadata as tags using mutagen
     Currently only supports FLAC format
+
     :param input_file:
     :param note:
     :param pitch_fraction:
@@ -136,6 +145,7 @@ def set_md_tags(input_file: str | Path, md: dict | None = None):
     """
     Set ID3 tags from dict
     Currently only supports FLAC format
+
     :param input_file:
     :param md: Metadata dictionary
     """
