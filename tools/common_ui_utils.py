@@ -294,8 +294,9 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
                     style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                               f'color: {plt.highlightedText().color().name()};}}')
                     action_label.setStyleSheet(style)
-                    action = menu.addAction('')
+                    action = QtWidgets.QWidgetAction(menu)
                     action.setDefaultWidget(action_label)
+                    menu.addAction(action)
                 else:
                     # Default alignment (left)
                     action = menu.addAction(f'{name}')
