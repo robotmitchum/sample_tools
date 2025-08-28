@@ -157,6 +157,7 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         # Custom events
 
     def get_options(self):
+        self.options.output_dir = self.output_path_l.fullPath()
         self.options.no_overwriting = self.no_overwriting_cb.isChecked()
 
         # - UI settings -
@@ -301,7 +302,8 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
                         bit_depth = Sample(f).params.sampwidth * 8
                     elif isinstance(bit_depth, str):
                         bit_depth = eval(bit_depth)
-                    filepath = Path.joinpath(Path(parent), f'{basename}{options["suffix"]}.{ext}').__str__()
+                    output_dir = (parent, options['output_dir'])[bool(options['output_dir'])]
+                    filepath = Path(output_dir) / f'{basename}{options["suffix"]}.{ext}'
                 else:
                     filepath = None
                     bit_depth = None

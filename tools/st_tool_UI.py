@@ -166,6 +166,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.options.ir_path = (None, self.ir_path_l.fullPath())[self.options.mode.startswith('conv')]
 
         # Get format settings
+        self.options.output_dir = self.output_path_l.fullPath()
         self.options.bit_depth = self.bitdepth_cmb.currentText()
         self.options.ext = self.format_cmb.currentText()
 
@@ -258,7 +259,8 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                     bit_depth = int(options['bit_depth'])
 
                 suffix = options['suffix']
-                filepath = Path(parent) / f'{stem}{suffix}.{ext}'
+                output_dir = (parent, options['output_dir'])[bool(options['output_dir'])]
+                filepath = Path(output_dir) / f'{stem}{suffix}.{ext}'
 
                 self.temp_audio.audio = ps.pseudo_stereo(data, sr, delay=options['delay'], mode=options['mode'],
                                                          seed=options['seed'], ir_file=options['ir_path'],

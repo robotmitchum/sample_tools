@@ -121,6 +121,7 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
             self.options.f_max = None
         self.options.target_sr = self.target_sr_sb.value()
         self.options.upsample_mix = self.upsample_mix_dsb.value()
+        self.options.output_dir = self.output_path_l.fullPath()
 
     def do_process(self, worker, progress_callback, message_callback, mode='batch'):
         """
@@ -200,7 +201,8 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
                     bit_depth = int(options['bit_depth'])
 
                 suffix = options['suffix']
-                filepath = Path(parent) / f'{stem}{suffix}.{ext}'
+                output_dir = (parent, options['output_dir'])[bool(options['output_dir'])]
+                filepath = Path(output_dir) / f'{stem}{suffix}.{ext}'
 
                 # - Process -
 

@@ -35,7 +35,7 @@ class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):
         self.icon_file = resource_path(self.current_dir / 'UI/icons/mutate_tool_64.png')
         self.setWindowTitle(f'{self.tool_name} v{self.tool_version}')
 
-        self.suffix_le.setText('_seq')
+        self.suffix_le.setText('_rr')
 
         app_icon = QtGui.QIcon()
         app_icon.addFile(self.icon_file, QtCore.QSize(64, 64))
@@ -60,7 +60,7 @@ class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):
         add_ctx(self.fade_db_dsb, [-20, -40, -60, -80, -100])
 
         # Noise|Tonal splitting
-        add_ctx(self.split_stft_sb, [1024, 2048, 4096, 8192])
+        add_ctx(self.split_stft_sb, [512, 1024, 2048, 4096, 8192])
         add_ctx(self.iterations_sb, [1, 3, 5])
 
         # Params widgets
@@ -78,11 +78,11 @@ class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):
         self.random_pb.clicked.connect(self.random_ctx)
 
         add_ctx(self.noise_rand_amp_dsb, [1, .5, 0])
-        add_ctx(self.noise_rand_rate_dsb, [.5, 1, 2])
+        add_ctx(self.noise_rand_rate_dsb, [.25, .5, 1, 2])
         add_ctx(self.noise_rand_pitch_dsb, [0, 1, 2])
 
         add_ctx(self.tonal_rand_amp_dsb, [1, .5, 0])
-        add_ctx(self.tonal_rand_rate_dsb, [.5, 1, 2])
+        add_ctx(self.tonal_rand_rate_dsb, [.25, .5, 1, 2])
         add_ctx(self.tonal_rand_pitch_dsb, [0, 0.05, 0.1])
 
         # Output directory
@@ -97,7 +97,7 @@ class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):
         self.target_sr_cmb.currentTextChanged.connect(lambda state: self.target_sr_sb.setEnabled(state == 'custom'))
         add_ctx(self.oversample_sb, [2, 3, 4])
         add_ctx(self.target_sr_sb, [44100, 48000, 88200, 96000])
-        add_ctx(self.suffix_le, ['', '_seq', '_variant'])
+        add_ctx(self.suffix_le, ['', '_rr', '_seq', '_variant'])
 
         # Process buttons
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
@@ -250,7 +250,7 @@ class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):
 
     def random_ctx(self):
         names = ['Reset random']
-        values = [[.5, .5, 2, .25, .5, .05]]
+        values = [[.5, .333, 2, .5, .333, .05]]
         content = [{'type': 'cmds', 'name': name, 'cmd': partial(self.set_random, value)}
                    for name, value in zip(names, values)]
         popup_menu(content=content, parent=self.random_pb)

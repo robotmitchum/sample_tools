@@ -55,6 +55,14 @@ class ScreenCap(QMainWindow):
                 mod = self.script_modules[module_name]
                 wid = mod.run(parent=self)
                 filename = module_name.lower()
+
+                # Clear output path if applicable
+                if script not in ['sample_tools_UI.py', 'smp2ds_UI.py', 'drds_UI.py']:
+                    try:
+                        wid.output_path_l.setFullPath('')
+                    except Exception as e:
+                        print(e)
+
                 QTimer.singleShot(100, partial(self.capture, wid, filename))
             except Exception as e:
                 print(f'Failed to import {module_name}: {e}')

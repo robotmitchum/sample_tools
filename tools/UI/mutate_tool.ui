@@ -409,7 +409,7 @@ A larger value decimates more cues leading to a smoother less chaotic result</st
          <enum>QAbstractSpinBox::NoButtons</enum>
         </property>
         <property name="minimum">
-         <number>512</number>
+         <number>256</number>
         </property>
         <property name="maximum">
          <number>16384</number>
@@ -963,7 +963,7 @@ Tonal content should typically not bear too much pitch variation</string>
            <double>0.100000000000000</double>
           </property>
           <property name="value">
-           <double>0.500000000000000</double>
+           <double>0.333000000000000</double>
           </property>
          </widget>
         </item>
@@ -1038,7 +1038,7 @@ Tonal content should typically not bear too much pitch variation</string>
            <double>0.100000000000000</double>
           </property>
           <property name="value">
-           <double>0.250000000000000</double>
+           <double>0.500000000000000</double>
           </property>
          </widget>
         </item>
@@ -1072,7 +1072,7 @@ Tonal content should typically not bear too much pitch variation</string>
            <double>0.100000000000000</double>
           </property>
           <property name="value">
-           <double>0.500000000000000</double>
+           <double>0.333000000000000</double>
           </property>
          </widget>
         </item>
@@ -1121,6 +1121,9 @@ When unchecked, noise and tonal content are more free to drift away from each ot
         <property name="text">
          <string>Match End Cues</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="0" column="4">
@@ -1167,6 +1170,9 @@ When unchecked, noise and tonal content are more free to drift away from each ot
 lnear	tame interpolation without overshoots
 quadratic	smoother but with overshoots
 cubic	even more continuous but with crazier overshoots</string>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
         </property>
         <item>
          <property name="text">
@@ -1607,7 +1613,7 @@ Use wav for 32 bits float</string>
          <string>Suffix added to the base name</string>
         </property>
         <property name="text">
-         <string>_seq</string>
+         <string>_rr</string>
         </property>
         <property name="maxLength">
          <number>16</number>
