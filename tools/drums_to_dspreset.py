@@ -556,10 +556,10 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples',
 
         # Choke
         choke_indices = grp.get('choke', [])
-        # choke_indices.append(g)  # Self-Choke
-        choke_names = [group_names[c] for c in sorted(list(set(choke_indices)))]
-        grp_attrib['silencedByTags'] = ','.join(choke_names)
-        grp_attrib['silencingMode'] = 'fast'
+        if choke_indices:
+            choke_names = [group_names[c] for c in sorted(list(set(choke_indices)))]
+            grp_attrib['silencedByTags'] = ','.join(choke_names)
+            grp_attrib['silencingMode'] = 'fast'
 
         # Round-Robin mode
         if use_seq:
