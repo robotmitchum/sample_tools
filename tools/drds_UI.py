@@ -135,7 +135,7 @@ class DrDsUi(QMainWindow):
         self.output_path_l.setToolTip('Preset root directory')
         self.output_path_l.setMinimumHeight(40)
         self.output_path_lyt.addWidget(self.output_path_l)
-        self.output_path_l.setStyleSheet('QLabel{color: rgb(95,191,143);}')
+        style_widget(self.output_path_l, properties={'color': 'rgb(95,191,143)'})
         font = self.output_path_l.font()
         font.setBold(True)
         self.output_path_l.setFont(font)
@@ -885,9 +885,16 @@ class DrDsUi(QMainWindow):
     def load_settings_from_rootdir(self):
         self.update_progress(0)
         self.set_settings_path()
-        settings_files = [f for f in Path(self.output_path_l.fullPath()).glob(f'*.{self.settings_ext}')]
-        if settings_files:
+        dropped_settings = [item for item in self.output_path_l.dropped_items if
+                            item.is_file() and item.suffix[1:] == self.settings_ext]
+
+        if dropped_settings:
+            settings_files = [dropped_settings[0]]
+        else:
+            settings_files = [f for f in Path(self.output_path_l.fullPath()).glob(f'*.{self.settings_ext}')]
             settings_files = sorted(settings_files, key=lambda f: os.path.getmtime(f))
+
+        if settings_files:
             read_settings(widget=self, filepath=settings_files[-1], startdir=None, ext=None)
             self.update_message(f'{settings_files[-1].name} found and loaded')
         else:
@@ -1006,14 +1013,11 @@ class DrDsUi(QMainWindow):
 
     def about_dialog(self):
         try:
-            about_dlg = AboutDialog(parent=self)
-            about_dlg.icon_file = self.icon_file
-            about_dlg.title = f'About {self.tool_name}'
-            about_dlg.text = f'{self.tool_name}<br>Version {self.tool_version}<br><br>'
-            about_dlg.text += 'MIT License<br>'
-            about_dlg.text += "Copyright © 2024 Michel 'Mitch' Pecqueur<br><br>"
-            about_dlg.url = 'https://github.com/robotmitchum/sample_tools'
-            about_dlg.setup_ui()
+            about_dlg = AboutDialog(parent=self, title=f'About {self.tool_name}', icon_file=self.icon_file)
+            text = (f"{self.tool_name}\nVersion {self.tool_version}\n\nMIT License\n"
+                    f"Copyright © 2024 Michel 'Mitch' Pecqueur\n\n")
+            about_dlg.set_text(text)
+            about_dlg.append_url('https://github.com/robotmitchum/sample_tools')
             about_dlg.exec_()
         except Exception as e:
             print(e)

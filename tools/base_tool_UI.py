@@ -470,14 +470,11 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
     def about_dialog(self):
         try:
-            about_dlg = AboutDialog(parent=self)
-            about_dlg.icon_file = self.icon_file
-            about_dlg.title = f'About {self.tool_name}'
-            about_dlg.text = f'{self.tool_name}<br>Version {self.tool_version}<br><br>'
-            about_dlg.text += 'MIT License<br>'
-            about_dlg.text += "Copyright © 2024 Michel 'Mitch' Pecqueur<br><br>"
-            about_dlg.url = 'https://github.com/robotmitchum/sample_tools'
-            about_dlg.setup_ui()
+            about_dlg = AboutDialog(parent=self, title=f'About {self.tool_name}', icon_file=self.icon_file)
+            text = (f"{self.tool_name}\nVersion {self.tool_version}\n\nMIT License\n"
+                    f"Copyright © 2024 Michel 'Mitch' Pecqueur\n\n")
+            about_dlg.set_text(text)
+            about_dlg.append_url('https://github.com/robotmitchum/sample_tools')
             about_dlg.exec_()
         except Exception as e:
             print(e)

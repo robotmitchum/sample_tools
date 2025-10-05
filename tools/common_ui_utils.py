@@ -16,9 +16,10 @@ from PyQt5 import QtCore, Qt, QtWidgets, QtGui
 
 from common_math_utils import lerp
 from sample_utils import Sample
+import subprocess
 
 
-def get_user_directory(subdir='Documents'):
+def get_user_directory(subdir: str = 'Documents') -> Path:
     if sys.platform == 'win32':
         import winreg
 
@@ -49,7 +50,23 @@ def get_user_directory(subdir='Documents'):
     else:
         result = Path.home() / subdir
 
-    return result
+    return Path(result)
+
+
+def explore_directory(path: Path | str = ''):
+    """Open system file explorer"""
+    match sys.platform:
+        case 'win32':
+            os.startfile(str(path))
+            # subprocess.Popen(['start', str(path)], shell=True)
+        case 'darwin':
+            subprocess.Popen(['open', str(path)])
+        case _:
+            try:
+                subprocess.Popen(['xdg-open', str(path)])
+            except OSError as e:
+                print(e)
+                pass
 
 
 def replace_widget(old_widget, new_widget):
@@ -73,15 +90,14 @@ def replace_widget(old_widget, new_widget):
     return new_widget
 
 
-def resource_path(relative_path, as_str=True):
+def resource_path(relative_path: Path | str, as_str: bool = True):
     """
     Get absolute path to resource, works for dev and for PyInstaller
     Modified from :
     https://stackoverflow.com/questions/31836104/pyinstaller-and-onefile-how-to-include-an-image-in-the-exe-file
-    :param str or WindowsPath relative_path:
-    :param bool as_str: Return result as a string
+    :param relative_path:
+    :param as_str: Return result as a string
     :return:
-    :rtype: str or Path
     """
     if hasattr(sys, '_MEIPASS'):
         base_path = Path(sys._MEIPASS)
@@ -91,15 +107,15 @@ def resource_path(relative_path, as_str=True):
     return (result, str(result))[bool(as_str)]
 
 
-def resource_path_alt(relative_path, parent_dir=None, as_str=True):
+def resource_path_alt(relative_path: Path | str, parent_dir: Path | str | None = None,
+                      as_str: bool = True) -> Path | str:
     """
     Alternate version with preliminary local check
     Allow to override resources embedded in PyInstaller executable
-    :param str or WindowsPath relative_path:
-    :param str or WindowsPath parent_dir: override parent dir for local check
-    :param bool as_str:
+    :param relative_path:
+    :param parent_dir: override parent dir for local check
+    :param as_str: Return result as a string
     :return:
-    :rtype: str or WindowsPath
     """
     path = (Path(parent_dir) / Path(relative_path).name, Path(relative_path))[bool(parent_dir is None)]
     if path.exists():
@@ -108,12 +124,11 @@ def resource_path_alt(relative_path, parent_dir=None, as_str=True):
         return resource_path(relative_path, as_str=as_str)
 
 
-def get_custom_font(path):
+def get_custom_font(path: Path | str) -> Qt.QFont:
     """
     Return PyQt font object from file path
-    :param str or Path path:
+    :param path:
     :return:
-    :rtype: Qt.QFont
     """
     font_path = resource_path(path)
     font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
@@ -138,10 +153,11 @@ class FilePathLabel(QtWidgets.QLabel):
         self.start_dir = ''
         self.current_dir = os.path.dirname(sys.modules['__main__'].__file__)
         self.file_types = ['.wav', '.flac', '.aif']
-
-        # self.setStyleSheet('QLabel{color: #808080}')
+        self.dropped_items = []
 
         self.setAcceptDrops(True)
+
+        style_widget(self, properties={'color': 'gray'}, clickable=True)
 
     def fullPath(self):
         return self._full_path
@@ -164,6 +180,10 @@ class FilePathLabel(QtWidgets.QLabel):
         self._full_path = path
         self.setText(text)
         self.pathChanged.emit(path)
+
+    def validatePath(self):
+        if not Path(self._full_path).exists():
+            self.setFullPath('')
 
     def setPlaceholderText(self, text):
         self._placeholder_text = text
@@ -202,13 +222,14 @@ class FilePathLabel(QtWidgets.QLabel):
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             items = event.mimeData().urls()
-            items = [item.toLocalFile() for item in items]
+            items = [Path(item.toLocalFile()) for item in items]
+            self.dropped_items = items
             if self._file_mode:
-                items = [item for item in items if Path(item).is_file()]
+                items = [item for item in items if item.is_file()]
             else:
-                items = [item for item in items if Path(item).is_dir()]
+                items = [item if item.is_dir() else item.parent for item in items]
             if items:
-                p = Path(items[0])
+                p = items[0]
                 if p.is_relative_to(self.current_dir):
                     p = p.relative_to(self.current_dir)
                 self.setFullPath(p)
@@ -226,6 +247,14 @@ class FilePathLabel(QtWidgets.QLabel):
             event.accept()
         else:
             event.ignore()
+
+    def mouseDoubleClickEvent(self, event):
+        if self.fullPath():
+            p = Path(self.fullPath())
+            if Path(p).is_dir():
+                explore_directory(p)
+            elif Path(p).is_file():
+                explore_directory(p.parent)
 
 
 class Node:
@@ -490,7 +519,7 @@ def get_text_color(widget: QtWidgets.QWidget) -> QtGui.QColor:
     return QtGui.QColor(0, 0, 0)
 
 
-def style_widget(widget: any, properties: dict, clickable: bool = True):
+def style_widget(widget: QtWidgets.QWidget, properties: dict, clickable: bool = True):
     """
     Style a given widget using stylesheet creating derived colors for hover and disabled state
     :param widget:
@@ -499,16 +528,33 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
     """
     wid_class = widget.__class__.__name__
 
+    enabled = widget.isEnabled()
+    widget.setEnabled(True)  # Enable widget to capture properly its original palette
+
     widget.show()  # Force color update
     plt = widget.palette()
 
     text_color = get_text_color(widget)
     bg_color = plt.color(widget.backgroundRole())
+    # bg_alpha = bg_color.alpha()
 
-    properties['color'] = properties.get('color', text_color.name())
-    properties['background-color'] = properties.get('background-color', bg_color.name())
+    prop = dict(properties)
+    prop['color'] = properties.get('color', text_color.name())
 
-    ss = dict_to_stylesheet(wid_class, properties)
+    ss = widget.styleSheet()
+
+    bg_transparent = False
+    if isinstance(widget, QtWidgets.QLabel) and not ss:
+        bg_transparent = True
+    elif 'background-color:transparent' in ss.replace(' ', '').lower():
+        bg_transparent = True
+
+    if bg_transparent:
+        prop['background-color'] = 'transparent'
+    else:
+        prop['background-color'] = properties.get('background-color', bg_color.name())
+
+    ss = dict_to_stylesheet(wid_class, prop)
 
     widget.setStyleSheet(ss)
     plt = widget.palette()
@@ -516,64 +562,85 @@ def style_widget(widget: any, properties: dict, clickable: bool = True):
     bg_color = plt.color(widget.backgroundRole())
 
     # Calculate hover, disabled and pressed states from base color
-    text_rgb = np.array(bg_color.getRgb()[:3])
+    text_rgb = np.array(text_color.getRgb()[:3])
     bg_rgb = np.array(bg_color.getRgb()[:3])
+
+    # Hover: original color mixed with white
+    hover_text_color = tuple(np.round(lerp(text_rgb, 255, .3)).astype(np.uint8).tolist())
     hover_bg_color = tuple(np.round(lerp(bg_rgb, 255, .3)).astype(np.uint8).tolist())
 
-    disabled_text_color = tuple(np.round(lerp(max(text_rgb), np.array([127] * 3), .3)).astype(np.uint8).tolist())
+    # Disabled : original color converted to luminance mixed with dark gray
+    disabled_text_color = tuple(
+        np.round(lerp(np.max(text_rgb).repeat(3, ), 63, .5)).astype(np.uint8).tolist())
     disabled_bg_color = tuple(
-        np.round(lerp(max(bg_rgb), np.array([max(bg_rgb) * .5] * 3), .3)).astype(np.uint8).tolist())
+        np.round(lerp(np.max(bg_rgb).repeat(3), 63, .5)).astype(np.uint8).tolist())
 
-    ss += f'\n{wid_class}:hover {{color: {text_color.name()}; background-color: rgb{hover_bg_color};}}'
-    ss += f'\n{wid_class}:disabled {{color: rgb{disabled_text_color}; background-color: rgb{disabled_bg_color};}}'
+    ss += f'\n{wid_class}:hover {{color: rgb{hover_text_color};'
+    ss += (f' background-color: rgb{hover_bg_color};}}', '}')[bg_transparent]
+
+    ss += f'\n{wid_class}:disabled {{color: rgb{disabled_text_color};'
+    ss += (f' background-color: rgb{disabled_bg_color};}}', '}')[bg_transparent]
 
     if clickable:
+        # Pressed : original color mixed with middle gray
         pressed_bg_color = tuple(np.round(lerp(bg_rgb, 127, .3)).astype(np.uint8).tolist())
-        ss += f'\n{wid_class}:pressed {{color: {text_color.name()}; background-color: rgb{pressed_bg_color};}}'
+        ss += f'\n{wid_class}:pressed {{color: {text_color.name()};'
+        ss += (f' background-color: rgb{pressed_bg_color};}}', '}')[bg_transparent]
+
+    widget.setEnabled(enabled)  # Set widget to its original state
 
     widget.setStyleSheet(ss)
 
 
 # Misc
 class AboutDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None, title: str = 'About', icon_file: Path | str | None = None):
         super().__init__(parent)
-        self.setFixedSize(400, 160)
-        self.title = 'About'
-        self.text = ''
-        self.url = ''
-        self.icon_file = ''
-
-    def setup_ui(self):
-        self.setWindowTitle(self.title)
+        self.setSizePolicy(Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Minimum)
+        self.setFixedSize(0, 0)
+        self.setWindowTitle(title or 'About')
 
         # Icon
-        self.icon_l = QtWidgets.QLabel()
-        if self.icon_file:
-            self.icon_pixmap = QtGui.QPixmap(self.icon_file)
+        self.icon_l = QtWidgets.QLabel(self)
+        self.icon_pixmap = None
+        self.set_icon(icon_file)
+
+        # Message with clickable URL
+        self.msg_l = QtWidgets.QLabel(self)
+        self.msg_l.setTextFormat(Qt.Qt.RichText)
+        self.msg_l.setTextInteractionFlags(Qt.Qt.TextBrowserInteraction)
+        self.msg_l.setAlignment(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
+        self.msg_l.linkActivated.connect(self.handle_link_clicked)
+
+        # - Layout -
+        self.content_lyt = QtWidgets.QHBoxLayout()
+        self.content_lyt.addWidget(self.icon_l)
+        self.content_lyt.addWidget(self.msg_l)
+
+        self.lyt = QtWidgets.QVBoxLayout()
+        self.lyt.addLayout(self.content_lyt)
+        # self.lyt.addStretch()
+
+        self.setLayout(self.lyt)
+
+    def set_icon(self, icon_file: Path | str | None = None):
+        if icon_file:
+            self.icon_pixmap = QtGui.QPixmap(str(icon_file))
         else:
             self.icon_pixmap = QtGui.QPixmap(64, 64)
             self.icon_pixmap.fill(Qt.Qt.green)
         self.icon_l.setPixmap(self.icon_pixmap)
 
-        # Message with clickable URL
-        self.msg_l = QtWidgets.QLabel()
-        self.msg_l.setTextFormat(Qt.Qt.RichText)
-        self.msg_l.setTextInteractionFlags(Qt.Qt.TextBrowserInteraction)
-        self.msg_l.setText(f'{self.text}<a href="{self.url}">{self.url}</a>')
-        self.msg_l.setAlignment(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
-        self.msg_l.linkActivated.connect(self.handle_link_clicked)
+    def set_text(self, value: str, append: bool = True):
+        v = value.replace('\n', '<br>')
+        if append:
+            self.msg_l.setText(self.msg_l.text() + v)
+        else:
+            self.msg_l.setText(v)
 
-        self.content_lyt = QtWidgets.QHBoxLayout()
-        self.content_lyt.addWidget(self.icon_l)
-        self.content_lyt.addWidget(self.msg_l)
-
-        # Main layout
-        self.lyt = QtWidgets.QVBoxLayout()
-        self.lyt.addLayout(self.content_lyt)
-        self.lyt.addStretch()
-
-        self.setLayout(self.lyt)
+    def append_url(self, value: str, end_line: str = '\n'):
+        v = end_line.replace('\n', '<br>')
+        self.msg_l.setText(f'{self.msg_l.text()}<a href="{value}">{value}</a>' + v)
 
     def handle_link_clicked(self, url: str):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
