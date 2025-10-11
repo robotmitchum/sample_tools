@@ -1312,6 +1312,7 @@ class Ui_smp_to_ds_ui(object):
         self.bg_text_cmb.setCurrentIndex(1)
         self.preset_fmt_cmb.setCurrentIndex(2)
         self.use_eg_cmb.setCurrentIndex(2)
+        self.lossy_flac_mode_cmb.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(smp_to_ds_ui)
 
     def retranslateUi(self, smp_to_ds_ui):

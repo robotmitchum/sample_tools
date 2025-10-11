@@ -4113,6 +4113,9 @@ auto	keep input bit-depth, ignore IR samples
 auto_ir	keep input bit-depth, also process IR samples
 16	reduce bit-depth to 16 bits except for IR</string>
             </property>
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
             <property name="frame">
              <bool>false</bool>
             </property>

@@ -508,6 +508,7 @@ class DrDsUi(QMainWindow):
         self.lossy_flac_mode_cmb = QComboBox(parent=self.cw)
         self.lossy_flac_mode_cmb.setObjectName('lossy_flac_mode_cmb')
         self.lossy_flac_mode_cmb.addItems(['auto', 'auto_ir', '16'])
+        self.lossy_flac_mode_cmb.setCurrentIndex(1)
         self.lossy_flac_mode_cmb.setEnabled(False)
         self.lossy_flac_mode_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
         self.lossy_flac_mode_cmb.setToolTip('LossyFLAC mode\n'
