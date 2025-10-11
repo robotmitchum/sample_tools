@@ -148,7 +148,7 @@ def audio_upsample(input_file, output_file, audio=None, sr=None, f_max=None, tar
         result /= mx
 
     if output_file is not None:
-        sf.write(output_file, result, samplerate=target_sr)
+        sf.write(output_file, result, samplerate=target_sr, compression_level=1.0)
 
     return result
 

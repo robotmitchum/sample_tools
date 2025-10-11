@@ -71,13 +71,13 @@ class Sample:
         self.note, self.pitchFraction, self.loopStart, self.loopEnd, self.loops = None, None, None, None, None
         self.cues = None
 
-        # Read ID3 tags
+        # Read metadata tags
         md = read_metadata_tags(path, extra_tags)
         # Convert md dict as attributes
         for tag in md:
             setattr(self, tag, md[tag])
 
-        # Wav fourCC tags always override ID3 tags
+        # Wav fourCC tags always override metadata tags
         if self.filetype == 'wav':
             md.update(read_metadata(path))
             # Convert md dict as attributes
@@ -429,7 +429,7 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
         # Temporary file name
         with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{output_ext}', delete=False) as temp_file:
             tmp_name = temp_file.name
-        sf.write(tmp_name, data, samplerate=sr, subtype=subtype)
+        sf.write(tmp_name, data, samplerate=sr, subtype=subtype, compression_level=1.0)
 
         # Write Metadata
         if output_ext == 'wav':
@@ -534,7 +534,7 @@ def apply_finetuning(input_file: Path | str, output_file: Path | str, value: flo
     output_dir = p.parent
     with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{output_ext}', delete=False) as temp_file:
         tmp_name = temp_file.name
-    sf.write(tmp_name, result, samplerate=sr, subtype=subtype)
+    sf.write(tmp_name, result, samplerate=sr, subtype=subtype, compression_level=1.0)
 
     # Write Metadata
     if output_ext == 'wav':
@@ -688,23 +688,6 @@ def read_metadata_tags(input_file, extra_tags=()):
     else:
         data.pop('loops', None)
 
-    return data
-
-
-def get_all_tags_raw(input_file):
-    """
-    Get all ID3 tags from a given file without trying to interpret them
-    Good enough to simply copy them from file to file
-    Insufficient on their own to inform attributes as tags are not case-sensitive
-
-    :param str input_file:
-    :return: Metadata with tag name as key and value as a string
-    :rtype: dict
-    """
-    audio = mutagen.File(input_file)
-    tags = audio.keys()
-    values = [audio[tag][0] for tag in tags]
-    data = dict(zip(tags, values))
     return data
 
 

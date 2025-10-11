@@ -6,7 +6,7 @@
 
     Support import/export for :
     - wav : through riff 'smpl' chunk, metadata are properly recognized by Kontakt or LoopAuditoneer for example
-    - flac : through custom ID3 tags which are recognized by these tools and are very easy to manage
+    - flac : through custom tags which are recognized by these tools and are very easy to manage
     (using foreign metadata inherited from wav is possible but is cumbersome to create
     and is in practice recognized by virtually nothing, so I gave up on this idea.)
 
@@ -58,7 +58,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):

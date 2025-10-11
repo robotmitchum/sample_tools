@@ -143,7 +143,7 @@ def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
         out_data /= mx / db_to_lin(-.1)
 
     if output_file and out_data is not None:
-        sf.write(output_file, out_data, samplerate=sr)
+        sf.write(output_file, out_data, samplerate=sr, compression_level=1.0)
 
     return out_data
 

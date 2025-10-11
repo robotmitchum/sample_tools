@@ -37,7 +37,7 @@ from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
@@ -276,7 +276,8 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
 
                     # Soundfile only recognizes aiff and not aif when writing
                     sf_path = (filepath, f'{filepath}f')[ext == 'aif']
-                    sf.write(str(sf_path), self.temp_audio.audio, sr, subtype=subtypes[bit_depth])
+                    sf.write(str(sf_path), self.temp_audio.audio, sr, subtype=subtypes[bit_depth],
+                             compression_level=1.0)
                     if sf_path != filepath:
                         os.rename(sf_path, filepath)
 

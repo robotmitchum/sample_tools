@@ -272,14 +272,12 @@ class DrDsUi(QMainWindow):
         self.basenote_sb.valueChanged.connect(self.update_drumpads)
 
         # - Output options -
-
         line = QFrame(self.cw)
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         self.lyt.addWidget(line)
 
         # - Background Options -
-
         self.bg_lyt = QHBoxLayout()
         self.bg_lyt.setContentsMargins(4, 4, 4, 4)
         self.bg_lyt.setSpacing(4)
@@ -463,7 +461,11 @@ class DrDsUi(QMainWindow):
         # - Process buttons -
         self.buttons_lyt = QHBoxLayout()
         self.buttons_lyt.setContentsMargins(0, 4, 0, 4)
+        self.buttons_lyt.setSpacing(4)
+
         self.lyt.addLayout(self.buttons_lyt)
+
+        self.buttons_lyt.addStretch()
 
         font.setBold(True)
         font.setPointSize(12)
@@ -477,6 +479,8 @@ class DrDsUi(QMainWindow):
         self.preset_pb.setFont(font)
         self.preset_pb.clicked.connect(self.create_preset)
 
+        self.buttons_lyt.addStretch()
+
         self.dslibrary_pb = QPushButton('Create dslibrary', parent=self.cw)
         self.dslibrary_pb.setToolTip(
             'Create dslibrary (which is a renamed zip file) from root directory by archiving only required files\n'
@@ -487,6 +491,36 @@ class DrDsUi(QMainWindow):
         self.buttons_lyt.addWidget(self.dslibrary_pb)
         self.dslibrary_pb.setFont(font)
         self.dslibrary_pb.clicked.connect(partial(self.as_worker, self.create_dslibrary))
+
+        # Ds library widgets
+        self.lossy_flac_lyt = QHBoxLayout()
+        self.lossy_flac_lyt.setContentsMargins(0, 4, 0, 4)
+        self.lossy_flac_lyt.setSpacing(4)
+
+        self.use_lossy_flac_cb = QCheckBox('LossyFLAC', parent=self.cw)
+        self.use_lossy_flac_cb.setObjectName('use_lossy_flac_cb')
+        self.use_lossy_flac_cb.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.use_lossy_flac_cb.setToolTip(
+            'Convert FLAC to LossyFLAC\n'
+            'Pre-process allowing near-lossless compression to squeeze the files size a bit more\n\n'
+            'NOTE: this only affects audio files copies inside the dslibrary file')
+
+        self.lossy_flac_mode_cmb = QComboBox(parent=self.cw)
+        self.lossy_flac_mode_cmb.setObjectName('lossy_flac_mode_cmb')
+        self.lossy_flac_mode_cmb.addItems(['auto', 'auto_ir', '16'])
+        self.lossy_flac_mode_cmb.setEnabled(False)
+        self.lossy_flac_mode_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.lossy_flac_mode_cmb.setToolTip('LossyFLAC mode\n'
+                                            'auto\tkeep input bit-depth, ignore IR samples\n'
+                                            'auto_ir\tkeep input bit-depth, also process IR samples\n'
+                                            '16\treduce bit-depth to 16 bits except for IR')
+
+        self.use_lossy_flac_cb.stateChanged.connect(lambda state: self.lossy_flac_mode_cmb.setEnabled(state))
+        self.lossy_flac_lyt.addWidget(self.use_lossy_flac_cb)
+        self.lossy_flac_lyt.addWidget(self.lossy_flac_mode_cmb)
+
+        self.buttons_lyt.addSpacing(16)
+        self.buttons_lyt.addLayout(self.lossy_flac_lyt)
 
         # Progress Bar
         self.progress_pb = QProgressBar(parent=self.cw)
@@ -662,14 +696,17 @@ class DrDsUi(QMainWindow):
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
-        result = smp2ds.create_dslibrary(self.root_dir)
+        lossy_flac_mode = [None, self.lossy_flac_mode_cmb.currentText()][self.use_lossy_flac_cb.isChecked()]
+        result = smp2ds.create_dslibrary(self.root_dir, lossy_flac_mode=lossy_flac_mode,
+                                         worker=worker,
+                                         progress_callback=progress_callback,
+                                         message_callback=message_callback)
 
         if result is None:
             progress_callback.emit(0)
             message_callback.emit('No dspreset file found')
         else:
             progress_callback.emit(100)
-            message_callback.emit(f'{shorten_path(result, 30)} successfully created')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
     def create_preset(self):

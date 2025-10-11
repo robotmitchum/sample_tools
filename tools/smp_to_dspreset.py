@@ -25,9 +25,10 @@ from common_ui_utils import shorten_str, beautify_str
 from estimate_offset import sampleset_offset
 from file_utils import recursive_search, resolve_overwriting, read_txt
 from jsonFile import read_json
+from lossy_flac import lossy_flac
 
 __ds_version__ = '1.13.1'
-__version__ = '1.4.6'
+__version__ = '1.4.7'
 
 
 def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
@@ -186,7 +187,7 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
     # List of sample attributes offered by Decent Sampler and *hopefully* supported by this tool
     # Attribute values can be provided in the sample name (with some limitations depending on how the name is formatted)
-    # or using ID3 tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
+    # or using tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
 
     num_attrs, ds_smp_attrib = ['vel', 'note', 'seqPosition'], []
     smp_attrib_data = read_json(smp_attrib_cfg) or {}
@@ -1243,7 +1244,7 @@ def get_dspreset_dependencies(dspreset_file):
 
     # Retrieve all attribute values qualifying as valid file paths
     for elem in root.iter():
-        result |= {v for v in elem.attrib.values() if root_dir.joinpath(v).is_file()}
+        result |= {v for v in elem.attrib.values() if (root_dir / v).is_file()}
 
     # Also include text files and preference files
     for ext in ('txt', 'smp2ds', 'drds', 'sfz'):
@@ -1253,15 +1254,26 @@ def get_dspreset_dependencies(dspreset_file):
     return result
 
 
-def create_dslibrary(root_dir):
+def create_dslibrary(root_dir: Path | str, lossy_flac_mode: str | None = None,
+                     worker=None, progress_callback=None, message_callback=None) -> Path:
     """
     Create a dslibrary file from a root directory archiving only files required by found dspreset(s)
+
     :param str or Path root_dir:
     :return: Created file path
-    :rtype: str
+
+    :param lossy_flac_mode: 'auto', 'auto_ir' or '16bits'
+
+    :param worker:
+    :param progress_callback:
+    :param message_callback:
+
+    :return: File path
     """
+    rd = Path(root_dir)
+
     # Get all dspreset files from root_dir
-    dspreset_files = [f for f in Path(root_dir).glob('*.dspreset')]
+    dspreset_files = [f for f in rd.glob('*.dspreset')]
 
     if not dspreset_files:
         return None
@@ -1269,29 +1281,72 @@ def create_dslibrary(root_dir):
     # Get dependencies from each dspreset
     deps = set()
     for f in dspreset_files:
-        deps.add(Path(f).relative_to(root_dir).as_posix())
+        deps.add(Path(f).relative_to(rd).as_posix())
         deps |= get_dspreset_dependencies(f)
     deps = sorted(list(deps))
 
-    # Copy retrieved files to a temp directory
-    base_name = Path(root_dir).name
+    ref_size = 0
+    result_size = 0
 
-    temp_dir = Path(tempfile.gettempdir()).joinpath(base_name)
-    for f in deps:
-        src = Path(root_dir).joinpath(f)
+    # Copy retrieved files to a temp directory
+    base_name = rd.name
+
+    temp_dir = Path(tempfile.gettempdir()) / base_name
+    for i, f in enumerate(deps):
+        src = rd / f
         if not src.is_file():
             continue
-        dst = Path(temp_dir).joinpath(f)
+        dst = temp_dir / f
         dst_dir = dst.parent
         if not dst_dir.exists():
-            os.makedirs(dst_dir)
-        shutil.copyfile(src=src, dst=dst)
+            dst_dir.mkdir(parents=True, exist_ok=True)
+
+        do_lossy_flac = False
+        is_ir = 'IR' in str(src.parent)  # Check if sample is an IR
+        if src.suffix == '.flac' and lossy_flac_mode:
+            if is_ir and lossy_flac_mode in ['auto_ir', '16'] or not is_ir:
+                do_lossy_flac = True
+
+        if do_lossy_flac:
+            msg = f'Processed "{src.name}" ... %p%'
+            bit_depth = (None, 16)[lossy_flac_mode == '16' and not is_ir]  # Never bit reduce IR
+            _, stats = lossy_flac(input_file=src, output_file=dst, bit_depth=bit_depth)
+            if stats:
+                ref_size += stats[0]
+                result_size += min(stats)
+        else:
+            # src_size = src.stat().st_size
+            # ref_size += src_size
+            # result_size += src_size
+            msg = f'Copied "{src.name}" ... %p%'
+            shutil.copyfile(src=src, dst=dst)
+
+        if progress_callback:
+            percent = (i + 1) * 100 // (len(deps) + 1)
+            progress_callback.emit(percent)
+            message_callback.emit(msg)
 
     # Zip temp directory, rename to dslibrary and delete temp directory
-    zip_basename = Path(root_dir).parent.joinpath(f'{base_name}')
+    zip_basename = rd.parent / base_name
+    if progress_callback:
+        message_callback.emit('Zipping files ... %p%')
     zip_path = shutil.make_archive(str(zip_basename), 'zip', root_dir=temp_dir)
-    result_path = Path(root_dir).parent.joinpath(f'{base_name}.dslibrary')
+    result_path = rd.parent / f'{base_name}.dslibrary'
     Path(zip_path).replace(result_path)
     shutil.rmtree(temp_dir, ignore_errors=True)
 
-    return str(result_path)
+    if progress_callback:
+        if ref_size > 0:
+            compression_ratio = result_size * 100 // ref_size
+        else:
+            compression_ratio = 100
+
+        progress_callback.emit(100)
+        if compression_ratio != 100:
+            msg = f'"{result_path.name}" successfully created - lossyFLAC ratio {compression_ratio}%'
+        else:
+            msg = f'"{result_path.name}" successfully created'
+
+        message_callback.emit(msg)
+
+    return result_path

@@ -507,8 +507,7 @@ class Ui_rename_tool_mw(object):
         self.pitch_fraction_l.setText(_translate("rename_tool_mw", "Pitch Fraction"))
         self.pitch_fraction_cmb.setToolTip(_translate("rename_tool_mw", "keep: use embedded value (if applicable)\n"
 "override: replace with a given value\n"
-"fine_tune: Detect pitch fraction using autocorrelation\n"
-""))
+"fine_tune: Detect pitch fraction using autocorrelation"))
         self.pitch_fraction_cmb.setItemText(0, _translate("rename_tool_mw", "keep"))
         self.pitch_fraction_cmb.setItemText(1, _translate("rename_tool_mw", "override"))
         self.pitch_fraction_cmb.setItemText(2, _translate("rename_tool_mw", "fine_tune"))

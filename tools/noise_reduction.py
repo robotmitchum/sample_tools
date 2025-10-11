@@ -35,7 +35,7 @@ def generate_quantize_noise(output_file=None, sr=48000, length=None, bd=8, seed=
     result = np.random.uniform(-1, 1, length) / mx
 
     if output_file:
-        sf.write(output_file, result, sr, subtype='PCM_24')
+        sf.write(output_file, result, sr, subtype='PCM_24', compression_level=1.0)
 
     return result
 

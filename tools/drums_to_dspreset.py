@@ -21,7 +21,7 @@ from jsonFile import read_json
 from smp_to_dspreset import write_xml_to_file
 
 __ds_version__ = '1.13.1'
-__version__ = '1.1.4'
+__version__ = '1.1.5'
 
 
 def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples',
@@ -145,7 +145,7 @@ def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples',
 
     # List of sample attributes offered by Decent Sampler and *hopefully* supported by this tool
     # Attribute values can be provided in the sample name (with some limitations depending on how the name is formatted)
-    # or using ID3 tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
+    # or using tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
 
     num_attrs, ds_smp_attrib = ['vel', 'note', 'seqPosition'], []
 

@@ -472,8 +472,7 @@ NOTE:	No algorithm is perfect so always double-check results in an audio editor 
         <property name="toolTip">
          <string>keep: use embedded value (if applicable)
 override: replace with a given value
-fine_tune: Detect pitch fraction using autocorrelation
-</string>
+fine_tune: Detect pitch fraction using autocorrelation</string>
         </property>
         <property name="currentIndex">
          <number>0</number>

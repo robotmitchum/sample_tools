@@ -32,7 +32,7 @@ from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
@@ -274,7 +274,8 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
 
                     # Soundfile only recognizes aiff and not aif when writing
                     sf_path = (filepath, f'{filepath}f')[ext == 'aif']
-                    sf.write(str(sf_path), self.temp_audio.audio, sr, subtype=subtypes[bit_depth])
+                    sf.write(str(sf_path), self.temp_audio.audio, sr, subtype=subtypes[bit_depth],
+                             compression_level=1.0)
                     if sf_path != filepath:
                         os.rename(sf_path, filepath)
 

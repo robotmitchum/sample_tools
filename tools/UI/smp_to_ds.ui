@@ -180,7 +180,7 @@ Click for context menu and some pattern examples</string>
 Attribute names must be enclosed with curly braces {}
 Files have to be named accordingly
 
-ID3 tags matching Decent Sampler specifiation are also supported for flac
+Tags matching Decent Sampler specifiation are also supported for flac
 when file naming feels impractical</string>
         </property>
         <property name="text">
@@ -3844,6 +3844,9 @@ Not required for tightly trimmed samples with sharp percussive attacks</string>
             <property name="currentIndex">
              <number>2</number>
             </property>
+            <property name="frame">
+             <bool>false</bool>
+            </property>
             <item>
              <property name="text">
               <string>DS</string>
@@ -3903,6 +3906,9 @@ Not required for tightly trimmed samples with sharp percussive attacks</string>
 generic	Recommended default
 sforzando	disable unsupported opcodes such as 'output', 'loop_crossfade' and 'sample_fadeout'
 sfizz	EG last point hack to terminate release and avoid polyphony crash, should not be necessary</string>
+               </property>
+               <property name="frame">
+                <bool>false</bool>
                </property>
                <item>
                 <property name="text">
@@ -3994,6 +4000,9 @@ on	use envelope generator for all trigger mode</string>
              <property name="currentIndex">
               <number>2</number>
              </property>
+             <property name="frame">
+              <bool>false</bool>
+             </property>
              <item>
               <property name="text">
                <string>off</string>
@@ -4074,6 +4083,57 @@ background-color: rgb(128, 220, 213);}</string>
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="lossy_flac_lyt">
+          <item>
+           <widget class="QCheckBox" name="use_lossy_flac_cb">
+            <property name="toolTip">
+             <string>Convert FLAC to LossyFLAC
+Pre-process allowing near-lossless compression to squeeze the files size a bit more
+
+NOTE: this only affects audio files copies inside the dslibrary file</string>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>LossyFLAC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="lossy_flac_mode_cmb">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>LossyFLAC mode
+auto	keep input bit-depth, ignore IR samples
+auto_ir	keep input bit-depth, also process IR samples
+16	reduce bit-depth to 16 bits except for IR</string>
+            </property>
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string>auto</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>auto_ir</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>16</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QPushButton" name="create_dslib_pb">

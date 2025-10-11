@@ -7,7 +7,7 @@
 
     They have to be correctly named and located in a directory following this pattern 'Instrument/Samples'
 
-    - ID3 tags are supported for 'flac' format
+    - Metadata tags are supported for 'flac' format
     - Note/Loop metadata from 'smpl' chunk are supported for wav format
     - limited features for aif format (no support for embedded tags or metadata)
 
@@ -240,6 +240,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.use_reverb_cb.stateChanged.connect(lambda state: self.reverb_wet_dsb.setEnabled(state))
         self.use_reverb_cb.stateChanged.connect(lambda state: self.use_ir_cb.setEnabled(state))
+
+        # Ds library widgets
+        self.use_lossy_flac_cb.stateChanged.connect(lambda state: self.lossy_flac_mode_cmb.setEnabled(state))
 
         # Process buttons
         self.add_suffix_cb.stateChanged.connect(lambda state: self.suffix_le.setEnabled(state))
@@ -587,14 +590,16 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             QMessageBox.information(self, 'Notification', 'Please set a valid root directory')
             return False
 
-        result = smp2ds.create_dslibrary(self.root_dir)
+        lossy_flac_mode = [None, self.lossy_flac_mode_cmb.currentText()][self.use_lossy_flac_cb.isChecked()]
+        result = smp2ds.create_dslibrary(self.root_dir, lossy_flac_mode=lossy_flac_mode, worker=worker,
+                                         progress_callback=progress_callback,
+                                         message_callback=message_callback)
 
         if result is None:
             progress_callback.emit(0)
             message_callback.emit('No dspreset file found')
         else:
             progress_callback.emit(100)
-            message_callback.emit(f'{shorten_path(result, 30)} successfully created')
             play_notification(audio_file=self.current_dir / 'process_complete.flac')
 
     def limit_ctx(self):

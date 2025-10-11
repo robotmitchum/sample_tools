@@ -407,7 +407,7 @@ def popup_menu(content, parent=None):
 
 
 # Name formatting
-def shorten_path(file_path, max_length=30):
+def shorten_path(file_path: Path | str, max_length: int = 30) -> str:
     """
     :param str file_path:
     :param int max_length:

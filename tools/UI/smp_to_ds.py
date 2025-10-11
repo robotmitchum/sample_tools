@@ -1174,6 +1174,7 @@ class Ui_smp_to_ds_ui(object):
         self.preset_fmt_cmb.setSizePolicy(sizePolicy)
         self.preset_fmt_cmb.setMinimumSize(QtCore.QSize(80, 0))
         self.preset_fmt_cmb.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.preset_fmt_cmb.setFrame(False)
         self.preset_fmt_cmb.setObjectName("preset_fmt_cmb")
         self.preset_fmt_cmb.addItem("")
         self.preset_fmt_cmb.addItem("")
@@ -1195,6 +1196,7 @@ class Ui_smp_to_ds_ui(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.sfz_engine_cmb.sizePolicy().hasHeightForWidth())
         self.sfz_engine_cmb.setSizePolicy(sizePolicy)
+        self.sfz_engine_cmb.setFrame(False)
         self.sfz_engine_cmb.setObjectName("sfz_engine_cmb")
         self.sfz_engine_cmb.addItem("")
         self.sfz_engine_cmb.addItem("")
@@ -1221,6 +1223,7 @@ class Ui_smp_to_ds_ui(object):
         self.use_eg_cmb.setSizePolicy(sizePolicy)
         self.use_eg_cmb.setMinimumSize(QtCore.QSize(80, 0))
         self.use_eg_cmb.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.use_eg_cmb.setFrame(False)
         self.use_eg_cmb.setObjectName("use_eg_cmb")
         self.use_eg_cmb.addItem("")
         self.use_eg_cmb.addItem("")
@@ -1251,6 +1254,21 @@ class Ui_smp_to_ds_ui(object):
         self.dslib_lyt.setObjectName("dslib_lyt")
         spacerItem67 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.dslib_lyt.addItem(spacerItem67)
+        self.lossy_flac_lyt = QtWidgets.QHBoxLayout()
+        self.lossy_flac_lyt.setObjectName("lossy_flac_lyt")
+        self.use_lossy_flac_cb = QtWidgets.QCheckBox(self.centralwidget)
+        self.use_lossy_flac_cb.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.use_lossy_flac_cb.setObjectName("use_lossy_flac_cb")
+        self.lossy_flac_lyt.addWidget(self.use_lossy_flac_cb)
+        self.lossy_flac_mode_cmb = QtWidgets.QComboBox(self.centralwidget)
+        self.lossy_flac_mode_cmb.setEnabled(False)
+        self.lossy_flac_mode_cmb.setFrame(False)
+        self.lossy_flac_mode_cmb.setObjectName("lossy_flac_mode_cmb")
+        self.lossy_flac_mode_cmb.addItem("")
+        self.lossy_flac_mode_cmb.addItem("")
+        self.lossy_flac_mode_cmb.addItem("")
+        self.lossy_flac_lyt.addWidget(self.lossy_flac_mode_cmb)
+        self.dslib_lyt.addLayout(self.lossy_flac_lyt)
         self.create_dslib_pb = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -1317,7 +1335,7 @@ class Ui_smp_to_ds_ui(object):
 "Attribute names must be enclosed with curly braces {}\n"
 "Files have to be named accordingly\n"
 "\n"
-"ID3 tags matching Decent Sampler specifiation are also supported for flac\n"
+"Tags matching Decent Sampler specifiation are also supported for flac\n"
 "when file naming feels impractical"))
         self.pattern_le.setPlaceholderText(_translate("smp_to_ds_ui", "Click Pattern for examples, Right click to insert an attribute"))
         self.grpnaming_l.setText(_translate("smp_to_ds_ui", "Group Naming"))
@@ -1629,6 +1647,18 @@ class Ui_smp_to_ds_ui(object):
 "\n"
 "NOTE: SFZ is converted from dspreset data"))
         self.create_preset_pb.setText(_translate("smp_to_ds_ui", "Create Preset"))
+        self.use_lossy_flac_cb.setToolTip(_translate("smp_to_ds_ui", "Convert FLAC to LossyFLAC\n"
+"Pre-process allowing near-lossless compression to squeeze the files size a bit more\n"
+"\n"
+"NOTE: this only affects audio files copies inside the dslibrary file"))
+        self.use_lossy_flac_cb.setText(_translate("smp_to_ds_ui", "LossyFLAC"))
+        self.lossy_flac_mode_cmb.setToolTip(_translate("smp_to_ds_ui", "LossyFLAC mode\n"
+"auto    keep input bit-depth, ignore IR samples\n"
+"auto_ir    keep input bit-depth, also process IR samples\n"
+"16    reduce bit-depth to 16 bits except for IR"))
+        self.lossy_flac_mode_cmb.setItemText(0, _translate("smp_to_ds_ui", "auto"))
+        self.lossy_flac_mode_cmb.setItemText(1, _translate("smp_to_ds_ui", "auto_ir"))
+        self.lossy_flac_mode_cmb.setItemText(2, _translate("smp_to_ds_ui", "16"))
         self.create_dslib_pb.setToolTip(_translate("smp_to_ds_ui", "Create dslibrary (which is a renamed zip file) from root directory by archiving only required files\n"
 "At least one valid dspreset must exist in the directory\n"
 "\n"

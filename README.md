@@ -81,7 +81,7 @@ python3 ir_tool_UI.py
 - Help is provided using tooltips for most widgets
 - Backup, increment to avoid overwriting
 
-**These tools use custom ID3 tags to handle metadata for the FLAC format which is recommended to get the most features**
+**These tools use custom tags to handle metadata for the FLAC format which is recommended to get the most features**
 
 ## SMP2ds
 
@@ -112,7 +112,7 @@ Sample attributes Config
 List of sample attributes offered by Decent Sampler and *hopefully* supported by this tool
 
 Attribute values can be provided in the sample name (with some limitations depending on how the name is formatted)
-or using ID3 tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
+or using tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
 
 This file found in this directory is required by this tool and should only be modified to recognize future Decent
 Sampler features

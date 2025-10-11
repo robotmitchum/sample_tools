@@ -120,30 +120,19 @@ def metadata_to_bin(sr: int, note: int | None, pitch_fraction: float | None,
     return bin_data
 
 
-def set_metadata_tags(input_file: str | Path, note: int | None, pitch_fraction: float | None,
-                      loop_start: int | None, loop_end: int | None):
+def get_md_tags(input_file: Path | str) -> dict:
     """
-    Set sample metadata as tags using mutagen
-    Currently only supports FLAC format
+    Get all tags as dict using mutagen
 
     :param input_file:
-    :param note:
-    :param pitch_fraction:
-    :param loop_start:
-    :param loop_end:
     """
-    audio = mutagen.File(input_file)
-    tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd']
-    values = [note, pitch_fraction, loop_start, loop_end]
-    for tag, value in zip(tags, values):
-        if value is not None:
-            audio[tag] = str(value)
-    audio.save()
+    audio = mutagen.File(str(input_file))
+    return {k: v[0] for k, v in audio.tags.items()}
 
 
 def set_md_tags(input_file: str | Path, md: dict | None = None):
     """
-    Set ID3 tags from dict
+    Set tags from dict using mutagen
     Currently only supports FLAC format
 
     :param input_file:
