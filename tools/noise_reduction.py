@@ -12,21 +12,24 @@ from noisereduce import reduce_noise
 from scipy.interpolate import interp1d
 from common_audio_utils import db_to_lin
 from common_math_utils import lerp
+from pathlib import Path
 
 
-def generate_quantize_noise(output_file=None, sr=48000, length=None, bd=8, seed=0):
+def generate_quantize_noise(output_file: Path | str | None = None, sr: int = 48000, length: int | None = None,
+                            bd: int = 8, seed: int = 0) -> np.ndarray:
     """
     Generate quantization noise profile
 
-    :param str or None output_file:
-    :param int sr: Sampling Rate
-    :param int or None length: Length in samples
-    :param int bd: Bit-depth
-    :param int seed: Noise generator seed
+    :param output_file:
+    :param sr: Sampling Rate
+    :param length: Length in samples
+    :param bd: Bit-depth
+    :param seed: Noise generator seed
 
     :return:
-    :rtype: np.array
     """
+    p = Path(output_file)
+
     mx = 2 ** (bd - 1)
 
     if length is None:
@@ -35,23 +38,24 @@ def generate_quantize_noise(output_file=None, sr=48000, length=None, bd=8, seed=
     result = np.random.uniform(-1, 1, length) / mx
 
     if output_file:
-        sf.write(output_file, result, sr, subtype='PCM_24', compression_level=1.0)
+        cmp = ({}, {'compression_level': 1.0})[p.suffix == '.flac']
+        sf.write(str(output_file), result, sr, subtype='PCM_24', **cmp)
 
     return result
 
 
-def denoise(audio, noise_profile, sr, mix=1.0, normalize=True):
+def denoise(audio: np.ndarray, noise_profile: np.ndarray, sr: int, mix: float = 1.0,
+            normalize: bool = True) -> np.ndarray:
     """
     Spectral gate noise reduction using reduce noise, basically just a more convenient re-wrap
 
-    :param np.array audio:
-    :param np.array noise_profile:
-    :param int sr:
-    :param float mix:
-    :param bool normalize:
+    :param audio:
+    :param noise_profile:
+    :param sr:
+    :param mix:
+    :param normalize:
 
     :return:
-    :rtype: np.array
     """
     pad = 256
 
@@ -81,7 +85,8 @@ def denoise(audio, noise_profile, sr, mix=1.0, normalize=True):
     return result
 
 
-def declip(audio, db=-.1, threshold=None, mix=.25, normalize=False):
+def declip(audio: np.ndarray, db: float = -.1, threshold: float | None = None, mix: float = .25,
+           normalize: bool = False) -> np.ndarray:
     """
     Simplistic audio de-clipping
     Replace samples over a given threshold by cubic interpolation

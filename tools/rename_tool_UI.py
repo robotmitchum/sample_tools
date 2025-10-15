@@ -218,11 +218,11 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         # Bake Pitch Fraction
         add_suffix = ('', self.add_suffix_le.text())[self.add_suffix_cb.isChecked()]
-        no_overwrinting = self.no_overwriting_cb.isChecked()
+        no_overwriting = self.no_overwriting_cb.isChecked()
 
         bake_pf = None
         if self.bake_pf_cb.isChecked():
-            bake_pf = (add_suffix, True, no_overwrinting)
+            bake_pf = (add_suffix, True, no_overwriting)
 
         # File settings
         bit_depth = self.bitdepth_cmb.currentText()

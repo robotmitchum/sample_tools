@@ -36,16 +36,16 @@ class Sample:
     Class to hold sample attributes
     """
 
-    def __init__(self, path='', extra_tags=None):
+    def __init__(self, path: Path | str = '', extra_tags: tuple | None = None):
         """
-        :param str path:
-        :param list extra_tags:
+        :param path:
+        :param extra_tags:
         """
         if not path:
             return
 
         p = Path(path)
-        info = sf.info(path)
+        info = sf.info(str(path))
 
         self.path = path
         self.name, self.ext = str(p.stem), str(p.suffix)
@@ -134,7 +134,7 @@ class Sample:
         note, octave = note_to_name(self.note)
         self.noteName = f'{note}{octave}'
 
-    def set_notename(self, value):
+    def set_notename(self, value: str):
         if value is None:
             return
         if is_note_name(value):
@@ -143,12 +143,12 @@ class Sample:
         else:
             self.note, self.noteName, self.pitchFraction = None, None, None
 
-    def transpose(self, value):
+    def transpose(self, value: int):
         if any([value is None, value == 0, self.note is None]):
             return
         self.set_note(self.note + value)
 
-    def set_vel(self, value):
+    def set_vel(self, value: int):
         if value is None:
             return
         if value <= 0:
@@ -157,7 +157,7 @@ class Sample:
             self.vel = min(value, 127)
             self.dyn = vel_to_dyn(self.vel)
 
-    def set_dyn(self, value):
+    def set_dyn(self, value: str):
         if value is None:
             return
         if is_dyn_name(value):
@@ -199,21 +199,21 @@ class Sample:
             self.cues = [clamp(cue, 0, self.params.nframes - 1) for cue in self.cues]
 
 
-def info_from_name(path, pattern='{group}_{note}', override=True, force_pitch_from_name=False,
-                   extra_tags=None, num_attrib=('vel', 'note', 'seqPosition')):
+def info_from_name(path: Path | str, pattern: str | None = '{group}_{note}',
+                   override: bool = True, force_pitch_from_name: bool = False,
+                   extra_tags: list | None = None, num_attrib: list = ('vel', 'note', 'seqPosition')) -> Sample:
     """
     Extract info from name
 
-    :param str path: input file path
-    :param str or None pattern: Pattern used to extract info, use {} to mark attributes
-    :param bool force_pitch_from_name: Force note from the whole sample name
+    :param path: input file path
+    :param pattern: Pattern used to extract info, use {} to mark attributes
+    :param force_pitch_from_name: Force note from the whole sample name
     Might work even when the name is badly formatted
-    :param bool override: Overwrite existing attributes
-    :param list or tuple or None extra_tags:
-    :param list or tuple num_attrib: List of attributes to be considered numeric so letters should be ignored
+    :param override: Overwrite existing attributes
+    :param extra_tags:
+    :param num_attrib: List of attributes to be considered numeric so letters should be ignored
 
-    :return: Return Info as a Sample object
-    :rtype: Sample
+    :return: Info as a Sample object
     """
     smp = Sample(path, extra_tags=extra_tags)
 
@@ -276,51 +276,52 @@ def info_from_name(path, pattern='{group}_{note}', override=True, force_pitch_fr
     return smp
 
 
-def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bit_depth=None,
-                  group_name='sample', rep_str=None,
-                  src_pattern='', tgt_pattern='{group}_{note}_{trigger}',
-                  prefix='', suffix='',
-                  extra_tags=None,
-                  transpose=0, force_pitch_from_name=True,
-                  detect_pitch=None, pitch_fraction_mode='keep', pitch_fraction_override=None,
-                  use_loop=True, bake_pf=None,
-                  test_run=False):
+def rename_sample(input_file, output_dir: Path | str = '', output_ext: str = 'wav',
+                  check_list: list = (), bit_depth: int | None = None,
+                  group_name: str = 'sample', rep_str: list[list] | None = None,
+                  src_pattern: str = '', tgt_pattern: str = '{group}_{note}_{trigger}',
+                  prefix: str = '', suffix='',
+                  extra_tags: list | None = None,
+                  transpose: int = 0, force_pitch_from_name: bool = True,
+                  detect_pitch: str | None = None, pitch_fraction_mode: str = 'keep',
+                  pitch_fraction_override: float | None = None,
+                  use_loop: bool = True, bake_pf: tuple[str, bool | float, bool] | None = None,
+                  test_run: bool = False) -> Path:
     """
     Rename sample while updating its metadata accordingly
 
-    :param bit_depth:
-    :param str input_file:
-    :param str output_dir: Optional output writing directory
-    :param str output_ext: Output format, wav or flac, aiff NOT supported
-    :param list check_list: Optional file list used to resolve overwriting within the renaming process
-    :param int or None bit_depth: Keep original bit-depth if None
+    :param input_file:
+    :param output_dir: Optional output writing directory
+    :param output_ext: Output format, wav or flac, aiff NOT supported
+    :param check_list: Optional file list used to resolve overwriting within the renaming process
+    :param bit_depth: Keep original bit-depth if None
 
-    :param str src_pattern: Pattern used to inform sample data
-    :param str tgt_pattern: Pattern used to compose resulting file name
+    :param src_pattern: Pattern used to inform sample data
+    :param tgt_pattern: Pattern used to compose resulting file name
 
-    :param str suffix:
-    :param str prefix:
+    :param suffix:
+    :param prefix:
 
-    :param list or tuple or None extra_tags: List of extra tags to query from input file (flac input/output only)
+    :param extra_tags: List of extra tags to query from input file (flac input/output only)
 
-    :param str group_name: Override group name
+    :param group_name: Override group name
 
-    :param list(list) rep_str: Basic search and replace in original name
+    :param rep_str: Basic search and replace in original name
 
-    :param int transpose: Transpose notes in semitones
-    :param bool force_pitch_from_name: Force note from the whole sample name
+    :param transpose: Transpose notes in semitones
+    :param force_pitch_from_name: Force note from the whole sample name
 
-    :param str or None detect_pitch: Force pitch detection, 'corr' or 'pyin'
-    :param str pitch_fraction_mode: 'keep', 'fine_tune' or 'fine_tune_lr'
-    :param float or None pitch_fraction_override: Pitch fraction in semitone cents
+    :param detect_pitch: Force pitch detection, 'corr' or 'pyin'
+    :param pitch_fraction_mode: 'keep', 'fine_tune' or 'fine_tune_lr'
+    :param pitch_fraction_override: Pitch fraction in semitone cents
 
-    :param bool use_loop: Clear loop if False
+    :param use_loop: Clear loop if False
 
-    :param bake_pf: add_suffix, value
+    :param bake_pf: add_suffix, value, no_overwriting
 
-    :param bool test_run: Simulate process without doing anything
+    :param test_run: Simulate process without doing anything
 
-    :return:
+    :return: Resulting file
     """
     p = Path(input_file)
     output_dir = output_dir or p.parent
@@ -378,23 +379,21 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
     filename = f'{prefix}{basename}{suffix}.{output_ext}'
 
     # Compose output file path
-    output_file = Path.joinpath(output_dir, filename)
+    output_file = output_dir / filename
 
     # Increment file if needed
     i = 0
     while str(output_file) in check_list:
         i += 1
-        output_file = output_dir.joinpath(f'{Path(filename).stem}_{i:03d}.{output_ext}')
+        output_file = output_dir / f'{Path(filename).stem}_{i:03d}.{output_ext}'
 
     # Append a suffix if projected file already exists
     if output_file.exists():
-        output_file = output_dir.joinpath(f'{output_file.stem}(!).{output_ext}')
-
-    output_file = str(output_file)
+        output_file = output_dir / f'{output_file.stem}(!).{output_ext}'
 
     print(f'{input_file} -> {output_file}')
     if not test_run:
-        data, sr = sf.read(input_file)
+        data, sr = sf.read(str(input_file))
 
         # Keep left channel only if audio is mostly mono
         if is_stereo(data, db=-48) == 0:
@@ -429,7 +428,8 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
         # Temporary file name
         with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{output_ext}', delete=False) as temp_file:
             tmp_name = temp_file.name
-        sf.write(tmp_name, data, samplerate=sr, subtype=subtype, compression_level=1.0)
+        cmp = ({}, {'compression_level': 1.0})[output_file.suffix == '.flac']
+        sf.write(str(tmp_name), data, samplerate=sr, subtype=subtype, **cmp)
 
         # Write Metadata
         if output_ext == 'wav':
@@ -457,7 +457,7 @@ def rename_sample(input_file, output_dir='', output_ext='wav', check_list=(), bi
         apply_finetuning(input_file=output_file, output_file=baked_output_file, value=bake_pf[1],
                          no_overwriting=bake_pf[-1])
 
-    return output_file
+    return Path(output_file)
 
 
 def rename_samples(root_dir, sub_dir='Samples', smp_fmt=('wav', 'flac'), **kwargs):
@@ -534,7 +534,8 @@ def apply_finetuning(input_file: Path | str, output_file: Path | str, value: flo
     output_dir = p.parent
     with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{output_ext}', delete=False) as temp_file:
         tmp_name = temp_file.name
-    sf.write(tmp_name, result, samplerate=sr, subtype=subtype, compression_level=1.0)
+    cmp = ({}, {'compression_level': 1.0})[output_file.suffix == '.flac']
+    sf.write(str(tmp_name), result, samplerate=sr, subtype=subtype, **cmp)
 
     # Write Metadata
     if output_ext == 'wav':
@@ -557,7 +558,7 @@ def apply_finetuning(input_file: Path | str, output_file: Path | str, value: flo
 
     os.rename(tmp_name, output_file)
 
-    return output_file
+    return Path(output_file)
 
 
 def is_stereo(audio, db=-48):
@@ -625,13 +626,12 @@ def read_metadata(input_file):
     return bin_to_metadata(data, header=0)
 
 
-def bin_to_metadata(data, header=8):
+def bin_to_metadata(data: bytes, header: int = 8) -> dict:
     """
     Convert binary 'smpl' chunk to metadata
-    :param int header: Number of header bytes to skip - 0 if no header, typically 8 with header
-    :param bytes data:
-    :return: metadata
-    :rtype: dict
+    :param data:
+    :param header: Number of header bytes to skip - 0 if no header, typically 8 with header
+    :return: metadata dict
     """
     tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops']  # Base tags
     note, pitch_fraction, loop_start, loop_end, loops = None, None, None, None, []
@@ -655,15 +655,14 @@ def bin_to_metadata(data, header=8):
     return dict(zip(tags, values))
 
 
-def read_metadata_tags(input_file, extra_tags=()):
+def read_metadata_tags(input_file: Path | str, extra_tags: tuple | None = ()) -> dict:
     """
     Read metadata stored as tags with support for extra tags
     Attempt to interpret them with case-sensitive names
 
-    :param str input_file:
-    :param list or tuple or None extra_tags:
+    :param input_file:
+    :param extra_tags:
     :return: Metadata with tag name as key
-    :rtype: dict
     """
     audio = mutagen.File(input_file)
     tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']  # Base tags
@@ -691,16 +690,15 @@ def read_metadata_tags(input_file, extra_tags=()):
     return data
 
 
-def get_cues(input_file):
+def get_cues(input_file: Path | str) -> list:
     """
     Get markers from input file
 
     Info about this found here :
     https://sharkysoft.com/archive/lava/docs/javadocs/lava/riff/wave/doc-files/riffwave-content.htm
 
-    :param str input_file: Input wav file
-    :return:
-    :rtype: list
+    :param input_file: Input wav file
+    :return: Cue list
     """
     cues = []
     data = read_chunk(input_file, 'cue ')
@@ -718,14 +716,14 @@ def get_cues(input_file):
     return cues
 
 
-def append_markers(input_file, markers):
+def append_markers(input_file: Path | str, markers: list):
     """
     Add markers to a given wav file in a minimalistic way (no labelling support)
 
     NOTE : The data is simply appended, so it's meant to be used once on a wav without any cues
 
-    :param str input_file:
-    :param list markers: List of marker positions in sample
+    :param input_file:
+    :param markers: List of marker positions in sample
     :return:
     """
     if not markers:
@@ -763,53 +761,49 @@ def append_markers(input_file, markers):
     f.close()
 
 
-def uint32_to_pitch_fraction(value):
+def uint32_to_pitch_fraction(value: int) -> float:
     return value / 0xFFFFFFFF * 100
 
 
-def as_chunk(value, length):
+def as_chunk(value: int, length: int) -> bytes:
     """
     Encode a given value as a "little endian" chunk
-    :param int value:
-    :param int length: Chunk length in bytes
+    :param value:
+    :param length: Chunk length in bytes
     :return:
-    :rtype: binary
     """
     return value.to_bytes(length, byteorder='little')
 
 
-def rm_alpha_chr(word: str):
+def rm_alpha_chr(word: str) -> str:
     """
     Remove alpha character from string
-    :param str word:
+    :param word:
     :return:
-    :rtype: str
     """
     return re.sub(r'[^0-9+\-.\n]', '', word)
 
 
-def rm_zero_pad(word: str):
+def rm_zero_pad(word: str) -> str:
     """
     Remove zero padding from string
     Proper handling of '0'
     :param str word:
     :return:
-    :rtype: str
     """
     return (word.lstrip('0'), word)[word == '0']
 
 
 # Unused / Deprecated
 
-def read_metadata_generic(input_file, blocksize=1):
+def read_metadata_generic(input_file: Path | str, blocksize: int = 1) -> tuple[int, float, int, int, list]:
     """
     Basic generic riff metadata reader
     Should work on both wav or flac (containing foreign metadata) files
     Not using Chunk function so slower
-    :param str input_file: Path to a wav or flac file.
-    :param int blocksize:
-    :return: note, pitch_fraction, loop_start, loop_end
-    :rtype: tuple
+    :param input_file: Path to a wav or flac file.
+    :param blocksize:
+    :return: note, pitch_fraction, loop_start, loop_end, loops
     """
     note, pitch_fraction, loop_start, loop_end, loops = None, None, None, None, None
 

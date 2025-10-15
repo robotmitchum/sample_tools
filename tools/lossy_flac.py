@@ -234,14 +234,15 @@ def lossy_flac(input_file: Path | str | None, data: np.ndarray = None, sr: int |
 
     subtype_dict = {16: 'PCM_16', 24: 'PCM_24'}
     subtype = subtype_dict.get(min(bit_depth, 24), None)
-    sf.write(str(output_file), result, sr, subtype=subtype, compression_level=1.0)
+    cmp = ({}, {'compression_level': 1.0})[output_file.suffix == '.flac']
+    sf.write(str(output_file), result, sr, subtype=subtype, **cmp)
 
     stats = None
 
     if output_file.suffix == '.flac':
         if check_size:
             ref_flac = cache_dir / output_file.name
-            sf.write(str(ref_flac), data, sr, subtype=subtype, compression_level=1.0)
+            sf.write(str(ref_flac), data, sr, subtype=subtype, **cmp)
             lossy_size = output_file.stat().st_size
             ref_size = ref_flac.stat().st_size
 

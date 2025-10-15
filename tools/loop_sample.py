@@ -264,7 +264,8 @@ def loop_sample(input_file: str | Path | None = '', output_file: str | Path | No
 
     # Write file
     sf_path = (output_file, f'{output_file}f')[ext == 'aif']
-    sf.write(str(sf_path), audio, samplerate=sr, subtype=bd_dict[bit_depth], compression_level=1.0)
+    cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
+    sf.write(str(sf_path), audio, samplerate=sr, subtype=bd_dict[bit_depth], **cmp)
     if sf_path != output_file:
         os.rename(sf_path, output_file)
 

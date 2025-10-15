@@ -21,12 +21,15 @@ import soundfile as sf
 from scipy.interpolate import interp1d
 from scipy.signal import resample
 from scipy.stats import linregress
+from pathlib import Path
 
 from common_audio_utils import lin_to_db, db_to_lin
 from common_math_utils import lerp
 
 
-def audio_upsample(input_file, output_file, audio=None, sr=None, f_max=None, target_sr=48000, mix=1.0):
+def audio_upsample(input_file: Path | str | None, output_file: Path | str | None, audio: np.ndarray | None = None,
+                   sr: int | None = None, f_max: float | None = None, target_sr: int = 48000,
+                   mix: float = 1.0) -> np.ndarray | Path:
     """
     Audio up-resolution by replicating upper frequency band
 
@@ -148,7 +151,8 @@ def audio_upsample(input_file, output_file, audio=None, sr=None, f_max=None, tar
         result /= mx
 
     if output_file is not None:
-        sf.write(output_file, result, samplerate=target_sr, compression_level=1.0)
+        cmp = ({}, {'compression_level': 1.0})[output_file.suffix == '.flac']
+        sf.write(str(output_file), result, samplerate=target_sr, **cmp)
 
     return result
 

@@ -22,6 +22,7 @@ from utils import append_metadata, set_md_tags
 from utils import note_to_name, hz_to_note
 from common_math_utils import q_log, q_exp
 
+
 # importlib.reload(pd)
 
 
@@ -93,7 +94,8 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
     if write_cue_file:
         cue_file_path = Path.joinpath(path, f'{name}_cues.wav')
         if not dry_run:
-            sf.write(cue_file_path, audio, samplerate=sr, subtype=subtype, compression_level=1.0)
+            cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
+            sf.write(cue_file_path, audio, samplerate=sr, subtype=subtype, **cmp)
             append_markers(str(cue_file_path), cues.tolist())
         else:
             print(f'Cue file: {cue_file_path}')
@@ -193,7 +195,8 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
         if not dry_run:
             # Soundfile only recognizes aiff and not aif when writing
             sf_path = (filepath, f'{filepath}f')[ext == 'aif']
-            sf.write(str(sf_path), data, samplerate=sr, subtype=bd_dict[bit_depth], compression_level=1.0)
+            cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
+            sf.write(str(sf_path), data, samplerate=sr, subtype=bd_dict[bit_depth], **cmp)
             if sf_path != filepath:
                 os.rename(sf_path, filepath)
         else:

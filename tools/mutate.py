@@ -245,7 +245,8 @@ def mutate(audio: np.ndarray = None, sr: int = None, input_file: Path | str | No
 
             # Write file
             sf_path = (output_path, f'{output_path}f')[ext == 'aif']
-            sf.write(sf_path, variant_result, target_sr, subtype, compression_level=1.0)
+            cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
+            sf.write(str(sf_path), variant_result, target_sr, subtype, **cmp)
             if sf_path != output_path:
                 os.rename(sf_path, output_path)
 

@@ -6,13 +6,15 @@
     :date: 2024.05
 """
 
+from pathlib import Path
+
 import numpy as np
 import soundfile as sf
 from scipy.interpolate import interp1d
 from scipy.signal import resample
 from scipy.signal.windows import tukey
 
-from common_audio_utils import rms, peak, db_to_lin
+from common_audio_utils import peak, db_to_lin
 from common_math_utils import lerp
 
 
@@ -143,7 +145,8 @@ def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
         out_data /= mx / db_to_lin(-.1)
 
     if output_file and out_data is not None:
-        sf.write(output_file, out_data, samplerate=sr, compression_level=1.0)
+        cmp = ({}, {'compression_level': 1.0})[Path(output_file).suffix == '.flac']
+        sf.write(str(output_file), out_data, samplerate=sr, **cmp)
 
     return out_data
 
