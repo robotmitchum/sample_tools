@@ -6,9 +6,9 @@
     :date: 2024.05
 """
 
-import importlib
 import math
 import os.path
+import tempfile
 from collections import namedtuple
 from pathlib import Path
 
@@ -17,28 +17,29 @@ import soundfile as sf
 from scipy import interpolate
 
 import pitch_detect as pd
-from sample_utils import append_markers, is_stereo
-from utils import append_metadata, set_md_tags
-from utils import note_to_name, hz_to_note
 from common_math_utils import q_log, q_exp
+from file_utils import resolve_overwriting
+from sample_utils import append_markers, is_stereo, info_from_name
+from utils import append_metadata, get_md_tags, set_md_tags
+from utils import note_to_name, hz_to_note
 
 
 # importlib.reload(pd)
 
 
-def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | None = None,
+def split_audio(input_file: Path | str = '', output_file: Path | str = '', bit_depth: int | None = None,
                 suffix: list[str] | None = (), pitch_mode: str = 'pyin', use_note: int | None = 0,
                 use_pitch_fraction: bool = True,
                 extra_suffix: str | None = '',
-                split_db=-60, fade_db=-48, min_duration=.1,
+                split_db: float = -60, fade_db: float = -48, min_duration: float = .1,
                 dither: bool = False, dc_offset: bool = True,
-                write_cue_file=True, dry_run=True, progress_bar: None = None,
-
-                worker=None, progress_callback=None, message_callback=None, range_callback=None) -> list[str]:
+                write_cue_file: bool = True, dry_run: bool = True,
+                progress_bar: None = None,
+                worker=None, progress_callback=None, message_callback=None, range_callback=None) -> list[Path]:
     """
     :param input_file:
     :param output_file:
-    :param list or tuple or None suffix:
+    :param suffix:
     :param extra_suffix:
 
     :param bit_depth: If None use input bit-depth
@@ -48,9 +49,9 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
     :param dither: Apply triangular noise to improve quantization distortion when writing to 16 bits
     Only applied to fades
 
-    :param float split_db: Split threshold
-    :param float or None fade_db: Fade threshold
-    :param float min_duration: Minimum silence/sound duration
+    :param split_db: Split threshold
+    :param fade_db: Fade threshold
+    :param min_duration: Minimum silence/sound duration
 
     :param pitch_mode: 'corr' (fastest), 'pyin' (average) or 'crepe' (slow)
     :param use_note: 0 disabled, 1 MIDI note number, 2 note name
@@ -62,11 +63,11 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
     :param message_callback: (unused)
     :param range_callback:
 
-    :param bool dry_run: Simulate process without writing anything, for debugging
+    :param dry_run: Simulate process without writing anything, for debugging
 
     :return: List of resulting files
     """
-    audio, sr = sf.read(input_file)
+    audio, sr = sf.read(str(input_file))
 
     if audio.ndim > 1:
         mono_audio = audio.mean(axis=1)
@@ -82,21 +83,21 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
 
     p = Path(output_file)
     name, ext = p.stem, p.suffix[1:]
-    path = p.parent
+    output_dir = p.parent
 
-    if not path.exists() and not dry_run:
-        os.makedirs(path, exist_ok=True)
+    if not output_dir.exists() and not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     # Get input subtype
-    subtype = sf.info(input_file).subtype
+    subtype = sf.info(str(input_file)).subtype
 
     # Cue file
     if write_cue_file:
-        cue_file_path = Path.joinpath(path, f'{name}_cues.wav')
+        cue_file_path = output_dir / f'{name}_cues.wav'
         if not dry_run:
             cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
-            sf.write(cue_file_path, audio, samplerate=sr, subtype=subtype, **cmp)
-            append_markers(str(cue_file_path), cues.tolist())
+            sf.write(str(cue_file_path), audio, samplerate=sr, subtype=subtype, **cmp)
+            append_markers(cue_file_path, cues.tolist())
         else:
             print(f'Cue file: {cue_file_path}')
 
@@ -143,7 +144,7 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
         if use_note:
             freq = pd.pitch_detect(mono_data, sr, mode=pitch_mode, resample=None, st_ed=.25)
             if np.isnan(freq) or freq is None:
-                filepath = Path.joinpath(Path(path), f'{name}_pitchfail{i + 1:03d}.{ext}')
+                filepath = output_dir / f'{name}_pitchfail{i + 1:03d}.{ext}'
             else:
                 pitch = hz_to_note(freq)
                 note = int(round(pitch))
@@ -156,25 +157,25 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
                 print(f'{i + 1:03d}', md)
                 if use_note == 2:
                     note_name, octave = note_to_name(note)
-                    filepath = Path.joinpath(Path(path), f'{name}_{note_name}{octave}.{ext}')
+                    filepath = output_dir / f'{name}_{note_name}{octave}.{ext}'
                 else:
-                    filepath = Path.joinpath(Path(path), f'{name}_{note:03d}.{ext}')
+                    filepath = output_dir / f'{name}_{note:03d}.{ext}'
 
         if not use_note or freq is False:
             if i < len(suffix):
-                filepath = Path.joinpath(Path(path), f'{name}_{suffix[i]}.{ext}')
+                filepath = output_dir / f'{name}_{suffix[i]}.{ext}'
             else:
-                filepath = Path.joinpath(Path(path), f'{name}_{i + 1:03d}.{ext}')
+                filepath = output_dir / f'{name}_{i + 1:03d}.{ext}'
 
         if extra_suffix:
-            filepath = filepath.parent.joinpath(f'{filepath.stem}{extra_suffix}.{ext}')
+            filepath = filepath.parent / f'{filepath.stem}{extra_suffix}.{ext}'
 
         # Prevent overwriting
         incr = 0
         p = Path(filepath)
         while filepath in split_files:
             incr += 1
-            filepath = Path.joinpath(Path(path), f'{p.stem}_{incr:03d}.{ext}')
+            filepath = output_dir / f'{p.stem}_{incr:03d}.{ext}'
 
         if dc_offset:
             dc_offset = np.mean(data)
@@ -205,10 +206,10 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
         # Add 'smpl' metadata
         if use_note:
             if ext == 'wav':
-                append_metadata(str(filepath), note=note, pitch_fraction=pitch_fraction, loop_start=None, loop_end=None)
+                append_metadata(filepath, note=note, pitch_fraction=pitch_fraction, loop_start=None, loop_end=None)
             # Add metadata as tags for flac
             elif ext == 'flac':
-                set_md_tags(str(filepath), md=md)
+                set_md_tags(filepath, md=md)
 
         # Increment progress bar sub-task
         if progress_bar is not None:
@@ -222,6 +223,145 @@ def split_audio(input_file: str = '', output_file: str = '', bit_depth: int | No
         progress_callback.emit(pb_val + 1)
 
     return split_files
+
+
+def trim_file(input_file: Path | str = '', output_file: Path | str = '', bit_depth: int | None = None,
+              trim_db: float = -60, fade_db: float = -48,
+              md: dict | None = None, extra_suffix: str | None = '',
+              dither: bool = False, dc_offset: bool = True,
+              dry_run: bool = True, no_overwriting: bool = False) -> Path:
+    """
+    Trim audio file while preserving metadata
+
+    :param input_file:
+    :param output_file:
+    :param bit_depth:
+    :param trim_db:
+    :param fade_db:
+    :param md:
+    :param extra_suffix:
+    :param dither:
+    :param dc_offset:
+    :param dry_run:
+    :param no_overwriting:
+
+    :return: Result file
+    """
+    audio, sr = sf.read(str(input_file))
+
+    if audio.ndim > 1:
+        mono_audio = audio.mean(axis=1)
+    else:
+        mono_audio = audio
+
+    # Keep only one channel if audio is not stereo
+    if not is_stereo(audio, db=-48):
+        data = mono_audio
+    else:
+        data = audio
+
+    p = Path(output_file)
+    name, ext = p.stem, p.suffix[1:]
+    output_dir = p.parent
+
+    info = info_from_name(input_file)
+    md = md or {}
+    if ext == 'flac':
+        md = get_md_tags(input_file) | md
+
+    if not output_dir.exists() and not dry_run:
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+    # - Bit Depth -
+    # Get input subtype
+    subtype = sf.info(str(input_file)).subtype
+
+    bit_depth = bit_depth or info.params.sampwidth * 8
+    if ext == 'flac':
+        bit_depth = min(bit_depth, 24)
+    subtypes = {16: 'PCM_16', 24: 'PCM_24', 32: 'FLOAT'}
+    subtype = subtypes.get(bit_depth, subtype)
+
+    # Integer peak value
+    mx = 1.0
+    if bit_depth <= 24:
+        mx = 2 ** (bit_depth - 1) - 1
+
+    filepath = output_dir / f'{name}.{ext}'
+
+    if extra_suffix:
+        filepath = filepath.parent / f'{filepath.stem}{extra_suffix}.{ext}'
+
+    if dc_offset:
+        dc_offset = np.mean(data)
+        data -= dc_offset
+
+    data, trim_cues = trim_audio(data, db=trim_db, prevent_empty=True)
+    length = len(data)
+
+    if dry_run:
+        print(f'Trim: {len(mono_audio)} -> {trim_cues}')
+
+    if fade_db is not None:
+        _, fade_cues = trim_audio(data, db=fade_db, prevent_empty=False)
+
+        if dry_run:
+            print(f'Fade: {len(data)} -> {fade_cues}')
+
+        if fade_cues is not None:
+            orig_data = np.array(data)
+            data = apply_fade(data, fade_in=(0, fade_cues[0], 'log'),
+                              fade_out=(fade_cues[1], len(data) - 1 - fade_cues[1], 'log'))
+
+            if dither is True and bit_depth < 24:
+                dither_mask = (np.abs(orig_data - data) > 0).astype(np.float64)
+                dither = dither_mask * np.random.triangular(-1, 0, 1, data.shape)
+                data = np.round(data * mx + dither).astype(np.int16)
+
+    # Adjust loops and cues with trim
+    if hasattr(info, 'loops'):
+        if info.loops is not None:
+            info.loops = [[min(val - trim_cues[0], length - 1) for val in loop] for loop in info.loops]
+            info.loopStart, info.loopEnd = info.loops[0]
+            if dry_run:
+                print(f'Loops: {info.loops}')
+    if hasattr(info, 'cues'):
+        info.cues = [min(cue - trim_cues[0], length - 1) for cue in info.cues]
+        if dry_run:
+            print(f'Cues: {info.cues}')
+
+    if not dry_run:
+        output_dir = p.parent
+
+        # Temporary file name
+        with tempfile.NamedTemporaryFile(dir=output_dir, suffix=f'.{ext}', delete=False) as temp_file:
+            tmp_name = temp_file.name
+        cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
+        sf_path = (tmp_name, f'{filepath}f')[ext == 'aif']
+        sf.write(str(sf_path), data, samplerate=sr, subtype=subtype, **cmp)
+        # if sf_path != filepath:
+        #     os.rename(sf_path, filepath)
+
+        # Write Metadata
+        if ext == 'wav':
+            append_metadata(tmp_name, note=info.note, pitch_fraction=info.pitchFraction,
+                            loop_start=info.loopStart, loop_end=info.loopEnd)
+            if hasattr(info, 'cues'):
+                append_markers(tmp_name, markers=info.cues)
+        elif ext == 'flac':
+            attrs = ['loopStart', 'loopEnd', 'loops', 'cues']
+            values = [getattr(info, attr) for attr in attrs]
+            md |= dict(zip(attrs, values))
+            set_md_tags(str(tmp_name), md=md)
+
+        if no_overwriting:
+            resolve_overwriting(output_file, mode='dir', dir_name='backup_', test_run=False)
+        elif output_file.is_file():
+            os.remove(output_file)
+
+        os.rename(tmp_name, output_file)
+
+    return filepath
 
 
 # Auxiliary defs

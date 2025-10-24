@@ -46,7 +46,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
@@ -72,6 +72,16 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
     def setup_connections(self):
         super().setup_connections()
 
+        self.split_mode_cmb.currentTextChanged.connect(
+            lambda state: self.split_options_wid.setEnabled(state == 'split'))
+        self.split_mode_cmb.currentTextChanged.connect(
+            lambda state: self.write_cue_cb.setEnabled(state == 'split'))
+        self.split_mode_cmb.currentTextChanged.connect(
+            lambda state: self.min_dur_dsb.setEnabled(state == 'split'))
+
+        self.split_mode_cmb.currentTextChanged.connect(
+            lambda state: self.no_overwriting_cb.setEnabled(state == 'trim_only'))
+
         # Output directory
         default_dir = get_user_directory()
         desktop_dir = get_user_directory('Desktop')
@@ -79,6 +89,9 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         add_ctx(self.output_path_l, values=['', default_dir, desktop_dir],
                 names=['Clear', 'Default directory', 'Desktop'])
         self.set_output_path_tb.clicked.connect(self.output_path_l.browse_path)
+
+        style_widget(self.set_output_path_tb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
+        style_widget(self.set_files_tb, properties={'background-color': 'rgb(95,95,95)', 'border-radius': 8})
 
         # Base name widget
         add_ctx(self.basename_le, ['', 'Split', 'Sample'])
@@ -101,7 +114,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
 
         # Extra suffix widget
         self.extra_suffix_cb.stateChanged.connect(lambda state: self.extra_suffix_le.setEnabled(state))
-        add_ctx(self.extra_suffix_le, ['', '_v127', '_v063', '_f', '_p'])
+        add_ctx(self.extra_suffix_le, ['', '_v127', '_v063', '_f', '_p', '_trim'])
 
         # Pitch widgets
         self.suffix_mode_cmb.currentTextChanged.connect(
@@ -167,6 +180,8 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         self.options.bd_cmb = self.bitdepth_cmb.currentText()
         self.options.ext_cmb = self.format_cmb.currentText()
 
+        self.options.no_overwriting = self.no_overwriting_cb.isChecked()
+
     def do_process(self, worker, progress_callback, message_callback, mode):
         if mode == 'batch':
             files = self.get_lw_items()
@@ -185,6 +200,8 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
         # Options
         self.get_options()
         options = vars(self.options)
+
+        split_mode = self.split_mode_cmb.currentText()
 
         # Progress bar init
         range_callback.emit(0, count)
@@ -205,9 +222,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                 stem = p.stem
 
                 if options['subdir']:
-                    parent = Path.joinpath(Path(self.output_path_l.fullPath()), options['subdir'])
-
-                basename = self.basename_le.text() or stem
+                    parent = Path(self.output_path_l.fullPath()) / options['subdir']
 
                 if options['ext_cmb'] == 'same':
                     ext = p.suffix.strip('.')
@@ -219,20 +234,29 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                 else:
                     bit_depth = int(options['bd_cmb'])
 
-                filepath = Path.joinpath(Path(parent), f'{basename}.{ext}')
-                result = sa.split_audio(input_file=f, output_file=str(filepath), bit_depth=bit_depth,
-                                        suffix=options['suffix'], extra_suffix=options['extra_suffix'],
-                                        use_note=options['detect_pitch'],
-                                        pitch_mode=options['pitch_mode'],
-                                        use_pitch_fraction=options['use_pitch_fraction'],
-                                        min_duration=options['min_duration'],
-                                        split_db=options['split_db'], fade_db=options['fade_db'],
-                                        dc_offset=options['dc_offset'], dither=options['dither'],
-                                        write_cue_file=options['write_cue'],
-                                        dry_run=False, progress_bar=self.progress_pb,
-                                        worker=worker, progress_callback=progress_callback,
-                                        message_callback=message_callback,
-                                        range_callback=range_callback)
+                if split_mode == "split":
+                    basename = self.basename_le.text() or stem
+                    filepath = Path(parent) / f'{basename}.{ext}'
+                    result = sa.split_audio(input_file=f, output_file=str(filepath), bit_depth=bit_depth,
+                                            suffix=options['suffix'], extra_suffix=options['extra_suffix'],
+                                            use_note=options['detect_pitch'],
+                                            pitch_mode=options['pitch_mode'],
+                                            use_pitch_fraction=options['use_pitch_fraction'],
+                                            min_duration=options['min_duration'],
+                                            split_db=options['split_db'], fade_db=options['fade_db'],
+                                            dc_offset=options['dc_offset'], dither=options['dither'],
+                                            write_cue_file=options['write_cue'],
+                                            dry_run=False, progress_bar=self.progress_pb,
+                                            worker=worker, progress_callback=progress_callback,
+                                            message_callback=message_callback,
+                                            range_callback=range_callback)
+                else:
+                    filepath = Path(parent) / f'{p.stem}.{ext}'
+                    result = sa.trim_file(input_file=p, output_file=filepath, bit_depth=bit_depth,
+                                          extra_suffix=options['extra_suffix'],
+                                          trim_db=options['split_db'], fade_db=options['fade_db'],
+                                          dc_offset=options['dc_offset'], dither=options['dither'],
+                                          dry_run=False, no_overwriting=options['no_overwriting'])
                 print(result)
 
                 done += 1

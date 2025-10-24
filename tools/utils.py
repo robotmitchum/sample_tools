@@ -17,7 +17,7 @@ import soundfile as sf
 
 
 # Set/Append Tags / Metadata functions
-def append_metadata(input_file: str | Path, note: int, pitch_fraction: float | None,
+def append_metadata(input_file: Path | str, note: int, pitch_fraction: float | None,
                     loop_start: int | None, loop_end: int | None):
     """
     Simplistic note and region loop appending, properly recognized by Kontakt and other software
@@ -130,7 +130,7 @@ def get_md_tags(input_file: Path | str) -> dict:
     return {k: v[0] for k, v in audio.tags.items()}
 
 
-def set_md_tags(input_file: str | Path, md: dict | None = None):
+def set_md_tags(input_file: Path | str, md: dict | None = None):
     """
     Set tags from dict using mutagen
     Currently only supports FLAC format
