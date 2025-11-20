@@ -32,7 +32,7 @@ class Ui_split_tool_mw(object):
         self.files_title_l.setObjectName("files_title_l")
         self.verticalLayout.addWidget(self.files_title_l)
         self.input_lyt = QtWidgets.QHBoxLayout()
-        self.input_lyt.setSpacing(0)
+        self.input_lyt.setSpacing(4)
         self.input_lyt.setObjectName("input_lyt")
         self.files_lw = QtWidgets.QListWidget(self.centralwidget)
         self.files_lw.setFrameShape(QtWidgets.QFrame.NoFrame)
