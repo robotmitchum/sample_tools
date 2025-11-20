@@ -28,8 +28,6 @@ def generate_quantize_noise(output_file: Path | str | None = None, sr: int = 480
 
     :return:
     """
-    p = Path(output_file)
-
     mx = 2 ** (bd - 1)
 
     if length is None:
@@ -38,6 +36,7 @@ def generate_quantize_noise(output_file: Path | str | None = None, sr: int = 480
     result = np.random.uniform(-1, 1, length) / mx
 
     if output_file:
+        p = Path(output_file)
         cmp = ({}, {'compression_level': 1.0})[p.suffix == '.flac']
         sf.write(str(output_file), result, sr, subtype='PCM_24', **cmp)
 
