@@ -326,9 +326,10 @@ def trim_file(input_file: Path | str = '', output_file: Path | str = '', bit_dep
             if dry_run:
                 print(f'Loops: {info.loops}')
     if hasattr(info, 'cues'):
-        info.cues = [min(cue - trim_cues[0], length - 1) for cue in info.cues]
-        if dry_run:
-            print(f'Cues: {info.cues}')
+        if info.cues is not None:
+            info.cues = [min(cue - trim_cues[0], length - 1) for cue in info.cues]
+            if dry_run:
+                print(f'Cues: {info.cues}')
 
     if not dry_run:
         output_dir = p.parent
