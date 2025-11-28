@@ -218,11 +218,13 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                 prm = info.params
 
                 p = Path(f)
-                parent = self.output_path_l.fullPath() or p.parent
+                output_path = self.output_path_l.fullPath() or p.parent
                 stem = p.stem
 
                 if options['subdir']:
-                    parent = Path(self.output_path_l.fullPath()) / options['subdir']
+                    parent = output_path / options['subdir']
+                else:
+                    parent = output_path
 
                 if options['ext_cmb'] == 'same':
                     ext = p.suffix.strip('.')
