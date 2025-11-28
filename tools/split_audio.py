@@ -95,8 +95,7 @@ def split_audio(input_file: Path | str = '', output_file: Path | str = '', bit_d
     if write_cue_file:
         cue_file_path = output_dir / f'{name}_cues.wav'
         if not dry_run:
-            cmp = ({}, {'compression_level': 1.0})[ext == 'flac']
-            sf.write(str(cue_file_path), audio, samplerate=sr, subtype=subtype, **cmp)
+            sf.write(str(cue_file_path), audio, samplerate=sr, subtype=subtype)
             append_markers(cue_file_path, cues.tolist())
         else:
             print(f'Cue file: {cue_file_path}')
