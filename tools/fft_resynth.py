@@ -11,55 +11,54 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 from scipy.interpolate import interp1d
-from scipy.signal import resample
 from scipy.signal.windows import tukey
+from soxr import resample
 
 from common_audio_utils import peak, db_to_lin
 from common_math_utils import lerp
 
 
-def fft_resynth(input_file=None, input_data=None, sr=44100, target_sr=None,
-                start=0, fft_size=2048, freqs=None,
-                make_stereo=False, seed=0, width=.25,
-                atonal_mix=1, duration=1, normalize=None,
-                output_file=None):
+def fft_resynth(input_file: Path | str | None = None, input_data: np.ndarray | None = None,
+                sr: int = 44100, target_sr: int | None = None,
+                start: int = 0, fft_size: int = 2048, freqs: list[float] | float | None = None,
+                make_stereo: bool = False, seed: int = 0, width: float = .25,
+                atonal_mix: float = 1, duration: float = 1, normalize: float | None = None,
+                output_file: Path | str | None = None) -> np.ndarray:
     """
     Generate seamlessly looping audio from a short sample using FFT re-synthesis
 
-    :param str or None input_file:
-    :param np.array input_data:
-    :param int sr: Sampling Rate when using array as input
+    :param input_file:
+    :param input_data:
+    :param sr: Sampling Rate when using array as input
 
-    :param int or None target_sr: Resample to desired input before processing
+    :param target_sr: Resample to desired input before processing
 
-    :param int start: Start of input audio used for FFT
-    :param int fft_size: Length of input audio used for FFT
+    :param start: Start of input audio used for FFT (in samples)
+    :param fft_size: Length of input audio used for FFT (in samples)
 
-    :param list(float) float or None freqs: Frequencies used to determine harmonic series and generate "tonal" content
+    :param freqs: Frequencies used to determine harmonic series and generate "tonal" content
     These frequencies will keep their phase intact, other frequencies wil get random phases
 
-    :param bool make_stereo: mono to stereo
-    :param int seed: Seed for random phase (noise)
+    :param make_stereo: mono to stereo
+    :param seed: Seed for random phase (noise)
     Strong pseudo-stereo effect as left and right channel phases are uncorrelated except for "tonal" content
-    :param float width: Stereo width
+    :param width: Stereo width
 
-    :param float atonal_mix: "atonal" (random phases) content amplitude
+    :param atonal_mix: "atonal" (random phases) content amplitude
 
-    :param float duration: Desired output length (in s)
+    :param duration: Desired output length (in s)
 
-    :param float normalize: Normalize result to given dB
+    :param normalize: Normalize result to given dB
 
-    :param str or None output_file:
+    :param output_file:
 
     :return: Generated audio
-    :rtype: np.array
     """
     if input_file:
         input_data, sr = sf.read(input_file)
 
     if target_sr is not None and target_sr != sr:
-        target_len = np.round(len(input_data) * target_sr / sr).astype(np.int32)
-        input_data = resample(input_data, target_len, domain='time')
+        input_data = resample(input_data, sr, target_sr, quality='VHQ')
         sr = target_sr
 
     chn_random = False

@@ -32,7 +32,7 @@ from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):

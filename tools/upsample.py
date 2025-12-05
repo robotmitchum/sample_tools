@@ -13,15 +13,15 @@
     :date: 2024.07
 """
 import math
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pyrubberband as pyrb
 import soundfile as sf
 from scipy.interpolate import interp1d
-from scipy.signal import resample
 from scipy.stats import linregress
-from pathlib import Path
+from soxr import resample
 
 from common_audio_utils import lin_to_db, db_to_lin
 from common_math_utils import lerp
@@ -86,9 +86,7 @@ def audio_upsample(input_file: Path | str | None, output_file: Path | str | None
 
     print(f'Factor: {factor}')
 
-    target_len = np.round(len(data) * target_sr / sr).astype(np.int32)
-    data = resample(data, target_len, domain='time')
-    # duration = target_len / target_sr
+    data = resample(data, sr, target_sr, quality='VHQ')
 
     n_fft = len(data)
     cutoff = div * sr / 2
@@ -101,6 +99,7 @@ def audio_upsample(input_file: Path | str | None, output_file: Path | str | None
     result = np.zeros_like(data)
     band = band_width * bw[0]
     lp_mask = func(filter_mask(cutoff, cutoff - band, n_fft, target_sr))
+
     for c in range(nch):
         if nch > 1:
             chn_data = data[:, c]
