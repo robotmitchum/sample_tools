@@ -265,7 +265,10 @@ def trim_file(input_file: Path | str = '', output_file: Path | str = '', bit_dep
 
     info = info_from_name(input_file)
     md = md or {}
-    if ext == 'flac':
+
+    in_ext = Path(input_file).suffix[1:]
+
+    if in_ext == 'flac':
         md = get_md_tags(input_file) | md
 
     if not output_dir.exists() and not dry_run:
@@ -319,13 +322,13 @@ def trim_file(input_file: Path | str = '', output_file: Path | str = '', bit_dep
 
     # Adjust loops and cues with trim
     if hasattr(info, 'loops'):
-        if info.loops is not None:
+        if info.loops:
             info.loops = [[min(val - trim_cues[0], length - 1) for val in loop] for loop in info.loops]
             info.loopStart, info.loopEnd = info.loops[0]
             if dry_run:
                 print(f'Loops: {info.loops}')
     if hasattr(info, 'cues'):
-        if info.cues is not None:
+        if info.cues:
             info.cues = [min(cue - trim_cues[0], length - 1) for cue in info.cues]
             if dry_run:
                 print(f'Cues: {info.cues}')

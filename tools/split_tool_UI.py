@@ -46,7 +46,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
