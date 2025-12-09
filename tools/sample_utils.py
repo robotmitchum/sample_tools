@@ -24,7 +24,7 @@ from soxr import resample
 from common_math_utils import clamp
 from file_utils import resolve_overwriting
 from parseAttrString import parse_string, compose_string
-from pitch_detect import fine_tune, fine_tune_lr, pitch_detect
+from pitch_detect import fine_tune, fine_tune_b, fine_tune_lr, pitch_detect
 from utils import (append_metadata, set_md_tags,
                    hz_to_note, note_to_name, name_to_note, is_note_name, find_notes_from_name,
                    is_dyn_name, dyn_to_vel, vel_to_dyn,
@@ -401,9 +401,11 @@ def rename_sample(input_file, output_dir: Path | str = '', output_ext: str = 'wa
 
         match pitch_fraction_mode:
             case 'fine_tune':
-                smp.pitchFraction, confidence = fine_tune(audio=data, sr=sr, note=smp.note, period_factor=3,
-                                                          t=int(len(data) * .25), d=50, os=16, graph=False)
-                print(f'Pitch fraction: {smp.pitchFraction}, Confidence: {confidence}')
+                smp.pitchFraction, _ = fine_tune(audio=data, sr=sr, pos=.5, os=16, note=smp.note, graph=False)
+                print(f'Pitch fraction: {smp.pitchFraction}')
+            case 'fine_tune_b':
+                smp.pitchFraction = fine_tune_b(audio=data, sr=sr, pos=.5, size=8192, os=2, note=smp.note, graph=False)
+                print(f'Pitch fraction: {smp.pitchFraction}')
             case 'fine_tune_lr':
                 ft_lr = fine_tune_lr(audio=data, sr=sr, note=smp.note)
                 if ft_lr is not None:
