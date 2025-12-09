@@ -495,17 +495,47 @@ Negative : Low pass filter</string>
     <item>
      <layout class="QHBoxLayout" name="balance_lyt">
       <item>
-       <widget class="QCheckBox" name="balance_cb">
-        <property name="toolTip">
-         <string>Rebalance left and right channel so audio feels centered
+       <widget class="QWidget" name="balance_wid" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="balance_cb">
+           <property name="toolTip">
+            <string>Rebalance left and right channel so audio feels centered
 Recommanded, especially with 'velvet' mode</string>
-        </property>
-        <property name="text">
-         <string>Auto-Balance L/R</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
+           </property>
+           <property name="text">
+            <string>Auto-Balance L/R</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="align_phase_cb">
+           <property name="toolTip">
+            <string>Align phase of L/R channels
+May improve centering
+non-reversible</string>
+           </property>
+           <property name="text">
+            <string>Align Phase</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>

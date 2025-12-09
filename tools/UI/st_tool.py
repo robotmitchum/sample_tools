@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'st_tool.ui'
+# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\st_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -194,10 +194,19 @@ class Ui_st_tool_mw(object):
         self.verticalLayout.addLayout(self.filter_side_lyt)
         self.balance_lyt = QtWidgets.QHBoxLayout()
         self.balance_lyt.setObjectName("balance_lyt")
-        self.balance_cb = QtWidgets.QCheckBox(self.centralwidget)
+        self.balance_wid = QtWidgets.QWidget(self.centralwidget)
+        self.balance_wid.setObjectName("balance_wid")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.balance_wid)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.balance_cb = QtWidgets.QCheckBox(self.balance_wid)
         self.balance_cb.setChecked(True)
         self.balance_cb.setObjectName("balance_cb")
-        self.balance_lyt.addWidget(self.balance_cb)
+        self.horizontalLayout.addWidget(self.balance_cb)
+        self.align_phase_cb = QtWidgets.QCheckBox(self.balance_wid)
+        self.align_phase_cb.setObjectName("align_phase_cb")
+        self.horizontalLayout.addWidget(self.align_phase_cb)
+        self.balance_lyt.addWidget(self.balance_wid)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.balance_lyt.addItem(spacerItem2)
         self.width_l = QtWidgets.QLabel(self.centralwidget)
@@ -448,6 +457,10 @@ class Ui_st_tool_mw(object):
         self.balance_cb.setToolTip(_translate("st_tool_mw", "Rebalance left and right channel so audio feels centered\n"
 "Recommanded, especially with \'velvet\' mode"))
         self.balance_cb.setText(_translate("st_tool_mw", "Auto-Balance L/R"))
+        self.align_phase_cb.setToolTip(_translate("st_tool_mw", "Align phase of L/R channels\n"
+"May improve centering\n"
+"non-reversible"))
+        self.align_phase_cb.setText(_translate("st_tool_mw", "Align Phase"))
         self.width_l.setText(_translate("st_tool_mw", "Stereo Width"))
         self.width_dsb.setToolTip(_translate("st_tool_mw", "Stereo Width"))
         self.output_path_title_l.setText(_translate("st_tool_mw", "Output Path"))

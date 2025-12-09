@@ -17,9 +17,9 @@ import soundfile as sf
 from scipy import interpolate
 
 import pitch_detect as pd
-from common_math_utils import q_log, q_exp
 from file_utils import resolve_overwriting
 from sample_utils import append_markers, is_stereo, info_from_name
+from tools.common_audio_utils import apply_fade
 from utils import append_metadata, get_md_tags, set_md_tags
 from utils import note_to_name, hz_to_note
 
@@ -509,55 +509,4 @@ def envelope_transform(data: np.ndarray, w: int = 1024, mode: str = 'max', inter
     return result
 
 
-# Fade in/out functions
 
-def apply_fade(data: np.ndarray, fade_in: tuple[int, int, str] = (0, 100, 'log'),
-               fade_out: tuple[int, int, str] = (500, 32000, 'exp')) -> np.ndarray:
-    """
-    Apply fade in/out to audio
-    :param data: Input audio
-    :param fade_in: Start, Duration, Curve
-    :param fade_out: Start, Duration, Curve
-    :return: Processed audio
-    """
-    nch = data.ndim
-    length = len(data)
-
-    # Fade in
-    if fade_in:
-        fi = np.append(np.zeros(fade_in[0]), np.linspace(0, 1, fade_in[1]))
-        pad = length - fi.size
-        if pad > 0:
-            fi = np.append(fi, np.ones(pad))
-        else:
-            fi = fi[:length]
-        if fade_in[2] == 'exp':
-            fi = q_exp(fi)
-        if fade_in[2] == 'log':
-            fi = q_log(fi)
-    else:
-        fi = 1
-
-    # Fade out
-    if fade_out:
-        fo = np.append(np.ones(fade_out[0]), np.linspace(1, 0, fade_out[1]))
-        pad = length - fo.size
-        if pad > 0:
-            fo = np.append(fo, np.zeros(pad))
-        else:
-            fo = fo[:length]
-        if fade_out[2] == 'exp':
-            fo = q_exp(fo)
-        if fade_out[2] == 'log':
-            fo = q_log(fo)
-    else:
-        fo = 1
-
-    fade = fi * fo
-
-    if nch > 1:
-        fade = np.tile(fade, (nch, 1)).T
-
-    data *= fade
-
-    return data

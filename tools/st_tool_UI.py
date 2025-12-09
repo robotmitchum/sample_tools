@@ -115,7 +115,9 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
             lambda state: self.filter_side_cb.setDisabled(state.startswith('conv')))
 
         self.st_mode_cmb.currentTextChanged.connect(
-            lambda state: self.balance_cb.setDisabled(state.startswith('conv')))
+            lambda state: self.balance_wid.setDisabled(state.startswith('conv')))
+
+        self.balance_cb.stateChanged.connect(lambda state: self.align_phase_cb.setEnabled(state == 2))
 
         # Refresh widgets related to combo box
         self.st_mode_cmb.currentTextChanged.emit(self.st_mode_cmb.currentText())
@@ -156,7 +158,10 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.options.delay = self.delay_dsb.value()
         self.options.width = self.width_dsb.value()
         self.options.seed = self.seed_sb.value()
+
         self.options.balance = self.balance_cb.isChecked()
+        self.options.align_phase = self.align_phase_cb.isChecked()
+
         self.options.mx_len = self.mxlen_cb.isChecked()
         self.options.wet = self.wet_dsb.value()
 
@@ -266,7 +271,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                                                          seed=options['seed'], ir_file=options['ir_path'],
                                                          mx_len=options['mx_len'], wet=options['wet'],
                                                          cutoff=options['cutoff'], band=options['band'],
-                                                         balance=options['balance'],
+                                                         balance=options['balance'], align_phase=options['align_phase'],
                                                          width=options['width'])
                 self.temp_audio.info = info
 

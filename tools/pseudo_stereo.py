@@ -14,12 +14,14 @@ import soxr
 from scipy import signal
 
 from common_audio_utils import rms, peak, db_to_lin, st_to_ms, ms_to_st, convolve, compensate_ir, get_silence_threshold
+from common_audio_utils import normalize, balance_lr, align_phase_lr
+
 from common_math_utils import lerp
 from fft_utils import filter_mask, h_cos
 
 
 def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str = 'velvet', seed: int = 0,
-                  balance: bool = True,
+                  balance: bool = True, align_phase: bool = False,
                   ir_file: str | None = None, mx_len: bool = False, wet: float = 1.0,
                   cutoff: float | None = None, band: float = 100,
                   width: float = 1.0) -> np.ndarray:
@@ -33,7 +35,8 @@ def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str =
     :param mode: "haas" delay side channel or "velvet" convolve side channel with velvet impulse
     :param seed: Seed for Velvet noise
 
-    :param balance: Attempt to balance stereo by detecting angle
+    :param balance: Balance L/R channels volume
+    :param align_phase: Align phase of L/R channels, non-reversible
 
     :param ir_file: IR sample to use with 'convolve' mode
     :param mx_len: Extends length to account for IR tail
@@ -88,16 +91,14 @@ def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str =
 
         # Balance L/R
         if balance:
-            # Use rms level from left and right channels as barycenter weights
-            (l_chn, r_chn) = result.T
-            wt = np.array([rms(l_chn), rms(r_chn)])
-            wt /= sum(wt) / 2  # Normalize weights
-            result /= wt
+            result = balance_lr(result)
+
+            # Align phase of L/R channels
+            if align_phase:
+                result = align_phase_lr(result, mode='min')
 
     # Normalize in case of clipping
-    mx = peak(result)
-    if mx > 1:
-        result /= mx / db_to_lin(-.1)
+    result = normalize(result, prevent_clipping=True, db=.1)
 
     # Trim silence at end if needed
     silence_th = get_silence_threshold(bit_depth=24, as_db=True)

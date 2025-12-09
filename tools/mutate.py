@@ -21,7 +21,8 @@ from soxr import resample
 from common_audio_utils import peak, rms, db_to_lin, pad_audio
 from common_math_utils import string_to_seed
 from sample_utils import Sample, append_metadata, set_md_tags
-from split_audio import trim_audio, apply_fade
+from split_audio import trim_audio
+from tools.common_audio_utils import apply_fade
 from file_utils import resolve_overwriting
 
 

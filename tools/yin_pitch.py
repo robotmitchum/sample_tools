@@ -22,38 +22,22 @@ class ParameterError(ValueError):
 
 def yin(y: np.ndarray, *, fmin: float, fmax: float, sr: int = 22050,
         frame_length: int = 2048, win_length: Optional[int] = None, hop_length: Optional[int] = None,
-        trough_threshold: float = 0.1, center: bool = True, pad_mode: str = "constant",
-        ) -> np.ndarray:
+        trough_threshold: float = 0.1, center: bool = True, pad_mode: str = "constant") -> np.ndarray:
     """
-    Estimate pitch (fundamental frequency) using the YIN algorithm.
+    Estimate pitch (fundamental frequency) using the YIN algorithm
 
-    Parameters
-    ----------
-    y : np.ndarray
-        Input audio signal (1D or higher dimensions with time on last axis).
-    fmin : float
-        Minimum frequency to detect (Hz).
-    fmax : float
-        Maximum frequency to detect (Hz).
-    sr : int, optional
-        Sampling rate of `y` (default=22050).
-    frame_length : int, optional
-        Window size for analysis (default=2048).
-    win_length : int or None, optional
-        Length of window used for difference function calculation (default=frame_length // 2).
-    hop_length : int or None, optional
-        Step size between frames (default=frame_length // 4).
-    trough_threshold : float, optional
-        Threshold for trough detection in normalized difference function (default=0.1).
-    center : bool, optional
-        If True, pad the signal so frames are centered (default=True).
-    pad_mode : str, optional
-        Padding mode to use if centering (default="constant").
+    :param y: Mono audio array
+    :param sr: Sampling rate
+    :param fmin: Minimum frequency in Hz, 27.5 Hz (A0) Piano's lowest note is a reasonable choice
+    :param fmax: Maximum frequency in Hz, 4186 Hz (C8) Piano's highest note is a reasonable choice
+    :param win_length: optional, Length of window used for difference function calculation (default=frame_length // 2)
+    :param frame_length: Length of the analysis frame in samples
+    :param hop_length: Number of audio samples between adjacent YIN predictions
+    :param trough_threshold: Absolute threshold for peak estimation (trough detection)
+    :param center: If True, the signal y is padded so that frame D[:, t] is centered at y[t * hop_length]
+    :param pad_mode : Padding mode to use if centering (default="constant")
 
-    Returns
-    -------
-    np.ndarray
-        Estimated fundamental frequency for each frame (Hz).
+    :return: Array of fundamental frequencies in Hz
     """
     if win_length is None:
         win_length = frame_length // 2
@@ -103,21 +87,12 @@ def frame(x: np.ndarray, *, frame_length: int, hop_length: int, axis: int = -1) 
     """
     Slice input array into overlapping frames using strides.
 
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array to frame.
-    frame_length : int
-        Length of each frame.
-    hop_length : int
-        Number of samples to advance between frames.
-    axis : int, optional
-        Axis along which to frame (default: -1).
+    :param x: Input array to frame
+    :param frame_length: Length of each frame
+    :param hop_length: Number of samples to advance between frames
+    :param axis: Optional, Axis along which to frame (default: -1)
 
-    Returns
-    -------
-    np.ndarray
-        Framed array with an additional dimension for frame_length.
+    :return: Framed array with an additional dimension for frame_length
     """
     if x.shape[axis] < frame_length:
         raise ParameterError(f"Input is too short (n={x.shape[axis]}) for frame_length={frame_length}")
@@ -140,28 +115,19 @@ def frame(x: np.ndarray, *, frame_length: int, hop_length: int, axis: int = -1) 
 def _cumulative_mean_normalized_difference(y_frames: np.ndarray, frame_length: int, win_length: int, min_period: int,
                                            max_period: int, ) -> np.ndarray:
     """
-    Compute the cumulative mean normalized difference function for each frame.
+    Compute the cumulative mean normalized difference function for each frame
 
-    This function is the core of the YIN algorithm for pitch detection.
+    This function is the core of the YIN algorithm for pitch detection
 
-    Parameters
-    ----------
-    y_frames : np.ndarray
-        Framed audio signal.
-    frame_length : int
-        Length of each frame.
-    win_length : int
-        Window length used for difference calculation.
-    min_period : int
-        Minimum period (lag) to consider.
-    max_period : int
-        Maximum period (lag) to consider.
+    :param y_frames: Framed audio signal
+    :param frame_length: Length of each frame
+    :param win_length: Window length used for difference calculation
+    :param min_period: Minimum period (lag) to consider
+    :param max_period: Maximum period (lag) to consider
 
-    Returns
-    -------
-    np.ndarray
-        Normalized difference function for each frame.
+    :return: Normalized difference function for each frame
     """
+
     # Auto-correlation using FFT
     a = np.fft.rfft(y_frames, frame_length, axis=-2)
     b = np.fft.rfft(y_frames[..., win_length:0:-1, :], frame_length, axis=-2)
@@ -196,20 +162,14 @@ def _cumulative_mean_normalized_difference(y_frames: np.ndarray, frame_length: i
 
 def _parabolic_interpolation(x: np.ndarray, axis: int = -2) -> np.ndarray:
     """
-    Perform parabolic interpolation to refine the estimated lag positions.
+    Perform parabolic interpolation to refine the estimated lag positions
 
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array representing values to interpolate.
-    axis : int, optional
-        Axis along which to interpolate (default: -2).
+    :param x: Input array representing values to interpolate
+    :param axis: Axis along which to interpolate (default: -2)
 
-    Returns
-    -------
-    np.ndarray
-        Array of interpolation shifts.
+    :return: Array of interpolation shifts
     """
+
     xi = x.swapaxes(-1, axis)
     shifts = np.zeros_like(x)
     x0 = xi[..., :-2]
@@ -230,22 +190,15 @@ def _parabolic_interpolation(x: np.ndarray, axis: int = -2) -> np.ndarray:
 
 def expand_to(x: Union[np.ndarray, Sequence], ndim: int, axes: Union[int, Sequence[int]]) -> np.ndarray:
     """
-    Expand the dimensions of `x` by inserting singleton dimensions at specified axes
+    Expand the dimensions of x by inserting singleton dimensions at specified axes
 
-    Parameters
-    ----------
-    x : array_like
-        Input array to expand.
-    ndim : int
-        Target number of dimensions.
-    axes : int or sequence of int
-        Axes at which to insert singleton dimensions.
+    :param x: Input array to expand
+    :param ndim: Target number of dimensions
+    :param axes: Axes at which to insert singleton dimensions
 
-    Returns
-    -------
-    np.ndarray
-        Expanded array.
+    :return: Expanded array
     """
+
     x = np.asarray(x)
     if isinstance(axes, int):
         axes = [axes]
@@ -259,19 +212,12 @@ def expand_to(x: Union[np.ndarray, Sequence], ndim: int, axes: Union[int, Sequen
 
 def localmin(x: np.ndarray, axis: int = -1) -> np.ndarray:
     """
-    Detect local minima along a given axis.
+    Detect local minima along a given axis
 
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array.
-    axis : int, optional
-        Axis along which to find local minima (default: -1).
+    :param x: Input array
+    :param axis: Axis along which to find local minima (default: -1)
 
-    Returns
-    -------
-    np.ndarray
-        Boolean array indicating local minima positions.
+    :return: Boolean array indicating local minima positions
     """
     left = np.roll(x, 1, axis=axis)
     right = np.roll(x, -1, axis=axis)
@@ -280,16 +226,8 @@ def localmin(x: np.ndarray, axis: int = -1) -> np.ndarray:
 
 def tiny(x: np.ndarray) -> float:
     """
-    Return the smallest positive usable number for the dtype of `x`.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array.
-
-    Returns
-    -------
-    float
-        Tiny positive number for the array's dtype.
+    Return the smallest positive usable number for the dtype of x
+    :param x: Input array
+    :return: Tiny positive number for the array's dtype
     """
     return np.finfo(x.dtype).tiny

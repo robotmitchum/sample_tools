@@ -10,10 +10,11 @@ from scipy import signal
 from scipy.signal.windows import tukey
 
 from common_math_utils import lerp
+from tools.common_math_utils import q_exp, q_log
 from utils import hz_to_period
 
 
-# Volume estimation
+# Volume
 
 def peak(x):
     return np.max(np.abs(x))
@@ -27,6 +28,21 @@ def avg(x):
     return np.mean(np.abs(x))
 
 
+def normalize(audio: np.array, db: float = -1, prevent_clipping=False):
+    """
+    Normalize an audio array to given peak volume
+    :param audio:
+    :param prevent_clipping: Normalize only if amplitude > 1
+    :param db:
+    :return:
+    """
+    result = np.copy(audio)
+    mx = peak(audio)
+    if not prevent_clipping or mx >= 1:
+        result /= mx / db_to_lin(db)
+    return result
+
+
 # dB conversion
 
 def db_to_lin(db):
@@ -35,6 +51,60 @@ def db_to_lin(db):
 
 def lin_to_db(lin):
     return 20 * np.log10(lin)
+
+
+# Fade in/out functions
+
+def apply_fade(data: np.ndarray, fade_in: tuple[int, int, str] = (0, 100, 'log'),
+               fade_out: tuple[int, int, str] = (500, 32000, 'exp')) -> np.ndarray:
+    """
+    Apply fade in/out to audio
+    :param data: Input audio
+    :param fade_in: Start, Duration, Curve
+    :param fade_out: Start, Duration, Curve
+    :return: Processed audio
+    """
+    nch = data.ndim
+    length = len(data)
+
+    # Fade in
+    if fade_in:
+        fi = np.append(np.zeros(fade_in[0]), np.linspace(0, 1, fade_in[1]))
+        pad = length - fi.size
+        if pad > 0:
+            fi = np.append(fi, np.ones(pad))
+        else:
+            fi = fi[:length]
+        if fade_in[2] == 'exp':
+            fi = q_exp(fi)
+        if fade_in[2] == 'log':
+            fi = q_log(fi)
+    else:
+        fi = 1
+
+    # Fade out
+    if fade_out:
+        fo = np.append(np.ones(fade_out[0]), np.linspace(1, 0, fade_out[1]))
+        pad = length - fo.size
+        if pad > 0:
+            fo = np.append(fo, np.zeros(pad))
+        else:
+            fo = fo[:length]
+        if fade_out[2] == 'exp':
+            fo = q_exp(fo)
+        if fade_out[2] == 'log':
+            fo = q_log(fo)
+    else:
+        fo = 1
+
+    fade = fi * fo
+
+    if nch > 1:
+        fade = np.tile(fade, (nch, 1)).T
+
+    data *= fade
+
+    return data
 
 
 # Stereo manipulation
@@ -58,6 +128,76 @@ def get_silence_threshold(bit_depth, as_db=True):
     result = 1 / mx
     if as_db:
         return lin_to_db(result)
+    return result
+
+
+def balance_lr(audio: np.ndarray) -> np.ndarray:
+    """
+    Balance L/R channels volume
+    :param audio:
+    :return:
+    """
+    # Use rms level from left and right channels as barycenter weights
+    result = np.copy(audio)
+    (l_chn, r_chn) = result.T
+    wt = np.array([rms(l_chn), rms(r_chn)])
+    wt /= sum(wt) / 2  # Normalize weights
+    result /= wt
+    return result
+
+
+def align_phase_lr(audio: np.ndarray, mode: str | None = 'min') -> np.ndarray:
+    """
+    Align phase between L/R channels so the audio feels centered
+    :param audio:
+    :param mode: 'min' minimum delay or best correlation
+    :return:
+    """
+    result = np.copy(audio)
+    (l_chn, r_chn) = result.T
+
+    corr = signal.correlate(r_chn, l_chn, mode='same')
+
+    # Evaluate delay in both direction and use result according to mode
+    center = len(corr) // 2
+    pos_delay = np.argmax(corr[center:])
+    neg_delay = np.argmax(corr[:center][::-1])
+
+    match mode:
+        case 'min':
+            delay = (-neg_delay, pos_delay)[bool(neg_delay > pos_delay)]
+        case _:
+            delay = (-neg_delay, pos_delay)[bool(corr[pos_delay] > corr[neg_delay])]
+
+    if not delay:
+        return result
+
+    print(f'Delay: {delay} samples')
+    r_chn = shift(r_chn, -delay, r_chn[-1])
+    r_chn = apply_fade(r_chn, fade_in=(0, 8, 'log'), fade_out=(len(r_chn) - abs(delay), abs(delay), 'log'))
+
+    result = np.column_stack((l_chn, r_chn))
+
+    return result
+
+
+def shift(arr: np.ndarray, value: int = 0, fill_value: float = 0) -> np.ndarray:
+    """
+    Shift an array by a given value
+    :param arr:
+    :param value:
+    :param fill_value: Value used for padding
+    :return:
+    """
+    result = np.empty_like(arr)
+    if value > 0:
+        result[:value] = fill_value
+        result[value:] = arr[:-value]
+    elif value < 0:
+        result[value:] = fill_value
+        result[:value] = arr[-value:]
+    else:
+        result[:] = arr
     return result
 
 
@@ -240,13 +380,13 @@ def compensate_ir(audio, mode='rms', sr=48000):
 
 # Other functions
 
-def pad_audio(audio, before=0, after=0, mode='constant'):
+def pad_audio(audio: np.ndarray, before: int = 0, after: int = 0, mode: str = 'constant') -> np.ndarray:
     """
     Simplified multichannel audio padding
-    :param np.ndarray audio:
-    :param int before:
-    :param int after:
-    :param str mode:
+    :param  audio:
+    :param before:
+    :param after:
+    :param mode:
     :return:
     """
     if audio.ndim > 1:
