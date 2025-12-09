@@ -37,7 +37,7 @@ from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
