@@ -276,6 +276,18 @@ def info_from_name(path: Path | str, pattern: str | None = '{group}_{note}',
     return smp
 
 
+def info_to_md(info: Sample) -> dict:
+    """
+    Convert basic sample attributes from a Sample object to a metadata dict
+    :param info: Input Sample object
+    :return:
+    """
+    attrs = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']
+    md = {attr: getattr(info, attr, None) for attr in attrs}
+    md = {k: v for k, v in md.items() if v is not None}
+    return md
+
+
 def rename_sample(input_file, output_dir: Path | str = '', output_ext: str = 'wav',
                   check_list: list = (), bit_depth: int | None = None,
                   group_name: str = 'sample', rep_str: list[list] | None = None,
