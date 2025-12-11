@@ -85,7 +85,7 @@ def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str =
             mask = filter_mask(cutoff - h_band, cutoff + h_band, n_fft=n_fft, sr=sr)
             mask = np.exp(lerp(np.log(1e-5), np.log(1), h_cos(mask)))
             side = np.real(np.fft.ifft(fft_side * mask))
-            side = np.real(side)[pad:len(mid) + pad]
+            side = side[pad:len(mid) + pad]
 
         result = ms_to_st(np.column_stack((mid, side)))
 
