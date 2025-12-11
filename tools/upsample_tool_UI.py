@@ -26,13 +26,13 @@ from common_audio_utils import pad_audio
 from common_ui_utils import add_ctx, FilePathLabel, replace_widget, resource_path, get_user_directory, style_widget
 from file_utils import resolve_overwriting
 from loop_sample import db_to_lin
-from sample_utils import Sample
+from sample_utils import Sample, info_to_md
 from split_audio import envelope_transform
 from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
@@ -167,20 +167,14 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
 
                 data, sr = sf.read(input_file)
 
-                # Get 'smpl' metadata
-                tags = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']
-
                 if sr != options['target_sr']:
                     cue_scl = options['target_sr'] / sr
                     if info.loopStart is not None:
-                        info.loopStart = int(info.loopStart * cue_scl)
-                        info.loopEnd = int(info.loopEnd * cue_scl)
+                        info.loopStart = int(round(info.loopStart * cue_scl))
+                        info.loopEnd = int(round((info.loopEnd + 1) * cue_scl)) - 1
                         info.loops[0] = [info.loopStart, info.loopEnd]
 
-                md = {}
-                for tag in tags:
-                    md[tag] = getattr(info, tag, None)
-                md = {k: v for k, v in md.items() if v}
+                md = info_to_md(info)
 
                 p = Path(input_file)
                 parent = self.output_path_l.fullPath() or p.parent
