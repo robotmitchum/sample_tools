@@ -55,8 +55,8 @@ def lin_to_db(lin):
 
 # Fade in/out functions
 
-def apply_fade(data: np.ndarray, fade_in: tuple[int, int, str] = (0, 100, 'log'),
-               fade_out: tuple[int, int, str] = (500, 32000, 'exp')) -> np.ndarray:
+def apply_fade(data: np.ndarray, fade_in: tuple[int, int, str] | None = (0, 100, 'log'),
+               fade_out: tuple[int, int, str] | None = (500, 32000, 'exp')) -> np.ndarray:
     """
     Apply fade in/out to audio
     :param data: Input audio
