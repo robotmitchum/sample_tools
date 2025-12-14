@@ -14,7 +14,7 @@ import soxr
 from scipy import signal
 
 from common_audio_utils import rms, peak, db_to_lin, st_to_ms, ms_to_st, convolve, compensate_ir, get_silence_threshold
-from common_audio_utils import normalize, balance_lr, align_phase_lr
+from common_audio_utils import normalize_audio, balance_lr, align_phase_lr
 
 from common_math_utils import lerp
 from fft_utils import filter_mask, h_cos
@@ -98,7 +98,7 @@ def pseudo_stereo(data: np.ndarray, sr: int = 44100, delay: int = 6, mode: str =
                 result = align_phase_lr(result, mode='min')
 
     # Normalize in case of clipping
-    result = normalize(result, prevent_clipping=True, db=.1)
+    result = normalize_audio(result, prevent_clipping=True, db=.1)
 
     # Trim silence at end if needed
     silence_th = get_silence_threshold(bit_depth=24, as_db=True)

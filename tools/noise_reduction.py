@@ -10,7 +10,7 @@ import numpy as np
 import soundfile as sf
 from noisereduce import reduce_noise
 from scipy.interpolate import interp1d
-from common_audio_utils import db_to_lin
+from common_audio_utils import db_to_lin, normalize_audio
 from common_math_utils import lerp
 from pathlib import Path
 
@@ -77,9 +77,7 @@ def denoise(audio: np.ndarray, noise_profile: np.ndarray, sr: int, mix: float = 
         else:
             result += chn_result
 
-    mx = np.max(np.abs(result))
-    if mx > 1 or normalize:
-        result /= mx
+    result = normalize_audio(result, prevent_clipping=not normalize, db=.1)
 
     return result
 
@@ -129,6 +127,6 @@ def declip(audio: np.ndarray, db: float = -.1, threshold: float | None = None, m
             result += chn_result
 
     if normalize:
-        result /= np.max(np.abs(result))
+        result = normalize_audio(result, prevent_clipping=False, db=.1)
 
     return result

@@ -23,7 +23,7 @@ from scipy.interpolate import interp1d
 from scipy.stats import linregress
 from soxr import resample
 
-from common_audio_utils import lin_to_db, db_to_lin
+from common_audio_utils import lin_to_db, db_to_lin, normalize_audio
 from common_math_utils import lerp
 
 
@@ -145,9 +145,7 @@ def audio_upsample(input_file: Path | str | None, output_file: Path | str | None
             else:
                 result += chn_result
 
-    mx = np.max(np.abs(result))
-    if mx > 1:
-        result /= mx
+    normalize_audio(result, prevent_clipping=True, db=.1)
 
     if output_file is not None:
         cmp = ({}, {'compression_level': 1.0})[output_file.suffix == '.flac']
@@ -190,9 +188,6 @@ def filter_ramp(x, y, n_fft, sr):
         x.append(mx)
         y.append(y[-1])
     ramp = interp1d(x, y, kind='linear')(freqs)
-    # n = int(n_fft / len(x) / 2)
-    # k = np.ones(n) / n
-    # ramp = np.convolve(np.pad(ramp, n // 2, mode='edge'), k, mode='same')[n // 2:-n // 2 + 1]
     return ramp
 
 

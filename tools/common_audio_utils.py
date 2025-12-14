@@ -28,7 +28,7 @@ def avg(x):
     return np.mean(np.abs(x))
 
 
-def normalize(audio: np.array, db: float = -1, prevent_clipping=False):
+def normalize_audio(audio: np.array, db: float = -1, prevent_clipping=False):
     """
     Normalize an audio array to given peak volume
     :param audio:
