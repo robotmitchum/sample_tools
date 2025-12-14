@@ -220,7 +220,7 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
                     if noise_data is not None:
                         noise_amp = max(1, options['denoise_mix'])
                         result = nr.denoise(audio=result, noise_profile=noise_data * noise_amp, sr=sr,
-                                            mix=min(1, options['denoise_mix']), normalize=True)
+                                            mix=min(1, options['denoise_mix']), normalize=False)
 
                 if options['upsample']:
                     env = None
