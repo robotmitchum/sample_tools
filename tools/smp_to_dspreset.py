@@ -777,16 +777,19 @@ def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',
 
         # grp_attrib['tuning'] = f'{tuning}'
 
-        # Per-group ADSR
-        if adsr_knobs is False:
-            for a, v in zip(['attack', 'decay', 'sustain', 'release'], adsr):
+        if amp_env_enabled:
+            # Per-group ADSR
+            if adsr_knobs is False:
+                for a, v in zip(['attack', 'decay', 'sustain', 'release'], adsr):
+                    if v is not None:
+                        grp_attrib[a] = str(v)
+
+            # Per-group ADR Release
+            for a, v in zip(['attackCurve', 'decayCurve', 'releaseCurve'], adr_curve):
                 if v is not None:
                     grp_attrib[a] = str(v)
-
-        # Per-group ADR Release
-        for a, v in zip(['attackCurve', 'decayCurve', 'releaseCurve'], adr_curve):
-            if v is not None:
-                grp_attrib[a] = str(v)
+        else:
+            grp_attrib['ampEnvEnabled'] = 'false'
 
         if trg == 'attack' and fake_legato:
             grp_attrib['trigger'] = 'first'

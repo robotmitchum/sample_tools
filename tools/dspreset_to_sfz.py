@@ -446,8 +446,11 @@ def dspreset_to_sfz(input_file: Path | str | None,
 
             # Remove envelope attributes if envelope is explicitly disabled
             if parsed_attr.get('ampEnvEnabled', None) == 'false':
+                amp_env_enabled = False
                 for attr in adsr_attr + adr_crv_attr:
                     src_attr.pop(attr, None)
+            else:
+                amp_env_enabled = True
 
             if header == 'group':
                 grp_idx = list(root.iter('group')).index(elem)
@@ -462,11 +465,12 @@ def dspreset_to_sfz(input_file: Path | str | None,
                     env_duration[grp_idx] = sum([float(v) for i, v in enumerate(adsr_values) if i not in skip_idx])
 
                 # EG used as replacement for default SFZ1 envelopes
-                if use_eg is True or use_eg == 2 or (use_eg == 1 and grp_trg != 'release'):
-                    adsr_values = [eval(str(src_attr.pop(attr, None))) for attr in adsr_attr]
-                    adr_curve = [eval(str(src_attr.pop(attr, None))) for attr in adr_crv_attr]
-                    group_eg_str[grp_idx] = adsr_to_eg_str(adsr=adsr_values, adr_curve=adr_curve, eg_idx=1,
-                                                           trigger=grp_trg, engine=engine)
+                if amp_env_enabled:
+                    if use_eg is True or use_eg == 2 or (use_eg == 1 and grp_trg != 'release'):
+                        adsr_values = [eval(str(src_attr.pop(attr, None))) for attr in adsr_attr]
+                        adr_curve = [eval(str(src_attr.pop(attr, None))) for attr in adr_crv_attr]
+                        group_eg_str[grp_idx] = adsr_to_eg_str(adsr=adsr_values, adr_curve=adr_curve, eg_idx=1,
+                                                               trigger=grp_trg, engine=engine)
 
                 # Kill releases with attacks to spare polyphony
                 if release_off_by_attack and grp_trg == 'release' and 'silencedByTags' not in src_attr:
