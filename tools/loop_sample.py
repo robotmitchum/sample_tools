@@ -563,10 +563,10 @@ def find_idx(data: np.ndarray, x: int, direction: int = 0) -> int:
     :return: index from source array
     """
     idx = np.argmin(np.abs(data - x))
-    zc = data[idx]
-    if direction < 0 and x <= zc:
+    value = data[idx]
+    if direction < 0 and x <= value:
         idx -= 1
-    elif direction > 0 and x >= zc:
+    elif direction > 0 and x >= value:
         idx += 1
     idx = clamp(idx, 0, len(data) - 1)
     return np.clip(idx, 0, len(data))
