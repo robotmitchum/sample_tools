@@ -327,11 +327,15 @@ def decimate_cues(cues: np.ndarray, min_len: int = 256, keep_last: bool = True) 
     :param keep_last: Always keep last cue
     :return: processed cues
     """
-    diff = np.diff(cues)
-    result = np.append(cues[0], cues[1:][diff >= min_len])
+    if not len(cues):
+        return cues
+    result = [cues[0]]
+    for cue in cues[1:]:
+        if cue - result[-1] >= min_len:
+            result.append(cue)
     if keep_last and cues[-1] not in result:
-        result = np.append(result, cues[-1])
-    return result
+        result.append(cues[-1])
+    return np.array(result)
 
 
 def write_map_file(mapping: list[tuple[int | float],]) -> tempfile.NamedTemporaryFile:
