@@ -12,17 +12,18 @@ from common_audio_utils import pad_audio
 from common_math_utils import equal_power_sine, smoothstep
 
 
-def crossfade_clips(audio_a, audio_b, start, fade_len, fade_type='equal_power'):
+def crossfade_clips(audio_a: np.ndarray, audio_b: np.ndarray, start: int, fade_len: int,
+                    fade_type: str = 'equal_power'):
     """
     Cross-fade two audio arrays
 
-    :param np.array audio_a:
-    :param np.array audio_b:
-    :param int start: Start of fade
-    :param int fade_len: Fade length
-    :param str fade_type: 'equal_power' or 'linear'
+    :param audio_a:
+    :param audio_b:
+    :param start: Start of fade, in samples
+    :param fade_len: Fade length, in samples
+    :param fade_type: 'equal_power' or 'linear'
 
-    :return:
+    :return: Cross-faded result
     """
     nch = audio_a.ndim
 
