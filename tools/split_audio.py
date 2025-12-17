@@ -347,10 +347,10 @@ def trim_file(input_file: Path | str = '', output_file: Path | str = '', bit_dep
 
         # Write Metadata
         if ext == 'wav':
-            append_metadata(tmp_name, note=info.note, pitch_fraction=info.pitchFraction,
-                            loop_start=info.loopStart, loop_end=info.loopEnd)
             if hasattr(info, 'cues'):
                 append_markers(tmp_name, markers=info.cues)
+            append_metadata(tmp_name, note=info.note, pitch_fraction=info.pitchFraction,
+                            loop_start=info.loopStart, loop_end=info.loopEnd)
         elif ext == 'flac':
             attrs = ['loopStart', 'loopEnd', 'loops', 'cues']
             values = [getattr(info, attr) for attr in attrs]

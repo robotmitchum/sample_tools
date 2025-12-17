@@ -447,10 +447,10 @@ def rename_sample(input_file, output_dir: Path | str = '', output_ext: str = 'wa
 
         # Write Metadata
         if output_ext == 'wav':
-            append_metadata(tmp_name, note=smp.note, pitch_fraction=smp.pitchFraction,
-                            loop_start=smp.loopStart, loop_end=smp.loopEnd)
             if hasattr(smp, 'cues'):
                 append_markers(tmp_name, markers=smp.cues)
+            append_metadata(tmp_name, note=smp.note, pitch_fraction=smp.pitchFraction,
+                            loop_start=smp.loopStart, loop_end=smp.loopEnd)
         elif output_ext == 'flac':
             attrs = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']
             if extra_tags:
@@ -553,10 +553,10 @@ def apply_finetuning(input_file: Path | str, output_file: Path | str, value: flo
 
     # Write Metadata
     if output_ext == 'wav':
-        append_metadata(tmp_name, note=smp.note, pitch_fraction=smp.pitchFraction,
-                        loop_start=smp.loopStart, loop_end=smp.loopEnd)
         if hasattr(smp, 'cues'):
             append_markers(tmp_name, markers=smp.cues)
+        append_metadata(tmp_name, note=smp.note, pitch_fraction=smp.pitchFraction,
+                        loop_start=smp.loopStart, loop_end=smp.loopEnd)
     elif output_ext == 'flac':
         attrs = ['note', 'pitchFraction', 'loopStart', 'loopEnd', 'loops', 'cues']
         if extra_tags:
@@ -733,6 +733,7 @@ def get_cues(input_file: Path | str) -> list:
 def append_markers(input_file: Path | str, markers: list):
     """
     Add markers to a given wav file in a minimalistic way (no labelling support)
+    This has to be done before using append_metadata
 
     NOTE : The data is simply appended, so it's meant to be used once on a wav without any cues
 

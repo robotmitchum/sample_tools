@@ -21,6 +21,7 @@ def append_metadata(input_file: Path | str, note: int, pitch_fraction: float | N
                     loop_start: int | None, loop_end: int | None):
     """
     Simplistic note and region loop appending, properly recognized by Kontakt and other software
+    When also appending cue markers, this has to be done before this
 
     Based on information found here :
 
@@ -115,7 +116,7 @@ def metadata_to_bin(sr: int, note: int | None, pitch_fraction: float | None,
     bin_data += b'adtl'  # Associated Data List
     bin_data += b'labl' + as_chunk(12, 4)  # label + size of following data
     bin_data += as_chunk(1, 4)  # id
-    bin_data += b'Loop01' + as_chunk(0, 2)  # Loop label
+    bin_data += b'Loop01' + as_chunk(0, 2)  # Loop label + padding, so it's a multiple of 4 bytes
 
     return bin_data
 
