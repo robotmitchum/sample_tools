@@ -7,7 +7,11 @@
     "Darwin": "tools/UI/icons/sample_tools.icns",
     "Linux": null
   },
-  "--splash": "tools/UI/icons/sample_tools_splash.png",
+  "--splash": {
+    "Windows": "tools/UI/icons/sample_tools_splash.png",
+    "Darwin": null,
+    "Linux": "tools/UI/icons/sample_tools_splash.png"
+  },
   "--onefile": true,
   "--noconfirm": true,
   "--noconsole": true,
@@ -47,5 +51,5 @@
   "--version-file": {
     "Windows": "sample_tools_UI_version.txt"
   },
-  "--noupx": false
+  "--noupx": true
 }

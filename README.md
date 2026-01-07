@@ -87,6 +87,10 @@ python -m sample_tools_UI.py
 ```
 
 A build procedure is provided with this package<br/>
+
+The build_exe script runs a Python helper that reads a .json config describing the PyInstaller options<br/>
+This allows keeping build settings editable and cross-platform<br/>
+
 Open a terminal from the cloned project directory
 
 ### Or build a native executable
