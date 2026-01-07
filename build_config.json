@@ -29,10 +29,7 @@
     "numpy",
     "scipy",
     "PyQt5",
-    "selenium",
-    "PIL",
-    "requests",
-    "yt_dlp"
+    "PIL"
   ],
   "--collect-submodules": [
     "PyQt5.Qt",
