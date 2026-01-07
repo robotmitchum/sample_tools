@@ -1,0 +1,52 @@
+{
+  "--name": "sample_tools_UI",
+  "--workpath": "build",
+  "--distpath": "dist",
+  "--icon": {
+    "Windows": "tools/UI/icons/sample_tools.ico",
+    "Darwin": "tools/UI/icons/sample_tools.icns",
+    "Linux": null
+  },
+  "--splash": "tools/UI/icons/sample_tools_splash.png",
+  "--onefile": true,
+  "--noconfirm": true,
+  "--noconsole": true,
+  "--add-data": [
+    "*.py:.",
+    "tools:tools/"
+  ],
+  "--hidden-import": [
+    "pandas",
+    "mutagen",
+    "chunkmuncher",
+    "matplotlib",
+    "sounddevice",
+    "soundfile",
+    "noisereduce",
+    "soxr",
+    "pyrubberband",
+    "webcolors",
+    "numpy",
+    "scipy",
+    "PyQt5",
+    "selenium",
+    "PIL",
+    "requests",
+    "yt_dlp"
+  ],
+  "--collect-submodules": [
+    "PyQt5.Qt",
+    "PIL.Image",
+    "matplotlib"
+  ],
+  "--exclude": [
+    "tkinter",
+    "pip",
+    "pyinstaller"
+  ],
+  "--optimize": 2,
+  "--version-file": {
+    "Windows": "sample_tools_UI_version.txt"
+  },
+  "--noupx": false
+}
