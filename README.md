@@ -82,7 +82,7 @@ python3 -m sample_tools_UI.py
 #### Windows
 
 ```
-.venv\scripts\activate
+.venv\Scripts\activate
 python -m sample_tools_UI.py
 ```
 
