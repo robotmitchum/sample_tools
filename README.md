@@ -37,41 +37,126 @@ Additional required packages all listed in provided requirements.txt
 - sounddevice
 - soundfile
 - webcolors
+- platformdirs
 
 
-- pyrubberband (for Mutate and Upsample tools only)<br/>
+- pyrubberband *(for Mutate and Upsample tools only)*<br/>
   pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
   program directory)
 
-Clone repository and install required packages
+Clone repository, create venv and install required packages
+Open a terminal from a directory of your choice
+
+#### Linux and macOS
 
 ```
 git clone https://github.com/robotmitchum/sample_tools.git
 cd sample_tools
-pip install -r requirements.txt
-```
-
-or on MacOs
-
-```
+python3 -m venv .venv
 pip3 install -r requirements.txt
+```
+
+#### Windows
+
+```
+git clone https://github.com/robotmitchum/sample_tools.git
+cd sample_tools
+python -m venv .venv
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-Execute sample_tools_UI.py
+### Execute sample_tools_UI.py
+
+Open a terminal<br/>
+From the cloned project directory
+
+#### Linux and macOS
 
 ```
-python sample_tools_UI.py
+source .venv/bin/activate
+python3 -m sample_tools_UI.py
 ```
 
-or on MacOs
+#### Windows
 
 ```
-python3 ir_tool_UI.py
+.venv\scripts\activate
+python -m sample_tools_UI.py
 ```
 
-### Common features for most tools
+A build procedure is provided with this package<br/>
+Open a terminal from the cloned project directory
+
+### Or build a native executable
+
+#### Linux and macOS
+
+From the cloned project directory<br/>
+
+Install pyinstaller package
+
+```
+source .venv/bin/activate
+pip3 install pyinstaller
+```
+
+Build the executable with pyinstaller
+
+```
+chmod +x build_exe.sh
+./build_exe.sh
+```
+
+#### Windows
+
+Install pyinstaller package
+
+```
+.venv\scripts\activate
+pip install pyinstaller
+```
+
+Build the executable with pyinstaller
+
+Simply double-click on **build_exe.cmd** or type
+
+```
+build_exe.cmd
+```
+
+Let the process cook...<br/>
+
+When completed, the executable will be found in the **dist** subdirectory<br/>
+
+Copy the built executable to a directory called **sample_tools** in a location of your choice<br/>
+
+- Linux: I recommend *~/user_name/opt*
+- macOS: In your *Applications* folder
+- Windows: typically in *C:/Program Files* or in your user directory
+
+Copy the following files and directories to the executable location :
+
+- dh_ir
+- plt_cfg
+- instr_range.json
+- smp_attrib.json
+- rubberband executable *(Upsample Tool and Mutate Tool rely on it)*
+
+### Install desktop (Linux only)
+
+This assumes the executable is located in *~/user_name/opt/sample_tools* or the bash script won't work<br/>
+
+From the cloned project directory
+
+```
+source .venv/bin/activate
+chmod +x install_desktop.sh
+./build_exe.sh
+```
+
+## Common features for most tools
 
 - Drag and drop of files or directories (only the first level is scanned)
 - Context menus with right click on many widgets for examples or presets
