@@ -29,11 +29,13 @@
     "numpy",
     "scipy",
     "PyQt5",
-    "PIL"
+    "PIL",
+    "platformdirs"
   ],
   "--collect-submodules": [
     "PyQt5.Qt",
     "PIL.Image",
+    "PIL.ImageDraw",
     "matplotlib"
   ],
   "--exclude": [

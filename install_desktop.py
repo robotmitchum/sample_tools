@@ -12,7 +12,8 @@ import traceback
 from pathlib import Path
 
 
-def install_desktop(exe_path: Path, icon_file: Path | None = None, app_name: str | None = None) -> Path:
+def install_desktop(exe_path: Path, icon_file: Path | None = None, app_name: str | None = None,
+                    comment: str | None = None) -> Path:
     """
     Create desktop file and copy supplied icon
 
@@ -26,7 +27,7 @@ def install_desktop(exe_path: Path, icon_file: Path | None = None, app_name: str
     p = Path(exe_path)
 
     desktop_dir = home / '.local/share/applications'
-    icons_dir = home / '.local/share/icons/hicolor'
+    icons_dir = home / '.local/share/icons'
 
     desktop_dir.mkdir(parents=True, exist_ok=True)
 
@@ -45,12 +46,14 @@ def install_desktop(exe_path: Path, icon_file: Path | None = None, app_name: str
 
     desktop_str = (f'[Desktop Entry]\n'
                    f'Type=Application\n'
-                   f'Comment=Impulse Response Batch Processing Tool\n'
+
                    f'Name={app_name}\n'
                    f'Exec={p}\n'
                    f'Path={p.parent}\n')
     if icon_path:
         desktop_str += f'Icon={icon_path.stem}\n'
+    if comment:
+        desktop_str += f'Comment={comment}\n'
     desktop_str += f'Terminal=false\nCategories=Audio;'
 
     with open(desktop_file, 'w') as f:
