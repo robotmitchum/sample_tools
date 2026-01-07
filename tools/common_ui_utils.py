@@ -17,40 +17,33 @@ from PyQt5 import QtCore, Qt, QtWidgets, QtGui
 from common_math_utils import lerp
 from sample_utils import Sample
 import subprocess
+import platformdirs
 
 
 def get_user_directory(subdir: str = 'Documents') -> Path:
-    if sys.platform == 'win32':
-        import winreg
+    """
+    Get standard user directories in a cross-platform manner
+    If subdir is not among standard directories, it is just appended to the resulting path
 
-        folders = {
-            'Desktop': 'Desktop',
-            'Documents': 'Personal',
-            'Downloads': '{374DE290-123F-4565-9164-39C4925E467B}',
-            'Music': 'My Music',
-            'Pictures': 'My Pictures',
-            'Videos': 'My Video',
-        }
-        folders_lowercase = {k.lower(): v for k, v in folders.items()}
+    :param subdir: Given subdir
+    :return:
+    """
+    p = Path(subdir)
+    key = p.parts[0].lower()
 
-        p = Path(subdir)
-        subdir_root = p.parts[0].lower()
-        key_name = folders_lowercase.get(subdir_root, 'desktop')
+    dirs = {
+        'desktop': platformdirs.user_desktop_dir,
+        'documents': platformdirs.user_documents_dir,
+        'downloads': platformdirs.user_downloads_dir,
+        'music': platformdirs.user_music_dir,
+        'pictures': platformdirs.user_pictures_dir,
+        'videos': platformdirs.user_videos_dir,
+    }
 
-        # This works even if user profile has been moved to some other drive
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                            r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders') as key:
-            result, _ = winreg.QueryValueEx(key, key_name)
-            result = Path(result)
+    if key in dirs:
+        return Path(dirs[key]()).joinpath(*p.parts[1:])
 
-        if subdir_root in folders_lowercase:
-            result = result / '/'.join(p.parts[1:])
-        else:
-            result = result.parent / subdir
-    else:
-        result = Path.home() / subdir
-
-    return Path(result)
+    return Path.home() / subdir
 
 
 def explore_directory(path: Path | str = ''):

@@ -1,7 +1,8 @@
 /exclude/
-/output/
 __pycache__/
 .idea/
 /.obsidian/
 /tools/bak/
 /tools/UI/icons/work/_wip/
+/dist/
+/.venv/
