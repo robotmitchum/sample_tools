@@ -20,6 +20,7 @@ def install_desktop(exe_path: Path, icon_file: Path | None = None, app_name: str
     :param exe_path: Full path to the executable
     :param app_name: Application Name
     :param icon_file: .png icon file
+    :param comment: Optional comment
 
     :return: Path to created desktop file
     """
