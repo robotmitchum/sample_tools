@@ -44,7 +44,7 @@ Additional required packages all listed in provided requirements.txt
   pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
   program directory)
 
-Clone repository, create venv and install required packages
+Clone repository, create venv and install the required packages
 
 Open a terminal from a directory of your choice
 
