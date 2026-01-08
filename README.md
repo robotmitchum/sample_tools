@@ -40,11 +40,12 @@ Additional required packages all listed in provided requirements.txt
 - platformdirs
 
 
-- pyrubberband *(for Mutate and Upsample tools only)*<br/>
+- pyrubberband _(for Mutate and Upsample tools only)_<br/>
   pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
   program directory)
 
 Clone repository, create venv and install required packages
+
 Open a terminal from a directory of your choice
 
 #### Linux and macOS
@@ -69,8 +70,7 @@ pip install -r requirements.txt
 
 ### Execute sample_tools_UI.py
 
-Open a terminal<br/>
-From the cloned project directory
+Open a terminal from the cloned project directory
 
 #### Linux and macOS
 
@@ -86,6 +86,8 @@ python3 -m sample_tools_UI.py
 python -m sample_tools_UI.py
 ```
 
+### Or build a native executable
+
 A build procedure is provided with this package<br/>
 
 The build_exe script runs a Python helper that reads a .json config describing the PyInstaller options<br/>
@@ -93,13 +95,10 @@ This allows keeping build settings editable and cross-platform<br/>
 
 Open a terminal from the cloned project directory
 
-### Or build a native executable
-
 #### Linux and macOS
 
-From the cloned project directory<br/>
-
-Install pyinstaller package
+Install pyinstaller package<br>
+_(if you installed the project using requirements.txt you can skip this step, pyinstaller is already there)_
 
 ```
 source .venv/bin/activate
@@ -115,7 +114,8 @@ chmod +x build_exe.sh
 
 #### Windows
 
-Install pyinstaller package
+Install pyinstaller package<br>
+_(if you installed the project using requirements.txt you can skip this step, pyinstaller is already there)_
 
 ```
 .venv\scripts\activate
@@ -136,9 +136,9 @@ When completed, the executable will be found in the **dist** subdirectory<br/>
 
 Copy the built executable to a directory called **sample_tools** in a location of your choice<br/>
 
-- Linux: I recommend *~/user_name/opt*
-- macOS: In your *Applications* folder
-- Windows: typically in *C:/Program Files* or in your user directory
+- Linux : I recommend _~/user_name/opt_
+- macOS : In your _Applications_ folder
+- Windows : typically in _C:/Program Files_ or in your user directory
 
 Copy the following files and directories to the executable location :
 
@@ -146,7 +146,7 @@ Copy the following files and directories to the executable location :
 - plt_cfg
 - instr_range.json
 - smp_attrib.json
-- rubberband executable *(Upsample Tool and Mutate Tool rely on it)*
+- rubberband executable _(Upsample Tool and Mutate Tool rely on it)_
 
 ### Install desktop (Linux only)
 
