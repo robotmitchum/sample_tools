@@ -78,14 +78,14 @@ Open a terminal from the cloned project directory
 
 ```
 source .venv/bin/activate
-python3 -m sample_tools_UI.py
+python3 -m sample_tools_UI
 ```
 
 #### Windows
 
 ```
 .venv\Scripts\activate
-python -m sample_tools_UI.py
+python -m sample_tools_UI
 ```
 
 ### Or build a native executable
