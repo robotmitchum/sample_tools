@@ -157,9 +157,8 @@ This assumes the executable is located in *~/user_name/opt/sample_tools* or the 
 From the cloned project directory
 
 ```
-source .venv/bin/activate
 chmod +x install_desktop.sh
-./build_exe.sh
+./install_desktop.sh
 ```
 
 ## Common features for most tools
