@@ -18,7 +18,8 @@ Tools for creating and editing virtual sampled instruments
 
 ## Installation
 
-**For Windows users, an executable is available on this page, you don't need to install Python to use it**
+**For Windows and Linux users, a prebuilt executable is available in the releases<br/>
+You don't need to install Python to use it<br/>**
 
 This project was developed and tested with Python 3.12.10
 
@@ -41,8 +42,8 @@ Additional required packages all listed in provided requirements.txt
 
 
 - pyrubberband _(for Mutate and Upsample tools only)_<br/>
-  pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
-  program directory)
+  _pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
+  program directory<br/>On Linux, rubberband-cli should be available as a regular package depending on your distro_
 
 Clone repository, create venv and install the required packages
 
