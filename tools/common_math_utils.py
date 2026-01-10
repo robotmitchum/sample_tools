@@ -95,4 +95,4 @@ def np_to_rgbint(arr):
     :param nd.array arr:
     :return:
     """
-    return tuple(np.clip(np.round(arr * 255, 0), 0, 255).astype(np.uint8))
+    return tuple(np.clip(np.round(arr * 255, 0), 0, 255).astype(np.uint8).tolist())
