@@ -34,7 +34,8 @@
     "scipy",
     "PyQt5",
     "PIL",
-    "platformdirs"
+    "platformdirs",
+    "getpass"
   ],
   "--collect-submodules": [
     "PyQt5.Qt",
