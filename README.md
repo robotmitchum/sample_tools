@@ -33,19 +33,47 @@ Additional required packages all listed in provided requirements.txt
 - pandas
 - pillow
 - PyQt5
-- PyQt5_sip
 - scipy
 - sounddevice
 - soundfile
 - webcolors
 - platformdirs
-
-
 - pyrubberband _(for Mutate and Upsample tools only)_<br/>
-  _pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
-  program directory<br/>On Linux, rubberband-cli should be available as a regular package depending on your distro_
 
-Clone repository, create venv and install the required packages
+### rubberband executable
+
+pyrubberband requires [rubberband executable](https://breakfastquay.com/rubberband/) to be installed or copied in the
+program directory
+
+#### macOS
+
+Using Homebrew [brew.sh](https://brew.sh/)
+
+```
+brew install rubberband
+```
+
+#### Linux
+
+This will depend on your own distribution, here is an example using apt
+
+```
+sudo apt install rubberband-cli
+```
+
+#### Windows
+
+Download the Rubber Band executable from the following link:<br/>
+[rubberband executable](https://breakfastquay.com/files/releases/rubberband-4.0.0-gpl-executable-windows.zip)
+
+Either:
+
+- Copy `rubberband.exe` to a location of your choice<br/>
+  For example, _C:\Program Files\rubberband_<br/>
+  Then, add this directory to your PATH
+- Or, for the built version, copy `rubberband.exe` next to the `sample_tools_UI.exe` executable
+
+### Clone repository, create venv and install the required packages
 
 Open a terminal from a directory of your choice
 
