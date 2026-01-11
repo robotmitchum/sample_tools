@@ -21,7 +21,10 @@ Tools for creating and editing virtual sampled instruments
 **For Windows and Linux users, a prebuilt executable is available in the releases<br/>
 You don't need to install Python to use it<br/>**
 
-This project was developed and tested with Python 3.12.10
+This project was developed and tested with `Python 3.12.10`<br/>
+
+_It should be possible to run it and build it with another later Python version<br/>
+I was able to run and build just fine with Python 3.14.2 on Windows_
 
 Additional required packages all listed in provided requirements.txt
 
