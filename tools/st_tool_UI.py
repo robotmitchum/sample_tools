@@ -37,7 +37,7 @@ from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
@@ -75,7 +75,8 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         super().setup_connections()
 
         # IR path widgets
-        self.ir_path_l = replace_widget(self.ir_path_l, FilePathLabel(file_mode=True, parent=self))
+        self.ir_path_l = replace_widget(self.ir_path_l,
+                                        FilePathLabel(app_dir=self.app_dir, file_mode=True, parent=self))
         self.set_ir_path_tb.clicked.connect(self.ir_path_l.browse_path)
         self.ir_path_l.setContextMenuPolicy(3)
         self.ir_path_l.customContextMenuRequested.connect(self.ir_path_l_ctx)

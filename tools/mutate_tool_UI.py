@@ -18,8 +18,7 @@ from PyQt5 import QtGui, QtCore
 from UI import mutate_tool as gui
 from audio_player import play_notification
 from base_tool_UI import BaseToolUi, launch
-from common_ui_utils import add_ctx, resource_path, get_user_directory, style_widget, \
-    popup_menu
+from common_ui_utils import add_ctx, resource_path, get_user_directory, style_widget, popup_menu
 from mutate import mutate
 from sample_utils import Sample
 from subprocess_utils import DisableShellWindows

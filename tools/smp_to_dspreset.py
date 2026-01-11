@@ -28,7 +28,7 @@ from jsonFile import read_json
 from lossy_flac import lossy_flac
 
 __ds_version__ = '1.13.1'
-__version__ = '1.4.7'
+__version__ = '1.4.8'
 
 
 def create_dspreset(root_dir: str, smp_subdir: str = 'Samples',

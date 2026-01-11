@@ -135,7 +135,7 @@ def get_custom_font(path: Path | str) -> Qt.QFont:
 class FilePathLabel(QtWidgets.QLabel):
     pathChanged = QtCore.pyqtSignal(str)
 
-    def __init__(self, text='', file_mode=False, parent=None):
+    def __init__(self, text: str = '', app_dir: Path | str | None = None, file_mode: bool = False, parent=None):
         super().__init__(text, parent)
         self._full_path = ''
         self._default_path = ''
@@ -144,7 +144,12 @@ class FilePathLabel(QtWidgets.QLabel):
         self._file_mode = file_mode
         self.display_length = 40
         self.start_dir = ''
-        self.current_dir = os.path.dirname(sys.modules['__main__'].__file__)
+
+        if app_dir is not None:
+            self.app_dir = Path(app_dir)
+        else:
+            self.app_dir = Path(sys.modules['__main__'].__file__).parent
+
         self.file_types = ['.wav', '.flac', '.aif']
         self.dropped_items = []
 
@@ -163,11 +168,11 @@ class FilePathLabel(QtWidgets.QLabel):
         """
         if path:
             p = Path(path)
-            if p.is_relative_to(self.current_dir):
-                p = p.relative_to(self.current_dir)
             path = str(p.as_posix())
             self.start_dir = (path, str(p.parent))[self._file_mode]
-            text = self.shorten_path(path or '')
+            if p.is_relative_to(self.app_dir):
+                p = p.relative_to(self.app_dir)
+            text = self.shorten_path(p.as_posix() or '')
         else:
             text = self._placeholder_text or ''
         self._full_path = path
@@ -208,8 +213,6 @@ class FilePathLabel(QtWidgets.QLabel):
 
         if path:
             p = Path(path)
-            if p.is_relative_to(self.current_dir):
-                p = p.relative_to(self.current_dir)
             self.setFullPath(p)
 
     def dropEvent(self, event):
@@ -223,8 +226,6 @@ class FilePathLabel(QtWidgets.QLabel):
                 items = [item if item.is_dir() else item.parent for item in items]
             if items:
                 p = items[0]
-                if p.is_relative_to(self.current_dir):
-                    p = p.relative_to(self.current_dir)
                 self.setFullPath(p)
         else:
             event.ignore()

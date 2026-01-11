@@ -52,9 +52,19 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.setupUi(self)
         self.setAttribute(Qt.Qt.WA_DeleteOnClose)
 
+        self.current_dir = Path(__file__).parent
+        self.base_dir = self.current_dir.parent
+
+        if getattr(sys, 'frozen', False):
+            self.app_dir = Path(sys.executable).parent
+        else:
+            self.app_dir = self.base_dir
+        os.chdir(self.app_dir)
+
         # - Replace output_path_l with custom widget (displaying shortened paths) -
         self.output_path_l.setObjectName('')  # Clear objectName to prevent saving and loading of the widget state
-        self.output_path_l = replace_widget(self.output_path_l, FilePathLabel(parent=self.centralwidget))
+        self.output_path_l = replace_widget(self.output_path_l,
+                                            FilePathLabel(app_dir=self.app_dir, parent=self.centralwidget))
         self.output_path_l = cast(FilePathLabel, self.output_path_l)  # For auto-completion
         self.output_path_l.setPlaceholderText('Drag and drop a preset ROOT directory on the window')
         self.output_path_l.setAlignment(QtCore.Qt.AlignCenter)
@@ -64,9 +74,6 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.output_path_l.setFont(font)
         self.output_path_tb.clicked.connect(self.output_path_l.browse_path)
         self.output_path_l.pathChanged.connect(lambda _: setattr(self, 'root_dir', self.output_path_l.fullPath()))
-
-        self.current_dir = Path(__file__).parent
-        self.base_dir = self.current_dir.parent
 
         self.tool_name = 'SMP2ds'
         self.tool_version = __version__
@@ -86,15 +93,6 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.active_workers = []
         self.worker_result = None
         self.event_loop = QtCore.QEventLoop()
-
-        self.current_dir = Path(__file__).parent
-        self.base_dir = self.current_dir.parent
-
-        if getattr(sys, 'frozen', False):
-            self.app_dir = Path(sys.executable).parent
-        else:
-            self.app_dir = self.base_dir
-        os.chdir(self.app_dir)
 
         self.smp_attrib_cfg = resource_path_alt(self.base_dir / 'smp_attrib_cfg.json', parent_dir=self.app_dir)
 

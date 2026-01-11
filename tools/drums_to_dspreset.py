@@ -21,7 +21,7 @@ from jsonFile import read_json
 from smp_to_dspreset import write_xml_to_file
 
 __ds_version__ = '1.13.1'
-__version__ = '1.1.5'
+__version__ = '1.1.6'
 
 
 def create_drums_dspreset(root_dir: str = '', smp_subdir: str = 'Samples',

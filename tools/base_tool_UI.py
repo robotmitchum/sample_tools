@@ -42,9 +42,6 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.setupUi(self)
         self.setAttribute(Qt.Qt.WA_DeleteOnClose)
 
-        self.output_path_l = replace_widget(self.output_path_l, FilePathLabel(parent=self))
-        self.output_path_l = cast(FilePathLabel, self.output_path_l)  # For auto-completion
-
         self.options = Node()
 
         self.player = AudioPlayer()
@@ -67,6 +64,9 @@ class BaseToolUi(QtWidgets.QMainWindow):
         else:
             self.app_dir = self.base_dir
         os.chdir(self.app_dir)
+
+        self.output_path_l = replace_widget(self.output_path_l, FilePathLabel(app_dir=self.app_dir, parent=self))
+        self.output_path_l = cast(FilePathLabel, self.output_path_l)  # For auto-completion
 
         self.file_types = ['.wav', '.flac', '.aif']
         self.file_types.extend([ext.upper() for ext in self.file_types])  # Also add uppercase variant

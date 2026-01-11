@@ -61,6 +61,12 @@ class DrDsUi(QMainWindow):
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
 
+        if getattr(sys, 'frozen', False):
+            self.app_dir = Path(sys.executable).parent
+        else:
+            self.app_dir = self.base_dir
+        os.chdir(self.app_dir)
+
         self.tool_name = 'DR-DS'
         self.tool_version = __version__
         self.icon_file = resource_path(self.current_dir / 'UI/icons/drds_64.png')
@@ -85,12 +91,6 @@ class DrDsUi(QMainWindow):
         self.active_workers = []
         self.worker_result = None
         self.event_loop = QEventLoop(parent=self)
-
-        if getattr(sys, 'frozen', False):
-            self.app_dir = Path(sys.executable).parent
-        else:
-            self.app_dir = self.base_dir
-        os.chdir(self.app_dir)
 
         self.root_dir = None
 
@@ -130,7 +130,7 @@ class DrDsUi(QMainWindow):
         self.rootdir_l.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred))
         self.output_path_lyt.addWidget(self.rootdir_l)
 
-        self.output_path_l = FilePathLabel(parent=self.cw)
+        self.output_path_l = FilePathLabel(app_dir=self.app_dir, parent=self.cw)
         self.output_path_l.setPlaceholderText('Drag and drop a preset ROOT directory here')
         self.output_path_l.setToolTip('Preset root directory')
         self.output_path_l.setMinimumHeight(40)

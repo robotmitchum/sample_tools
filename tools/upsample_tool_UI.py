@@ -32,7 +32,7 @@ from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.4'
+__version__ = '1.1.5'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
@@ -68,7 +68,8 @@ class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):
         self.denoise_mode_cmb.currentTextChanged.connect(
             lambda state: self.noise_path_wid.setEnabled(state == 'custom'))
 
-        self.noise_path_l = replace_widget(self.noise_path_l, FilePathLabel(file_mode=True, parent=self))
+        self.noise_path_l = replace_widget(self.noise_path_l,
+                                           FilePathLabel(app_dir=self.app_dir, file_mode=True, parent=self))
         add_ctx(self.noise_path_l, values=[''], names=['Clear'])
         self.set_noise_path_tb.clicked.connect(self.noise_path_l.browse_path)
 
