@@ -12,7 +12,16 @@
     "Darwin": null,
     "Linux": "tools/UI/icons/sample_tools_splash.png"
   },
-  "--onefile": true,
+  "--onefile": {
+    "Darwin": false,
+    "Linux": true,
+    "Windows": true
+  },
+  "--onedir": {
+    "Darwin": true,
+    "Windows": false,
+    "Linux": false
+  },
   "--noconfirm": true,
   "--noconsole": true,
   "--add-data": [
