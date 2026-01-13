@@ -166,21 +166,22 @@ build_exe.cmd
 
 Let the process cook...<br/>
 
-When completed, the executable will be found in the **dist** subdirectory<br/>
+When completed, the executable will be found in the `dist/sample_tools` subdirectory<br/>
 
-Copy the built executable to a directory called **sample_tools** in a location of your choice<br/>
-
-- Linux : I recommend _~/user_name/opt_
-- macOS : In your _Applications_ folder
-- Windows : typically in _C:/Program Files_ or in your user directory
-
-Copy the following files and directories to the executable location :
+The following assets should also be bundled in `sample_tools` :
 
 - dh_ir
 - plt_cfg
 - instr_range.json
 - smp_attrib.json
-- rubberband executable _(Upsample Tool and Mutate Tool rely on it)_
+
+Copy this entire `sample_tools` directory to a location of your choice<br/>
+
+- Linux : I recommend _~/user_name/opt_
+- macOS : In your _Applications_ folder
+- Windows : typically in _C:/Program Files_ or in your user directory
+
+Finally, you will need to install the [rubberband executable](#rubberband-executable) _(Upsample Tool and Mutate Tool rely on it)_
 
 ### Install desktop (Linux only)
 
@@ -231,19 +232,19 @@ Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspr
 
 Sample attributes Config
 
-List of sample attributes offered by Decent Sampler and *hopefully* supported by this tool
+List of sample attributes offered by Decent Sampler and _hopefully_ supported by this tool
 
 Attribute values can be provided in the sample name (with some limitations depending on how the name is formatted)
-or using tags (flac only at the moment, it should support any attribute, but I didn't test everything...)
+or using tags - flac only at the moment, it should support any attribute, though I didn't test everything...
 
 This file found in this directory is required by this tool and should only be modified to recognize future Decent
 Sampler features
 
 - **Attribute names are case-sensitive!**
-- **"smp_attrib"** key defines a list of basic attributes used by this tool
-- **"ds_smp_attrib"** key defines a list of specific attributes recognized by Decent Sampler and described in its
+- `smp_attrib` key defines a list of basic attributes used by this tool
+- `ds_smp_attrib` key defines a list of specific attributes recognized by Decent Sampler and described in its
   documentation
-- **"num_attrib"** key defines a list of attributes which should be considered as numeric values
+- `num_attrib` key defines a list of attributes which should be considered as numeric values
 
 ### instr_range.json
 
