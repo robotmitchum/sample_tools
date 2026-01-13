@@ -346,6 +346,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
                 ir_smp = ir_path.glob(f'*{ext}')
                 self.ir_samples.extend(ir_smp)
         if self.ir_samples:
+            self.ir_samples = sorted(self.ir_samples)
             self.ir_path_l.setFullPath(self.ir_samples[0])
 
     def ir_path_l_ctx(self):
