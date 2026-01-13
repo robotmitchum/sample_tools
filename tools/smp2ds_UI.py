@@ -58,8 +58,8 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         if getattr(sys, 'frozen', False):
             if platform.system() == 'Darwin':
                 # On macOS, sys.executable does not return what is expected with other OSes
-                # It returns MyProgram.app/Contents/MacOS/MyProgram, so we need to query the parent 3 times more
-                self.app_dir = Path(sys.executable).parent.parent.parent.parent
+                # It returns MyProgram.app/Contents/MacOS/MyProgram, we need to query parent 4 times or parents[3]
+                self.app_dir = Path(sys.executable).parents[3]
             else:
                 self.app_dir = Path(sys.executable).parent
         else:
