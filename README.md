@@ -120,7 +120,7 @@ python3 -m sample_tools_UI
 python -m sample_tools_UI
 ```
 
-### Or build a native executable
+## Or build a native executable
 
 A build procedure is provided with this package<br/>
 

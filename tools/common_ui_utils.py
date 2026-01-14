@@ -7,17 +7,17 @@
 """
 import os
 import re
+import subprocess
 import sys
 import traceback
 from pathlib import Path
 
 import numpy as np
+import platformdirs
 from PyQt5 import QtCore, Qt, QtWidgets, QtGui
 
 from common_math_utils import lerp
 from sample_utils import Sample
-import subprocess
-import platformdirs
 
 
 def get_user_directory(subdir: str = 'Documents') -> Path:
@@ -47,16 +47,31 @@ def get_user_directory(subdir: str = 'Documents') -> Path:
 
 
 def explore_directory(path: Path | str = ''):
-    """Open system file explorer"""
+    """
+    Open system file explorer
+    :param path:
+    :return:
+    """
     match sys.platform:
         case 'win32':
             os.startfile(str(path))
-            # subprocess.Popen(['start', str(path)], shell=True)
         case 'darwin':
             subprocess.Popen(['open', str(path)])
         case _:
+            # Linux
+            env = os.environ.copy()
+            # Remove PyInstaller library path and use the system libraries instead
+            # This fixes the file manager failing to open when no other is opened
+            lp_key = 'LD_LIBRARY_PATH'
+            if lp_key in env:
+                # PyInstaller saves the original path here
+                orig_lp = env.get(lp_key + '_ORIG')
+                if orig_lp:
+                    env[lp_key] = orig_lp
+                else:
+                    env.pop(lp_key)
             try:
-                subprocess.Popen(['xdg-open', str(path)])
+                subprocess.Popen(['xdg-open', str(path)], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except OSError as e:
                 print(e)
                 pass
