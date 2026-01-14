@@ -130,14 +130,20 @@ def build_exe(scriptname: Path | str = '', build_config: Path | str = 'build_con
                 exe_path = output_path
 
         if create_bundle_dir:
-            # Move executable to a subdirectory with the program's name
+            # - Move executable to a subdirectory with the program's name
+
             bundle_dir = exe_path.resolve().parent / project_dir.resolve().name
+            # Use a temp name to deal with an executable and the project_dir having the same name
+            tmp_dir = exe_path.resolve().parent / 'temp_bundle_dir'
 
             print(f'\nBundle Directory: {bundle_dir}')
             new_exe_path = bundle_dir / exe_path.name
+            tmp_exe_path = tmp_dir / exe_path.name
+
             if not dry_run:
-                bundle_dir.mkdir(parents=True, exist_ok=True)
-                shutil.move(exe_path, new_exe_path)
+                tmp_dir.mkdir(parents=True, exist_ok=True)
+                shutil.move(exe_path, tmp_exe_path)
+            tmp_dir.rename(bundle_dir)
 
             exe_path = new_exe_path
 
