@@ -18,13 +18,13 @@ Tools for creating and editing virtual sampled instruments
 
 ## Installation
 
-**For Windows and Linux users, a prebuilt executable is available in the releases<br/>
-You don't need to install Python to use it<br/>**
+**Prebuilt executables are available in the releases<br/>
+Python installation is not required to use them<br/>**
+Though, they may or may not be a bit behind this repository especially on macOS<br/>
 
 This project was developed and tested with `Python 3.12.10`<br/>
-
-_It should be possible to run it and build it with another later Python version<br/>
-I was able to run and build just fine with Python 3.14.2 on Windows_
+However, it should be possible to run it and build it with another later Python version<br/>
+_(Building and running seems to work fine with Python 3.14.2 on Windows)_
 
 Additional required packages all listed in provided requirements.txt
 
@@ -181,7 +181,8 @@ Copy this entire `sample_tools` directory to a location of your choice<br/>
 - macOS : In your _Applications_ folder
 - Windows : typically in _C:/Program Files_ or in your user directory
 
-Finally, you will need to install the [rubberband executable](#rubberband-executable) _(Upsample Tool and Mutate Tool rely on it)_
+Finally, you will need to install the [rubberband executable](#rubberband-executable) _(Upsample Tool and Mutate Tool
+rely on it)_
 
 ### Install desktop (Linux only)
 
@@ -199,8 +200,8 @@ chmod +x install_desktop.sh
 - Drag and drop of files or directories (only the first level is scanned)
 - Context menus with right click on many widgets for examples or presets
 - Regular or looped Sample playback (Double click or Space Bar)
-- Keyboard shortcuts for file list ( **Ctrl + A**, **Ctrl + I**, **Delete** )
-- Visualization of **Waveform** and **Loop Point** ( **W**, **L** )
+- Keyboard shortcuts for file list (`Ctrl + A`, `Ctrl + I`, `Delete`)
+- Visualization of **Waveform** and **Loop Point** (`W`, `L`)
 - Help is provided using tooltips for most widgets
 - Backup, increment to avoid overwriting
 
@@ -214,7 +215,7 @@ chmod +x install_desktop.sh
 
 Create Decent Sampler and SFZ presets from samples in wav or flac format (limited support of aif)
 
-Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspreset and a sfz file
+Drag and drop a directory with a `Samples` subdirectory in it to generate a dspreset and a sfz file
 
 - wav, flac (recommended) and aif (limited support, not recommended) as input for samples
 - Samples are added and set according to their 'smpl' chunk/metadata (wav and flac only) and file name pattern
@@ -230,7 +231,7 @@ Drag and drop a directory with a 'Samples' subdirectory in it to generate a dspr
 
 ### smp_attrib_cfg.json
 
-Sample attributes Config
+_Sample attributes config_
 
 List of sample attributes offered by Decent Sampler and _hopefully_ supported by this tool
 
@@ -248,7 +249,9 @@ Sampler features
 
 ### instr_range.json
 
-This file is used to define custom instrument ranges used by this tool when pressing the **limit** button
+_Instrument range_
+
+This file is used to define custom instrument ranges used by this tool when pressing the `limit` button
 
 Use instrument names as keys with min and max MIDI note number provided as a list
 
@@ -264,7 +267,7 @@ Similar to SMP2Ds but specialized for drum sets
 
 Up to 32 drum pads though only the first 16 active drum pads will send their output to aux channels
 
-Drag and drop a directory with a 'Samples' subdirectory containing drum samples on the root directory widget
+Drag and drop a directory with a `Samples` subdirectory containing drum samples on the root directory widget
 
 Assign samples to drum pads by dropping one or several files (for velocity and round-robin) on them
 
@@ -285,7 +288,7 @@ Assign samples to drum pads by dropping one or several files (for velocity and r
 
 Split and trim audio file(s) by detecting silences
 
-Typical use cases : note by note instrument recordings, audio sample CDs tracks
+Typical use cases: note by note instrument recordings, audio sample CDs tracks
 
 Input audio files are split into several samples and renamed according user defined options
 
