@@ -122,8 +122,9 @@ def build_exe(scriptname: Path | str = '', build_config: Path | str = 'build_con
             case 'Darwin':
                 exe_path = output_path.with_suffix('.app')
                 # Clean raw compiled file outside the .app bundle
-                if not dry_run:
-                    output_path.unlink(missing_ok=True)
+                # FIXME: permission error
+                # if not dry_run:
+                #     output_path.unlink(missing_ok=True)
             case 'Windows':
                 exe_path = output_path.with_suffix('.exe')
             case _:
