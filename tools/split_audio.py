@@ -507,6 +507,3 @@ def envelope_transform(data: np.ndarray, w: int = 1024, mode: str = 'max', inter
     result = interpolate.interp1d(x, result, kind=interp)(x_new)[:length]
 
     return result
-
-
-
