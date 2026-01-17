@@ -218,7 +218,7 @@ class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):
                 prm = info.params
 
                 p = Path(f)
-                output_path = self.output_path_l.fullPath() or p.parent
+                output_path = Path(self.output_path_l.fullPath()) or p.parent
                 stem = p.stem
 
                 if options['subdir']:
