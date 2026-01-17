@@ -587,7 +587,7 @@ def is_stereo(audio, db=-48):
         return -1
     th = np.power(10, db / 20)
     result = np.max(np.abs(audio[:, 0] - audio[:, 1])) > th
-    return (0, 1)[result]
+    return (0, 1)[bool(result)]
 
 
 # Chunk / metadata functions
