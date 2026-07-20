@@ -34,7 +34,7 @@ def loop_sample(input_file: str | Path | None = '', output_file: str | Path | No
                 resynth: dict | None | bool = {'fft_range': 'custom', 'fft_start': 0.25, 'fft_end': 1.0,
                                                'duration': 2.0, 'atonal_mix': 1, 'freq_mode': 'note_pf', 'freqs': None,
                                                'resynth_mix': 'loop_tail', 'fade_in': .5, 'fade_out': .5, 'width': .5},
-                trim_after: bool = False, no_overwriting: bool = True, progress_bar: object | None = None,
+                trim_mode: str | None = None, no_overwriting: bool = True, progress_bar: object | None = None,
                 worker: object | None = None, progress_callback: object | None = None,
                 message_callback: object | None = None) -> namedtuple:
     """
@@ -76,7 +76,7 @@ def loop_sample(input_file: str | Path | None = '', output_file: str | Path | No
     'fade_in': float (fade-in length as % of audio length), 'fade_out': float (fade-out length as % of audio length),
      'width': float stereo effect mix with resynth_mix=='all' (0-1)}
 
-    :param trim_after: Trim file after loop end
+    :param trim_mode: 'start' 'end' 'all' or None
 
     :param no_overwriting:
 
@@ -235,9 +235,20 @@ def loop_sample(input_file: str | Path | None = '', output_file: str | Path | No
             info.loopStart = 0
             info.loopEnd = len(resynth_data) - 1
 
-    # Trim after loop
-    if trim_after:
-        audio = audio[:info.loopEnd + 1]
+    # Trim
+    match trim_mode:
+        case 'start':
+            audio = audio[info.loopStart:]
+            info.loopStart = 0
+            info.loopEnd -= info.loopStart
+        case 'end':
+            audio = audio[:info.loopEnd + 1]
+        case 'all':
+            audio = audio[info.loopStart:info.loopEnd + 1]
+            info.loopStart = 0
+            info.loopEnd -= info.loopStart
+        case _:
+            pass
 
     mx = np.max(np.abs(audio))
     if mx > 1:

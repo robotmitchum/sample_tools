@@ -68,6 +68,7 @@ SPACE BAR to play/stop selected file LOOPED</string>
        <widget class="QToolButton" name="set_files_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -1887,6 +1888,7 @@ color: rgb(255, 255, 255);</string>
        <widget class="QToolButton" name="set_output_path_tb">
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -2103,14 +2105,64 @@ Use wav for 32 bits float</string>
      </layout>
     </item>
     <item>
-     <widget class="QCheckBox" name="trim_after_cb">
-      <property name="toolTip">
-       <string>Reduce sample size by discarding data after the loop end</string>
+     <layout class="QHBoxLayout" name="trim_lyt">
+      <property name="spacing">
+       <number>0</number>
       </property>
-      <property name="text">
-       <string>Trim after loop end</string>
-      </property>
-     </widget>
+      <item>
+       <widget class="QCheckBox" name="trim_cb">
+        <property name="toolTip">
+         <string>Reduce sample size by discarding data outside of loop region</string>
+        </property>
+        <property name="text">
+         <string>Trim Loop</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="trim_mode_cmb">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>start	Trim audio before loop
+end	Trim audio after loop
+all	Keep only looped region</string>
+        </property>
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>start</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>end</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>all</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="Line" name="line">
@@ -2137,6 +2189,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -2164,6 +2217,7 @@ Use wav for 32 bits float</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -2192,6 +2246,7 @@ and play the result without writing anything</string>
         </property>
         <property name="font">
          <font>
+          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>

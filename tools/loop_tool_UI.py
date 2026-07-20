@@ -34,7 +34,7 @@ from utils import is_note_name, name_to_note, note_to_hz
 
 # from simple_logger import SimpleLogger
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
@@ -140,6 +140,9 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
         # Add Suffix widget
         add_ctx(self.suffix_le, ['_result', '_looped'])
 
+        # Trim widgets
+        self.trim_cb.stateChanged.connect(lambda state: self.trim_mode_cmb.setEnabled(state == 2))
+
         # Preview / Process buttons
         # Execute "as worker" to prevent multiple execution
         self.process_pb.clicked.connect(partial(self.as_worker, partial(self.do_process, mode='batch')))
@@ -224,7 +227,10 @@ class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):
                 self.resynth_cb.isChecked()]
 
         # Trim
-        self.options.trim_after = self.trim_after_cb.isChecked()
+        if self.trim_cb.isChecked():
+            self.options.trim_mode = self.trim_mode_cmb.currentText()
+        else:
+            self.options.trim_mode = None
 
         # Get format settings
         self.options.bit_depth = self.bitdepth_cmb.currentText()

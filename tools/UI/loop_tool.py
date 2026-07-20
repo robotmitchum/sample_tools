@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'loop_tool.ui'
+# Form implementation generated from reading ui file 'C:\Users\mitch\Documents\PycharmProjects\github\sample_tools\tools\UI\loop_tool.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -42,6 +42,7 @@ class Ui_loop_tool_mw(object):
         self.set_files_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_files_tb.setFont(font)
         self.set_files_tb.setObjectName("set_files_tb")
         self.files_lyt.addWidget(self.set_files_tb)
@@ -665,6 +666,7 @@ class Ui_loop_tool_mw(object):
         self.set_output_path_tb = QtWidgets.QToolButton(self.centralwidget)
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.set_output_path_tb.setFont(font)
         self.set_output_path_tb.setObjectName("set_output_path_tb")
         self.output_path_lyt.addWidget(self.set_output_path_tb)
@@ -751,9 +753,22 @@ class Ui_loop_tool_mw(object):
         self.no_overwriting_cb.setObjectName("no_overwriting_cb")
         self.output_file_lyt.addWidget(self.no_overwriting_cb)
         self.verticalLayout.addLayout(self.output_file_lyt)
-        self.trim_after_cb = QtWidgets.QCheckBox(self.centralwidget)
-        self.trim_after_cb.setObjectName("trim_after_cb")
-        self.verticalLayout.addWidget(self.trim_after_cb)
+        self.trim_lyt = QtWidgets.QHBoxLayout()
+        self.trim_lyt.setSpacing(0)
+        self.trim_lyt.setObjectName("trim_lyt")
+        self.trim_cb = QtWidgets.QCheckBox(self.centralwidget)
+        self.trim_cb.setObjectName("trim_cb")
+        self.trim_lyt.addWidget(self.trim_cb)
+        self.trim_mode_cmb = QtWidgets.QComboBox(self.centralwidget)
+        self.trim_mode_cmb.setEnabled(False)
+        self.trim_mode_cmb.setObjectName("trim_mode_cmb")
+        self.trim_mode_cmb.addItem("")
+        self.trim_mode_cmb.addItem("")
+        self.trim_mode_cmb.addItem("")
+        self.trim_lyt.addWidget(self.trim_mode_cmb)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.trim_lyt.addItem(spacerItem5)
+        self.verticalLayout.addLayout(self.trim_lyt)
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -770,6 +785,7 @@ class Ui_loop_tool_mw(object):
         self.process_sel_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_sel_pb.setFont(font)
         self.process_sel_pb.setObjectName("process_sel_pb")
         self.buttons_lyt.addWidget(self.process_sel_pb, 0, 1, 1, 1)
@@ -782,6 +798,7 @@ class Ui_loop_tool_mw(object):
         self.preview_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.preview_pb.setFont(font)
         self.preview_pb.setObjectName("preview_pb")
         self.buttons_lyt.addWidget(self.preview_pb, 0, 0, 1, 1)
@@ -794,6 +811,7 @@ class Ui_loop_tool_mw(object):
         self.process_pb.setMinimumSize(QtCore.QSize(160, 0))
         font = QtGui.QFont()
         font.setBold(True)
+        font.setWeight(75)
         self.process_pb.setFont(font)
         self.process_pb.setStyleSheet("QPushButton{background-color: rgb(31, 159, 127);\n"
 "color: rgb(255, 255, 255);}")
@@ -817,6 +835,7 @@ class Ui_loop_tool_mw(object):
         self.resynth_mix_cmb.setCurrentIndex(1)
         self.format_cmb.setCurrentIndex(0)
         self.bitdepth_cmb.setCurrentIndex(0)
+        self.trim_mode_cmb.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(loop_tool_mw)
 
     def retranslateUi(self, loop_tool_mw):
@@ -979,8 +998,14 @@ class Ui_loop_tool_mw(object):
         self.suffix_le.setText(_translate("loop_tool_mw", "_looped"))
         self.no_overwriting_cb.setToolTip(_translate("loop_tool_mw", "Avoid overwriting original files by moving them to a backup directory"))
         self.no_overwriting_cb.setText(_translate("loop_tool_mw", "Avoid Overwriting"))
-        self.trim_after_cb.setToolTip(_translate("loop_tool_mw", "Reduce sample size by discarding data after the loop end"))
-        self.trim_after_cb.setText(_translate("loop_tool_mw", "Trim after loop end"))
+        self.trim_cb.setToolTip(_translate("loop_tool_mw", "Reduce sample size by discarding data outside of loop region"))
+        self.trim_cb.setText(_translate("loop_tool_mw", "Trim Loop"))
+        self.trim_mode_cmb.setToolTip(_translate("loop_tool_mw", "start    Trim audio before loop\n"
+"end    Trim audio after loop\n"
+"all    Keep only looped region"))
+        self.trim_mode_cmb.setItemText(0, _translate("loop_tool_mw", "start"))
+        self.trim_mode_cmb.setItemText(1, _translate("loop_tool_mw", "end"))
+        self.trim_mode_cmb.setItemText(2, _translate("loop_tool_mw", "all"))
         self.process_sel_pb.setToolTip(_translate("loop_tool_mw", "Process selected item(s) with current settings"))
         self.process_sel_pb.setText(_translate("loop_tool_mw", "Process Selected"))
         self.preview_pb.setToolTip(_translate("loop_tool_mw", "Apply current settings to selected item\n"
