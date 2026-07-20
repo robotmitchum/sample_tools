@@ -82,6 +82,8 @@ def dspreset_to_sfz(input_file: Path | str | None,
     :param ds_sfz_att: DS to SFZ volume difference, typically -2.27 dB (tested with Sfizz only)
 
     :param vel_track: Default amplitude velocity tracking 0-1 when none is found in source dspreset
+    Sfizz does not seem to like vel_track=0, always use a very small value or 0.0 instead
+
     :param match_ds_vel: Apply linear mapping to velocity instead of default quadratic fake exp
 
     :param release_off_by_attack: Spare polyphony by choking a release group by its corresponding attack group
@@ -645,7 +647,7 @@ def adsr_to_eg_str(adsr: list = (0.001, 2, 0, .25),
     sustain = round(float(adsr_values[2]), 3)
     eg_lvl = [0, 1.0, sustain, 0.0]
 
-    curve = 2  # Not oo far from DS behavior
+    curve = 2  # Not too far from DS behavior
     eg_shape = [None] + [round(sign * (val, dft)[val is None] / 100 * curve, 2) for val, dft, sign in
                          zip(adr_curve, [-100, 100, 100], [1, -1, -1])]
 

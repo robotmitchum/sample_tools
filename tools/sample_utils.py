@@ -575,13 +575,12 @@ def apply_finetuning(input_file: Path | str, output_file: Path | str, value: flo
     return Path(output_file)
 
 
-def is_stereo(audio, db=-48):
+def is_stereo(audio: np.ndarray, db: float = -48) -> int:
     """
     Check if given audio data has enough difference between left and right to be considered stereo
-    :param np.array audio:
-    :param float db: difference threshold in dB beyond which the signal is considered "stereo enough"
+    :param audio:
+    :param db: difference threshold in dB beyond which the signal is considered "stereo enough"
     :return: -1 (audio has only one channel) 0 (audio has two channels but is mono) 1 (audio is stereo)
-    :rtype: int
     """
     if audio.ndim < 2:
         return -1
