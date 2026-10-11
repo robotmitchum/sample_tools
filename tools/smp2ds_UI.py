@@ -476,16 +476,16 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             confirm_dlg = QMessageBox.question(self, 'Confirmation',
                                                f'{' '.join(existing_file)} already exist'
                                                f'{('s', '')[len(existing_file) > 1]}\nOverwrite?',
-                                               QMessageBox.standardButton.Yes | QMessageBox.standardButton.No,
-                                               QMessageBox.standardButton.No)
-            if not confirm_dlg == QMessageBox.standardButton.Yes:
+                                               QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                               QMessageBox.StandardButton.No)
+            if not confirm_dlg == QMessageBox.StandardButton.Yes:
                 return False
 
         result = None
 
         try:
             self.as_worker(self.create_preset_process)
-            self.event_loop.exec_()  # Wait for result
+            self.event_loop.exec()  # Wait for result
             result = self.worker_result
             self.event_loop.quit()
 
