@@ -10,8 +10,8 @@
 import os
 from pathlib import Path
 
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QFileDialog
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import QFileDialog
 
 from jsonFile import read_json, write_json
 
@@ -105,8 +105,8 @@ def write_settings(widget, filepath=None, startdir=None, ext='json'):
         if filepath is None:
             startdir = startdir or Path(os.getcwd()) / 'settings.json'
 
-            options = QFileDialog.Options()
-            filepath, _ = QFileDialog.getSaveFileName(widget, caption='Save current settings', directory=str(startdir),
+            options = QFileDialog.Option(0)
+            filepath, _ = QFileDialog.getSaveFileName(widget, caption='Save current settings', dir=str(startdir),
                                                       filter=f'{ext} files (*.{ext})', options=options)
         if filepath:
             filepath = Path(filepath)
@@ -133,8 +133,8 @@ def read_settings(widget, filepath=None, startdir=None, ext='json'):
         if filepath is None:
             startdir = startdir or os.getcwd()
 
-            options = QFileDialog.Options()
-            filepath, _ = QFileDialog.getOpenFileName(widget, caption='Load settings', directory=str(startdir),
+            options = QFileDialog.Option(0)
+            filepath, _ = QFileDialog.getOpenFileName(widget, caption='Load settings', dir=str(startdir),
                                                       filter=f'{ext} files (*.{ext})', options=options)
         if filepath:
             filepath = Path(filepath)

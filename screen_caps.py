@@ -12,8 +12,8 @@ import sys
 from functools import partial
 from pathlib import Path
 
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtWidgets import *
 
 from dark_fusion_style import apply_dark_theme
 
@@ -24,7 +24,7 @@ class ScreenCap(QMainWindow):
         self.setWindowTitle('Capture UI')
         self.setGeometry(100, 100, 300, 200)
 
-        self.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.setLocale(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
         self.current_dir = Path(__file__).parent
         self.tools_path = self.current_dir / 'tools'
@@ -85,4 +85,4 @@ if __name__ == '__main__':
     window = ScreenCap()
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

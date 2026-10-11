@@ -5,15 +5,15 @@
     :author: Michel 'Mitch' Pecqueur
     :date: 2025.01
 """
-from PyQt5.QtCore import QObject, pyqtSignal, QRunnable
+from PySide6.QtCore import QObject, Signal, QRunnable
 
 
 class WorkerSignals(QObject):
-    progress = pyqtSignal(int)
-    progress_range = pyqtSignal(int, int)
-    message = pyqtSignal(str)
-    finished = pyqtSignal()
-    result = pyqtSignal(object)
+    progress = Signal(int)
+    progress_range = Signal(int, int)
+    message = Signal(str)
+    finished = Signal()
+    result = Signal(object)
 
 
 class Worker(QRunnable):

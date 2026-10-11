@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import cast
 
 import soundfile as sf
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 
 import pseudo_stereo as ps
 from UI import st_tool as gui
@@ -37,7 +37,7 @@ from file_utils import resolve_overwriting
 from sample_utils import Sample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.4'
+__version__ = '1.2.0'
 
 
 class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
@@ -78,7 +78,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         self.ir_path_l = replace_widget(self.ir_path_l,
                                         FilePathLabel(app_dir=self.app_dir, file_mode=True, parent=self))
         self.set_ir_path_tb.clicked.connect(self.ir_path_l.browse_path)
-        self.ir_path_l.setContextMenuPolicy(3)
+        self.ir_path_l.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.ir_path_l.customContextMenuRequested.connect(self.ir_path_l_ctx)
         self.ir_path_l.setEnabled(False)
 

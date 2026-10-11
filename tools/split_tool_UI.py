@@ -21,7 +21,7 @@ import traceback
 from functools import partial
 from pathlib import Path
 
-from PyQt5 import QtGui, QtCore
+from PySide6 import QtGui, QtCore
 
 import split_audio as sa
 from UI import split_tool as gui
@@ -46,7 +46,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.1.5'
+__version__ = '1.2.0'
 
 
 class SplitToolUi(gui.Ui_split_tool_mw, BaseToolUi):

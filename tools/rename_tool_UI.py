@@ -31,7 +31,7 @@ import traceback
 from functools import partial
 from pathlib import Path
 
-from PyQt5 import QtWidgets, QtGui, Qt, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 
 import sample_utils as st
 from UI import rename_tool as gui
@@ -58,7 +58,7 @@ except Exception as e:
     has_librosa = False
     pass
 
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 
 class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
@@ -130,7 +130,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         self.pitch_fraction_cmb.currentTextChanged.connect(
             lambda state: self.pitchfraction_dsb.setEnabled(state == 'override'))
-        self.pitchfraction_dsb.setContextMenuPolicy(3)
+        self.pitchfraction_dsb.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
 
         add_ctx(self.transpose_sb, [-12, 0, 12])
 
@@ -371,15 +371,15 @@ class InfoDialog(QtWidgets.QDialog):
         self.info_dialog_lyt = QtWidgets.QVBoxLayout(self)
 
         self.info_dialog_lw = QtWidgets.QListWidget(self)
-        self.info_dialog_lw.setFrameShape(Qt.QFrame.NoFrame)
+        self.info_dialog_lw.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
 
         # Set a mono font to the list widget to simplify white spaces handling
         font_path = resource_path(self.current_dir / 'RobotoMono-Medium.ttf')
         font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
         font_family = QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
 
-        # monospaced_font = Qt.QFont('DejaVu Sans Mono', 11)
-        custom_font = Qt.QFont(font_family, 11)
+        # monospaced_font = QtGui.QFont('DejaVu Sans Mono', 11)
+        custom_font = QtGui.QFont(font_family, 11)
         self.info_dialog_lw.setFont(custom_font)
         self.info_dialog_lw.setUniformItemSizes(True)
 
@@ -387,12 +387,13 @@ class InfoDialog(QtWidgets.QDialog):
             self.info_dialog_lw.addItem(item)
 
         self.info_dialog_bb = QtWidgets.QDialogButtonBox(self)
-        self.info_dialog_bb.setOrientation(Qt.Qt.Horizontal)
-        self.info_dialog_bb.setStandardButtons(Qt.QDialogButtonBox.Cancel | Qt.QDialogButtonBox.Apply)
+        self.info_dialog_bb.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.info_dialog_bb.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel | QtWidgets.QDialogButtonBox.StandardButton.Apply)
         self.info_dialog_bb.setCenterButtons(True)
 
-        cancel_pb = self.info_dialog_bb.button(Qt.QDialogButtonBox.Cancel)
-        apply_pb = self.info_dialog_bb.button(Qt.QDialogButtonBox.Apply)
+        cancel_pb = self.info_dialog_bb.button(QtWidgets.QDialogButtonBox.StandardButton.Cancel)
+        apply_pb = self.info_dialog_bb.button(QtWidgets.QDialogButtonBox.StandardButton.Apply)
 
         cancel_pb.setDefault(True)
         apply_pb.setText('Accept')

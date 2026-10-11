@@ -41,13 +41,13 @@
     "webcolors",
     "numpy",
     "scipy",
-    "PyQt5",
+    "PySide6",
     "PIL",
     "platformdirs",
     "getpass"
   ],
   "--collect-submodules": [
-    "PyQt5.Qt",
+    "PySide6.QtCore.Qt",
     "PIL.Image",
     "PIL.ImageDraw",
     "matplotlib"

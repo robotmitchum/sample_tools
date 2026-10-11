@@ -26,9 +26,10 @@ from functools import partial
 from pathlib import Path
 from typing import cast
 
-from PyQt5 import QtGui, QtCore, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtWidgets import QMenu, QMenuBar, QAction
+from PySide6 import QtGui, QtCore
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import QMenu, QMenuBar
 
 import smp_to_dspreset as smp2ds
 from UI import smp_to_ds as gui
@@ -36,7 +37,7 @@ from audio_player import play_notification
 from common_prefs_utils import Node, get_settings, set_settings, read_settings, write_settings
 from common_ui_utils import FilePathLabel, replace_widget
 from common_ui_utils import add_ctx, add_insert_ctx, popup_menu, get_custom_font, style_widget
-from common_ui_utils import beautify_str, resource_path, resource_path_alt, shorten_path, AboutDialog
+from common_ui_utils import beautify_str, resource_path, resource_path_alt, AboutDialog
 from dark_fusion_style import apply_dark_theme
 from dspreset_to_sfz import dspreset_to_sfz
 from file_utils import resolve_overwriting, read_txt, read_xml_data
@@ -50,7 +51,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.setAttribute(Qt.Qt.WA_DeleteOnClose)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
@@ -72,7 +73,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                                             FilePathLabel(app_dir=self.app_dir, parent=self.centralwidget))
         self.output_path_l = cast(FilePathLabel, self.output_path_l)  # For auto-completion
         self.output_path_l.setPlaceholderText('Drag and drop a preset ROOT directory on the window')
-        self.output_path_l.setAlignment(QtCore.Qt.AlignCenter)
+        self.output_path_l.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         style_widget(self.output_path_l, properties={'color': 'rgb(30, 161, 205)'})
         font = self.output_path_l.font()
         font.setBold(True)
@@ -144,7 +145,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         self.progress_pb.setFont(custom_font)
         self.progress_pb.setStyleSheet('QProgressBar{border: none;}')
-        self.progress_pb.setAlignment(QtCore.Qt.AlignCenter)
+        self.progress_pb.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.progress_pb.setTextVisible(True)
         self.progress_pb.setFont(custom_font)
         self.progress_pb.setValue(0)
@@ -231,7 +232,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
         # Group Mute widget
         self.grp_knob_rows_sb.valueChanged.connect(lambda state: self.group_mute_wid.setEnabled(state > 0))
-        validator = QtGui.QRegExpValidator(QtCore.QRegExp("[01]*"), self.group_mute_le)
+        validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[01]*"), self.group_mute_le)
         self.group_mute_le.setValidator(validator)  # Prevent invalid user entry
         add_ctx(self.group_mute_le, values=['', '0', '10', '01', '110'])
 
@@ -299,7 +300,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
         self.menu_bar.setNativeMenuBar(False)
 
         plt = self.menu_bar.palette()
-        plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
+        plt.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
         # Settings Menu
@@ -475,8 +476,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
             confirm_dlg = QMessageBox.question(self, 'Confirmation',
                                                f'{' '.join(existing_file)} already exist'
                                                f'{('s', '')[len(existing_file) > 1]}\nOverwrite?',
-                                               Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
-            if not confirm_dlg == Qt.QMessageBox.Yes:
+                                               QMessageBox.standardButton.Yes | QMessageBox.standardButton.No,
+                                               QMessageBox.standardButton.No)
+            if not confirm_dlg == QMessageBox.standardButton.Yes:
                 return False
 
         result = None
@@ -726,9 +728,9 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
 
             pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
             menu.setMinimumWidth(widget.width())
-            menu.exec_(pos)
+            menu.exec(pos)
 
-        widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         widget.customContextMenuRequested.connect(show_context_menu)
 
     def populate_palette_cmb(self):
@@ -868,7 +870,7 @@ class Smp2dsUi(gui.Ui_smp_to_ds_ui, QMainWindow):
                     f"Copyright © 2024 Michel 'Mitch' Pecqueur\n\n")
             about_dlg.set_text(text)
             about_dlg.append_url('https://github.com/robotmitchum/sample_tools')
-            about_dlg.exec_()
+            about_dlg.exec()
         except Exception as e:
             print(e)
             pass
@@ -900,4 +902,4 @@ if __name__ == "__main__":
 
     run()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

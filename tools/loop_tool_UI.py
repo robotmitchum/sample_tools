@@ -22,7 +22,7 @@ import traceback
 from functools import partial
 from pathlib import Path
 
-from PyQt5 import QtGui, QtCore
+from PySide6 import QtGui, QtCore
 
 import loop_sample as ls
 from UI import loop_tool as gui
@@ -34,7 +34,7 @@ from utils import is_note_name, name_to_note, note_to_hz
 
 # from simple_logger import SimpleLogger
 
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 
 class LoopToolUi(gui.Ui_loop_tool_mw, BaseToolUi):

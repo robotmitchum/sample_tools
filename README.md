@@ -35,7 +35,7 @@ Additional required packages all listed in provided requirements.txt
 - numpy
 - pandas
 - pillow
-- PyQt5
+- PySide6
 - scipy
 - sounddevice
 - soundfile

@@ -13,13 +13,13 @@ from pathlib import Path
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-from PyQt5.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 from common_ui_utils import resource_path
 
 
 class AudioPlayerSignals(QObject):
-    message = pyqtSignal(str)
+    message = Signal(str)
 
 
 class AudioPlayer:

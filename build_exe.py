@@ -144,7 +144,9 @@ def build_exe(scriptname: Path | str = '', build_config: Path | str = 'build_con
             if not dry_run:
                 tmp_dir.mkdir(parents=True, exist_ok=True)
                 shutil.move(exe_path, tmp_exe_path)
-            tmp_dir.rename(bundle_dir)
+                if bundle_dir.is_dir():
+                    shutil.rmtree(bundle_dir)
+                tmp_dir.rename(bundle_dir)
 
             exe_path = new_exe_path
 

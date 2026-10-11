@@ -14,7 +14,8 @@ import sys
 from functools import partial
 from pathlib import Path
 
-from PyQt5 import QtWidgets, QtCore, QtGui, Qt
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtWidgets import QMessageBox, QSizePolicy
 
 from __init__ import __version__  # noqa
 from dark_fusion_style import apply_dark_theme
@@ -49,7 +50,7 @@ class SampleToolsUi(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setObjectName('sample_tools_ui')
-        self.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        self.setLocale(QtCore.QLocale(QtCore.QLocale.Language.English, QtCore.QLocale.Country.UnitedStates))
         self.confirm_close = False
 
         self.current_dir = Path(__file__).parent
@@ -204,8 +205,9 @@ class SampleToolsUi(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         if self.confirm_close:
             confirm_dlg = QtWidgets.QMessageBox.question(self, 'Confirmation', 'Are you sure you want to quit?',
-                                                         Qt.QMessageBox.Yes | Qt.QMessageBox.No, Qt.QMessageBox.No)
-            if confirm_dlg == Qt.QMessageBox.Yes:
+                                                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                                         QMessageBox.StandardButton.No)
+            if confirm_dlg == QMessageBox.StandardButton.Yes:
                 print(f'{self.objectName()} closed')
                 event.accept()
             else:
@@ -226,7 +228,7 @@ class IconButton(QtWidgets.QPushButton):
         icon.addFile(image)
         self.setIcon(icon)
         self.setIconSize(QtCore.QSize(size, size))
-        size_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         size_policy.setHorizontalStretch(0)
         size_policy.setVerticalStretch(0)
         size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
@@ -257,7 +259,7 @@ if __name__ == '__main__':
 
     current_screen = app.primaryScreen()
     for screen in QtWidgets.QApplication.screens():
-        if screen.geometry().contains(Qt.QCursor.pos()):
+        if screen.geometry().contains(QtGui.QCursor.pos()):
             current_screen = screen
             break
 
@@ -271,4 +273,4 @@ if __name__ == '__main__':
         print(e)
         # logger.log_exception(e)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

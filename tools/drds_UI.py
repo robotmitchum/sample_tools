@@ -19,9 +19,9 @@ from pathlib import Path
 
 import numpy as np
 import soundfile as sf
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 
 import drums_to_dspreset as drds
 import smp_to_dspreset as smp2ds
@@ -55,7 +55,7 @@ file_types.extend([ext.upper() for ext in file_types])  # Also add uppercase var
 class DrDsUi(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.setLocale(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
         self.setObjectName('dr_ds_ui')
 
         self.current_dir = Path(__file__).parent
@@ -86,7 +86,7 @@ class DrDsUi(QMainWindow):
         self.lyt.setSpacing(0)
         self.cw.setLayout(self.lyt)
 
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.options = Node()
         self.sfz_options = Node()
@@ -132,7 +132,7 @@ class DrDsUi(QMainWindow):
         self.lyt.addLayout(self.output_path_lyt)
 
         self.rootdir_l = QLabel('Root Directory', parent=self.cw)
-        self.rootdir_l.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred))
+        self.rootdir_l.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred))
         self.output_path_lyt.addWidget(self.rootdir_l)
 
         self.output_path_l = FilePathLabel(app_dir=self.app_dir, parent=self.cw)
@@ -156,8 +156,8 @@ class DrDsUi(QMainWindow):
         self.output_path_l.pathChanged.connect(lambda _: setattr(self, 'root_dir', self.output_path_l.fullPath()))
 
         line = QFrame(parent=self.cw)
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
         self.lyt.addWidget(line)
 
         # - Mapping widgets -
@@ -198,15 +198,15 @@ class DrDsUi(QMainWindow):
         self.r_mapping_lyt.setSpacing(4)
 
         self.maping_lyt.addLayout(self.r_mapping_lyt)
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.r_mapping_lyt.addItem(spacer)
 
         # Base note widgets
         self.r_mapping_lyt.addWidget(QLabel('Base Note', parent=self.cw))
         self.basenote_sb = QSpinBox(parent=self.cw)
         self.basenote_sb.setObjectName('basenote_sb')
-        self.basenote_sb.setAlignment(Qt.AlignCenter)
-        self.basenote_sb.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.basenote_sb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.basenote_sb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.r_mapping_lyt.addWidget(self.basenote_sb)
         self.basenote_sb.setFixedWidth(48)
         self.basenote_sb.setValue(36)
@@ -218,7 +218,7 @@ class DrDsUi(QMainWindow):
 
         add_ctx(self.basenote_sb, values=[0, 24, 36, 48], default_idx=2)
 
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.r_mapping_lyt.addItem(spacer)
 
         # Seq mode widgets
@@ -231,7 +231,7 @@ class DrDsUi(QMainWindow):
         self.r_mapping_lyt.addWidget(self.seq_mode_cmb)
         self.seq_mode_cmb.addItems(['round_robin', 'random', 'true_random'])
         self.seq_mode_cmb.setCurrentIndex(1)
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.r_mapping_lyt.addItem(spacer)
 
         # Pads and properties widgets
@@ -278,8 +278,8 @@ class DrDsUi(QMainWindow):
 
         # - Output options -
         line = QFrame(self.cw)
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
         self.lyt.addWidget(line)
 
         # - Background Options -
@@ -318,7 +318,7 @@ class DrDsUi(QMainWindow):
         self.bg_plt_lyt.setSpacing(0)
         self.bg_plt_lyt.addWidget(QLabel('Palette'))
         self.palette_cmb = QComboBox(self.cw)
-        self.palette_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.palette_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
         self.palette_cmb.setObjectName('palette_cmb')
         self.palette_cmb.setToolTip('Color Palette used to generate the dspreset UI and its background image')
         self.bg_plt_lyt.addWidget(self.palette_cmb)
@@ -338,9 +338,9 @@ class DrDsUi(QMainWindow):
             dsb.setValue(value)
             dsb.setSingleStep(.1)
             dsb.setFrame(False)
-            dsb.setAlignment(Qt.AlignCenter)
-            dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
-            dsb.setContextMenuPolicy(Qt.NoContextMenu)
+            dsb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            dsb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+            dsb.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
             self.hsv_widgets.append(dsb)
             self.bg_plt_lyt.addWidget(dsb)
         self.bg_lyt.addLayout(self.bg_plt_lyt)
@@ -382,8 +382,8 @@ class DrDsUi(QMainWindow):
 
         self.reverb_wet_dsb = QDoubleSpinBox(self.cw)
         self.reverb_wet_dsb.setObjectName('reverb_wet_dsb')
-        self.reverb_wet_dsb.setAlignment(Qt.AlignCenter)
-        self.reverb_wet_dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.reverb_wet_dsb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.reverb_wet_dsb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.reverb_wet_dsb.setFrame(False)
         self.reverb_wet_dsb.setMaximum(1.0)
         self.reverb_wet_dsb.setSingleStep(.1)
@@ -432,7 +432,7 @@ class DrDsUi(QMainWindow):
 
         self.suffix_lyt.addWidget(self.auto_incr_cb)
 
-        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.output_options_lyt.addItem(spacer)
 
         # Format widgets
@@ -504,7 +504,7 @@ class DrDsUi(QMainWindow):
 
         self.use_lossy_flac_cb = QCheckBox('LossyFLAC', parent=self.cw)
         self.use_lossy_flac_cb.setObjectName('use_lossy_flac_cb')
-        self.use_lossy_flac_cb.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.use_lossy_flac_cb.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
         self.use_lossy_flac_cb.setToolTip(
             'Convert FLAC to LossyFLAC\n'
             'Pre-process allowing near-lossless compression to squeeze the files size a bit more\n\n'
@@ -515,7 +515,7 @@ class DrDsUi(QMainWindow):
         self.lossy_flac_mode_cmb.addItems(['auto', 'auto_ir', '16'])
         self.lossy_flac_mode_cmb.setCurrentIndex(1)
         self.lossy_flac_mode_cmb.setEnabled(False)
-        self.lossy_flac_mode_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.lossy_flac_mode_cmb.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
         self.lossy_flac_mode_cmb.setToolTip('LossyFLAC mode\n'
                                             'auto\tkeep input bit-depth, ignore IR samples\n'
                                             'auto_ir\tkeep input bit-depth, also process IR samples\n'
@@ -532,7 +532,7 @@ class DrDsUi(QMainWindow):
         self.progress_pb = QProgressBar(parent=self.cw)
         self.lyt.addWidget(self.progress_pb)
         self.progress_pb.setStyleSheet('QProgressBar{border: none;}')
-        self.progress_pb.setAlignment(Qt.AlignCenter)
+        self.progress_pb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.progress_pb.setTextVisible(True)
         self.progress_pb.setFont(custom_font)
         self.progress_pb.setValue(0)
@@ -567,7 +567,7 @@ class DrDsUi(QMainWindow):
         self.menu_bar.setNativeMenuBar(False)
 
         plt = self.menu_bar.palette()
-        plt.setColor(QPalette.Background, QColor(39, 39, 39))
+        plt.setColor(QPalette.ColorRole.Window, QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
         # Settings Menu
@@ -736,8 +736,9 @@ class DrDsUi(QMainWindow):
             confirm_dlg = QMessageBox.question(self, 'Confirmation',
                                                f'{' '.join(existing_file)} already exist'
                                                f'{('s', '')[len(existing_file) > 1]}\nOverwrite?',
-                                               QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if not confirm_dlg == QMessageBox.Yes:
+                                               QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                               QMessageBox.StandardButton.No)
+            if not confirm_dlg == QMessageBox.StandardButton.Yes:
                 return False
 
         result = None
@@ -865,7 +866,7 @@ class DrDsUi(QMainWindow):
             if not items and files_lw.count() > 0:
                 items = [files_lw.item(0)]
             if items:
-                audio_file = Path(items[0].data(Qt.UserRole))
+                audio_file = Path(items[0].data(Qt.ItemDataRole.UserRole))
                 if audio_file.is_file():
                     data, sr = sf.read(audio_file)
                     info = Sample(audio_file)
@@ -1012,7 +1013,7 @@ class DrDsUi(QMainWindow):
             menu.exec_(pos)
             menu.deleteLater()
 
-        widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         widget.customContextMenuRequested.connect(show_context_menu)
 
     def hsv_adjust_ctx(self):
@@ -1078,7 +1079,7 @@ class DrDsUi(QMainWindow):
 class AudioFilesLw(QListWidget):
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
         self.current_dir = Path(__file__).parent
         self.base_dir = self.current_dir.parent
@@ -1093,7 +1094,7 @@ class AudioFilesLw(QListWidget):
         self.setFont(custom_font)
         self.setUniformItemSizes(True)
 
-        self.setContextMenuPolicy(3)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.files_lw_ctx)
         self.doubleClicked.connect(self.play_lw_item)
 
@@ -1105,7 +1106,7 @@ class AudioFilesLw(QListWidget):
         self.refresh_lw_items()
         if not self.last_dir:
             items = self.selectedItems() or self.get_lw_items()
-            items = [s.data(Qt.UserRole) for s in items]
+            items = [s.data(Qt.ItemDataRole.UserRole) for s in items]
             if items:
                 self.last_dir = Path(items[-1]).parent
 
@@ -1157,11 +1158,11 @@ class AudioFilesLw(QListWidget):
                 dialog.exec_()
 
     def get_lw_items(self):
-        items = [self.item(i).data(Qt.UserRole) for i in range(self.count())]
+        items = [self.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.count())]
         return list(filter(None, items))
 
     def get_sel_lw_items(self):
-        items = [item.data(Qt.UserRole) for item in self.selectedItems()]
+        items = [item.data(Qt.ItemDataRole.UserRole) for item in self.selectedItems()]
         return list(filter(None, items))
 
     def current_lw_item(self):
@@ -1205,7 +1206,7 @@ class AudioFilesLw(QListWidget):
         self.addItems(names)
 
         for i, file_path in enumerate(files):
-            self.item(i).setData(Qt.UserRole, file_path)
+            self.item(i).setData(Qt.ItemDataRole.UserRole, file_path)
 
         if files:
             self.last_dir = Path(files[-1]).parent
@@ -1213,9 +1214,9 @@ class AudioFilesLw(QListWidget):
     def refresh_lw_items(self):
         lw_items = [self.item(i) for i in range(self.count())]
         for i, item in enumerate(lw_items):
-            p = Path(item.data(Qt.UserRole)).resolve()
+            p = Path(item.data(Qt.ItemDataRole.UserRole)).resolve()
             if p.is_file():
-                self.item(i).setData(Qt.UserRole, p)
+                self.item(i).setData(Qt.ItemDataRole.UserRole, p)
                 item.setText(simplify_path(p, root_dir=self.root_dir))
             else:
                 self.takeItem(self.row(item))
@@ -1223,39 +1224,39 @@ class AudioFilesLw(QListWidget):
 
     def play_lw_item(self, *args):
         self.player.stop()
-        audio_file = args[0].data(Qt.UserRole)
+        audio_file = args[0].data(Qt.ItemDataRole.UserRole)
         if Path(audio_file).is_file():
             data, sr = sf.read(audio_file)
             self.playback_thread = threading.Thread(target=self.player.play, args=(data, sr, None, None), daemon=True)
             self.playback_thread.start()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete:
             items = self.selectedItems()
             for item in items:
                 self.takeItem(self.row(item))
 
-        if event.key() == Qt.Key_W:
+        if event.key() == Qt.Key.Key_W:
             self.waveform_dlg()
-        # if event.key() == Qt.Key_L:
+        # if event.key() == Qt.Key.Key_L:
         #     self.loop_point_dlg()
 
-        if event.key() == Qt.Key_Down:
+        if event.key() == Qt.Key.Key_Down:
             mx = self.count() - 1
             sel_indices = [a.row() + 1 if a.row() < mx else mx for a in self.selectedIndexes()]
             self.clearSelection()
             for idx in sel_indices:
                 self.item(idx).setSelected(True)
-        elif event.key() == Qt.Key_Up:
+        elif event.key() == Qt.Key.Key_Up:
             sel_indices = [a.row() - 1 if a.row() > 0 else 0 for a in self.selectedIndexes()]
             self.clearSelection()
             for idx in sel_indices:
                 self.item(idx).setSelected(True)
 
-        elif event.modifiers() & Qt.ControlModifier:
-            if event.key() == Qt.Key_A:
+        elif event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if event.key() == Qt.Key.Key_A:
                 self.selectAll()
-            elif event.key() == Qt.Key_I:
+            elif event.key() == Qt.Key.Key_I:
                 items = self.selectedItems()
                 self.selectAll()
                 for item in items:
@@ -1283,7 +1284,7 @@ class AudioFilesLw(QListWidget):
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
-            event.setDropAction(Qt.LinkAction)
+            event.setDropAction(Qt.DropAction.LinkAction)
             event.accept()
         else:
             event.ignore()
@@ -1307,7 +1308,7 @@ class DrumpadProperties(QWidget):
         self.parent_window = parent_window
         self.root_dir = ''
 
-        lbl_size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        lbl_size_policy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         lbl_size_policy.setHeightForWidth(True)
 
         # Drum Properties Title
@@ -1369,10 +1370,10 @@ class DrumpadProperties(QWidget):
         self.name_lyt.addWidget(QLabel('Name', self))
         self.name_le = QLineEdit(self)
         self.name_le.setObjectName(f'name_le_{index + 1:02d}')
-        add_ctx(self.name_le, values=drum_names, alignment=Qt.AlignCenter)
+        add_ctx(self.name_le, values=drum_names, alignment=Qt.AlignmentFlag.AlignCenter)
         self.name_le.setFrame(False)
         self.name_le.setToolTip('Name used for group and tool tips in generated UI')
-        self.name_le.setAlignment(Qt.AlignCenter)
+        self.name_le.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.name_lyt.addWidget(self.name_le)
 
         # Spacer
@@ -1381,10 +1382,10 @@ class DrumpadProperties(QWidget):
         # Label
         self.name_lyt.addWidget(QLabel('Label', self))
         self.label_le = QLineEdit(self)
-        add_ctx(self.label_le, values=drum_labels, alignment=Qt.AlignCenter)
+        add_ctx(self.label_le, values=drum_labels, alignment=Qt.AlignmentFlag.AlignCenter)
         self.label_le.setObjectName(f'label_le_{index + 1:02d}')
         self.label_le.setFrame(False)
-        self.label_le.setAlignment(Qt.AlignCenter)
+        self.label_le.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_le.setToolTip('Shortened label to identify knobs in the generated UI')
         self.label_le.setFixedWidth(64)
         self.name_lyt.addWidget(self.label_le)
@@ -1397,15 +1398,15 @@ class DrumpadProperties(QWidget):
         # Tuning
         self.tuning_l = QLabel('Tuning', self)
         self.tuning_l.setSizePolicy(lbl_size_policy)
-        self.tuning_l.setAlignment(Qt.AlignCenter)
+        self.tuning_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_lyt.addWidget(self.tuning_l, 0, 0, 1, 1)
 
         self.tuning_dsb = QDoubleSpinBox(self)
-        add_ctx(self.tuning_dsb, values=[-12, -6, 0, 6, 12], alignment=Qt.AlignCenter)
+        add_ctx(self.tuning_dsb, values=[-12, -6, 0, 6, 12], alignment=Qt.AlignmentFlag.AlignCenter)
         self.tuning_dsb.setObjectName(f'tuning_dsb_{index + 1:02d}')
         self.tuning_dsb.setFrame(False)
-        self.tuning_dsb.setAlignment(Qt.AlignCenter)
-        self.tuning_dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.tuning_dsb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tuning_dsb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.tuning_dsb.setDecimals(3)
         self.tuning_dsb.setMinimum(-36)
         self.tuning_dsb.setMaximum(36)
@@ -1416,15 +1417,15 @@ class DrumpadProperties(QWidget):
         # Volume
         self.volume_l = QLabel('Volume', self)
         self.volume_l.setSizePolicy(lbl_size_policy)
-        self.volume_l.setAlignment(Qt.AlignCenter)
+        self.volume_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_lyt.addWidget(self.volume_l, 0, 1, 1, 1)
 
         self.volume_dsb = QDoubleSpinBox(self)
-        add_ctx(self.volume_dsb, values=[.25, .5, 1], alignment=Qt.AlignCenter)
+        add_ctx(self.volume_dsb, values=[.25, .5, 1], alignment=Qt.AlignmentFlag.AlignCenter)
         self.volume_dsb.setObjectName(f'volume_dsb_{index + 1:02d}')
         self.volume_dsb.setFrame(False)
-        self.volume_dsb.setAlignment(Qt.AlignCenter)
-        self.volume_dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.volume_dsb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.volume_dsb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.volume_dsb.setMinimum(0)
         self.volume_dsb.setMaximum(1)
         self.volume_dsb.setValue(1)
@@ -1435,15 +1436,15 @@ class DrumpadProperties(QWidget):
         # Pan
         self.pan_l = QLabel('Pan', self)
         self.pan_l.setSizePolicy(lbl_size_policy)
-        self.pan_l.setAlignment(Qt.AlignCenter)
+        self.pan_l.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.grid_lyt.addWidget(self.pan_l, 0, 2, 1, 1)
 
         self.pan_dsb = QDoubleSpinBox(self)
         self.pan_dsb.setObjectName(f'pan_dsb_{index + 1:02d}')
-        add_ctx(self.pan_dsb, values=[-75, -50, -25, 0, 25, 50, 75], alignment=Qt.AlignCenter)
+        add_ctx(self.pan_dsb, values=[-75, -50, -25, 0, 25, 50, 75], alignment=Qt.AlignmentFlag.AlignCenter)
         self.pan_dsb.setFrame(False)
-        self.pan_dsb.setAlignment(Qt.AlignCenter)
-        self.pan_dsb.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.pan_dsb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pan_dsb.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.pan_dsb.setMinimum(-100)
         self.pan_dsb.setMaximum(100)
         self.pan_dsb.setFixedWidth(96)
@@ -1628,7 +1629,7 @@ class CheckPullDown(QPushButton):
         items with a non-bool value can't be toggled
         """
         super().__init__(parent=parent)
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        size_policy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         size_policy.setHorizontalStretch(0)
         size_policy.setVerticalStretch(0)
         size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
@@ -1709,8 +1710,8 @@ class CheckPullDown(QPushButton):
             check = (' ', '•')[bool(value > 0)]
             action_label = QLabel(f' {key:02d}{check}', parent=self)
             action_label.setFont(self.font())
-            action_label.setAlignment(Qt.AlignCenter)
-            action_label.setAttribute(Qt.WA_Hover, True)
+            action_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            action_label.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
             if not isinstance(value, bool):
                 action_label.setEnabled(False)
             action_label.setMouseTracking(True)
@@ -1720,7 +1721,7 @@ class CheckPullDown(QPushButton):
             style += (f'QLabel:hover {{background-color: {plt.highlight().color().name()}; '
                       f'color: {plt.highlightedText().color().name()};}}')
             style += (f'QLabel:disabled {{background-color: {plt.alternateBase().color().name()}; '
-                      f'color: {plt.color(QPalette.Disabled, QPalette.Text).name()};}}')
+                      f'color: {plt.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text).name()};}}')
             action_label.setStyleSheet(style)
             action = QWidgetAction(self)
             action.setDefaultWidget(action_label)
@@ -1730,7 +1731,7 @@ class CheckPullDown(QPushButton):
 
         pos = self.mapToGlobal(self.contentsRect().bottomLeft())
         menu.setMinimumWidth(self.width())
-        menu.exec_(pos)
+        menu.exec(pos)
 
     def ctx_menu(self):
         def show_context_menu():
@@ -1741,8 +1742,8 @@ class CheckPullDown(QPushButton):
 
             for name, cmd in zip(names, cmds):
                 action_label = QLabel(name, self)
-                action_label.setAlignment(Qt.AlignCenter)
-                action_label.setAttribute(Qt.WA_Hover, True)
+                action_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                action_label.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
                 action_label.setMouseTracking(True)
                 plt = self.palette()
                 style = (f'QLabel {{background-color: {plt.alternateBase().color().name()}; '
@@ -1760,7 +1761,7 @@ class CheckPullDown(QPushButton):
             menu.setMinimumWidth(self.width())
             menu.exec_(pos)
 
-        self.setContextMenuPolicy(3)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(show_context_menu)
 
 
@@ -1896,7 +1897,7 @@ class DrumpadButton(QWidget):
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
-            event.setDropAction(Qt.LinkAction)
+            event.setDropAction(Qt.DropAction.LinkAction)
             event.accept()
         else:
             event.ignore()
@@ -1921,7 +1922,7 @@ class DrumpadButton(QWidget):
             pos = QCursor.pos()
             menu.exec_(pos)
 
-        self.setContextMenuPolicy(3)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(show_context_menu)
 
 
@@ -1945,7 +1946,7 @@ class FlowLayout(QLayout):
         return self.itemList.pop(index) if 0 <= index < len(self.itemList) else None
 
     def expandingDirections(self):
-        return Qt.Orientations(Qt.Orientation(0))
+        return Qt.Orientation(0)
 
     def hasHeightForWidth(self):
         return True
@@ -2030,7 +2031,7 @@ def launch(mw, app_id=''):
     key_press_handler = KeyPressHandler(window)
     app.installEventFilter(key_press_handler)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

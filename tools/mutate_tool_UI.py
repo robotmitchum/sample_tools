@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 
 import numpy as np
-from PyQt5 import QtGui, QtCore
+from PySide6 import QtGui, QtCore
 
 from UI import mutate_tool as gui
 from audio_player import play_notification
@@ -23,7 +23,7 @@ from mutate import mutate
 from sample_utils import Sample
 from subprocess_utils import DisableShellWindows
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 class MutateToolUi(gui.Ui_mutate_tool_mw, BaseToolUi):

@@ -8,7 +8,7 @@
 import sys
 
 import numpy as np
-from PyQt5 import QtWidgets, QtGui, Qt
+from PySide6 import QtWidgets, QtGui, QtCore
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
@@ -31,11 +31,11 @@ class WaveformDialog(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout(self)
 
         self.info_dialog_bb = QtWidgets.QDialogButtonBox(self)
-        self.info_dialog_bb.setOrientation(Qt.Qt.Horizontal)
-        self.info_dialog_bb.setStandardButtons(Qt.QDialogButtonBox.Close)
+        self.info_dialog_bb.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.info_dialog_bb.setStandardButtons(QtWidgets.QDialogButtonBox.standardButtons.Close)
         self.info_dialog_bb.setCenterButtons(True)
 
-        close_pb = self.info_dialog_bb.button(Qt.QDialogButtonBox.Close)
+        close_pb = self.info_dialog_bb.button(QtWidgets.QDialogButtonBox.standardButtons.Close)
         close_pb.setDefault(True)
 
         self.figure = Figure()
@@ -154,7 +154,7 @@ class LoopPointDialog(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout(self)
 
         self.info_dialog_bb = QtWidgets.QDialogButtonBox(self)
-        self.info_dialog_bb.setOrientation(Qt.Qt.Horizontal)
+        self.info_dialog_bb.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.info_dialog_bb.setStandardButtons(Qt.QDialogButtonBox.Close)
         self.info_dialog_bb.setCenterButtons(True)
 

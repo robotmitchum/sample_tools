@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 import soundfile as sf
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 from scipy import interpolate
 
 import noise_reduction as nr
@@ -32,7 +32,7 @@ from subprocess_utils import DisableShellWindows
 from upsample import audio_upsample
 from utils import append_metadata, set_md_tags
 
-__version__ = '1.1.5'
+__version__ = '1.2.0'
 
 
 class UpsampleToolUi(gui.Ui_upsample_tool_mw, BaseToolUi):

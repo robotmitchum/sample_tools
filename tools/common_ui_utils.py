@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import platformdirs
-from PyQt5 import QtCore, Qt, QtWidgets, QtGui
+from PySide6 import QtCore, QtWidgets, QtGui
 
 from common_math_utils import lerp
 from sample_utils import Sample
@@ -132,7 +132,7 @@ def resource_path_alt(relative_path: Path | str, parent_dir: Path | str | None =
         return resource_path(relative_path, as_str=as_str)
 
 
-def get_custom_font(path: Path | str) -> Qt.QFont:
+def get_custom_font(path: Path | str) -> QtGui.QFont:
     """
     Return PyQt font object from file path
     :param path:
@@ -141,14 +141,14 @@ def get_custom_font(path: Path | str) -> Qt.QFont:
     font_path = resource_path(path)
     font_id = QtGui.QFontDatabase.addApplicationFont(font_path)
     font_family = QtGui.QFontDatabase.applicationFontFamilies(font_id)[0]
-    custom_font = Qt.QFont(font_family)
+    custom_font = QtGui.QFont(font_family)
     return custom_font
 
 
 # Utility classes
 
 class FilePathLabel(QtWidgets.QLabel):
-    pathChanged = QtCore.pyqtSignal(str)
+    pathChanged = QtCore.Signal(str)
 
     def __init__(self, text: str = '', app_dir: Path | str | None = None, file_mode: bool = False, parent=None):
         super().__init__(text, parent)
@@ -280,10 +280,10 @@ class KeyPressHandler(QtCore.QObject):
         super().__init__(parent)
 
     def eventFilter(self, obj, event):
-        if event.type() == event.KeyPress:
+        if event.type() == event.Type.KeyPress:
             focus_wid = QtWidgets.QApplication.focusWidget()
             allow_play = not isinstance(focus_wid, QtWidgets.QLineEdit)
-            if event.key() == Qt.Qt.Key_Space and allow_play:
+            if event.key() == QtCore.Qt.Key.Key_Space and allow_play:
                 self.parent().play_stop_toggle()
                 return True
             else:
@@ -324,7 +324,7 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
                     # Custom alignment
                     action_label = QtWidgets.QLabel(f'{name}', menu)
                     action_label.setAlignment(alignment)
-                    action_label.setAttribute(QtCore.Qt.WA_Hover, True)
+                    action_label.setAttribute(QtCore.Qt.WidgetAttribute.WA_Hover, True)
                     action_label.setMouseTracking(True)
                     plt = widget.palette()
                     style = (f'QLabel {{background-color: {plt.alternateBase().color().name()}; '
@@ -351,7 +351,7 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
         menu.exec_(pos)
         menu.deleteLater()
 
-    widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+    widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
     if trigger is None:
         widget.customContextMenuRequested.connect(show_context_menu)
     else:
@@ -377,7 +377,7 @@ def add_insert_ctx(widget, values=(), names=None):
         menu.exec_(QtGui.QCursor.pos())
         menu.deleteLater()
 
-    widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+    widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
     widget.customContextMenuRequested.connect(show_context_menu)
 
 
@@ -520,8 +520,8 @@ def dict_to_stylesheet(widget: str, properties: dict) -> str:
 def get_text_color(widget: QtWidgets.QWidget) -> QtGui.QColor:
     """Get most relevant text color"""
     plt = widget.palette()
-    for role in [QtGui.QPalette.ButtonText, QtGui.QPalette.WindowText,
-                 QtGui.QPalette.Text, QtGui.QPalette.Foreground]:
+    for role in [QtGui.QPalette.ColorRole.ButtonText, QtGui.QPalette.ColorRole.WindowText,
+                 QtGui.QPalette.ColorRole.Text]:
         color = plt.color(role)
         if color.isValid():
             return color
@@ -605,7 +605,7 @@ def style_widget(widget: QtWidgets.QWidget, properties: dict, clickable: bool = 
 class AboutDialog(QtWidgets.QDialog):
     def __init__(self, parent: QtWidgets.QWidget = None, title: str = 'About', icon_file: Path | str | None = None):
         super().__init__(parent)
-        self.setSizePolicy(Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Minimum)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         self.setFixedSize(0, 0)
         self.setWindowTitle(title or 'About')
 
@@ -616,9 +616,9 @@ class AboutDialog(QtWidgets.QDialog):
 
         # Message with clickable URL
         self.msg_l = QtWidgets.QLabel(self)
-        self.msg_l.setTextFormat(Qt.Qt.RichText)
-        self.msg_l.setTextInteractionFlags(Qt.Qt.TextBrowserInteraction)
-        self.msg_l.setAlignment(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
+        self.msg_l.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        self.msg_l.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextBrowserInteraction)
+        self.msg_l.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.msg_l.linkActivated.connect(self.handle_link_clicked)
 
         # - Layout -
@@ -637,7 +637,7 @@ class AboutDialog(QtWidgets.QDialog):
             self.icon_pixmap = QtGui.QPixmap(str(icon_file))
         else:
             self.icon_pixmap = QtGui.QPixmap(64, 64)
-            self.icon_pixmap.fill(Qt.Qt.green)
+            self.icon_pixmap.fill(QtCore.Qt.GlobalColor.green)
         self.icon_l.setPixmap(self.icon_pixmap)
 
     def set_text(self, value: str, append: bool = True):

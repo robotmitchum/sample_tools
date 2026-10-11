@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import cast
 
 import soundfile as sf
-from PyQt5 import QtWidgets, QtGui, Qt, QtCore
+from PySide6 import QtWidgets, QtGui, QtCore
 
 from audio_player import AudioPlayer
 from common_prefs_utils import get_settings, set_settings, read_settings, write_settings
@@ -40,7 +40,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.setAttribute(Qt.Qt.WA_DeleteOnClose)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.options = Node()
 
@@ -105,7 +105,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def setup_connections(self):
         # Files widgets
         self.set_files_tb.clicked.connect(self.browse_files)
-        self.files_lw.setContextMenuPolicy(3)
+        self.files_lw.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.files_lw.customContextMenuRequested.connect(self.files_lw_ctx)
         self.files_lw.doubleClicked.connect(self.play_lw_item)
 
@@ -141,18 +141,18 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.menu_bar.setNativeMenuBar(False)
 
         plt = self.menu_bar.palette()
-        plt.setColor(QtGui.QPalette.Background, QtGui.QColor(39, 39, 39))
+        plt.setColor(QtGui.QPalette.ColorRole.Window, QtGui.QColor(39, 39, 39))
         self.menu_bar.setPalette(plt)
 
         # Settings Menu
         self.settings_menu = QtWidgets.QMenu(self.menu_bar)
         self.settings_menu.setTitle('Settings')
 
-        self.save_settings_a = QtWidgets.QAction(self)
+        self.save_settings_a = QtGui.QAction(self)
         self.save_settings_a.setText('Save settings')
-        self.load_settings_a = QtWidgets.QAction(self)
+        self.load_settings_a = QtGui.QAction(self)
         self.load_settings_a.setText('Load settings')
-        self.restore_defaults_a = QtWidgets.QAction(self)
+        self.restore_defaults_a = QtGui.QAction(self)
         self.restore_defaults_a.setText('Restore defaults')
 
         self.settings_menu.addAction(self.load_settings_a)
@@ -165,9 +165,9 @@ class BaseToolUi(QtWidgets.QMainWindow):
         # Help Menu
         self.help_menu = QtWidgets.QMenu(self.menu_bar)
         self.help_menu.setTitle('?')
-        self.visit_github_a = QtWidgets.QAction(self)
+        self.visit_github_a = QtGui.QAction(self)
         self.visit_github_a.setText('Visit repository on github')
-        self.about_a = QtWidgets.QAction(self)
+        self.about_a = QtGui.QAction(self)
         self.about_a.setText('About')
 
         self.help_menu.addAction(self.visit_github_a)
@@ -211,7 +211,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.refresh_lw_items()
         if not self.last_file:
             items = self.files_lw.selectedItems() or self.get_lw_items()
-            items = [s.data(Qt.Qt.UserRole) for s in items]
+            items = [s.data(QtCore.Qt.ItemDataRole.UserRole) for s in items]
             if items:
                 self.last_file = items[-1]
 
@@ -265,10 +265,10 @@ class BaseToolUi(QtWidgets.QMainWindow):
                 dialog.deleteLater()
 
     def get_lw_items(self):
-        return [self.files_lw.item(i).data(Qt.Qt.UserRole) for i in range(self.files_lw.count())]
+        return [self.files_lw.item(i).data(QtCore.Qt.ItemDataRole.UserRole) for i in range(self.files_lw.count())]
 
     def get_sel_lw_items(self):
-        return [item.data(Qt.Qt.UserRole) for item in self.files_lw.selectedItems()]
+        return [item.data(QtCore.Qt.ItemDataRole.UserRole) for item in self.files_lw.selectedItems()]
 
     def del_lw_items(self):
         for item in self.files_lw.selectedItems():
@@ -283,7 +283,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         self.files_lw.addItems(names)
 
         for i, file_path in enumerate(files):
-            self.files_lw.item(i).setData(Qt.Qt.UserRole, file_path)
+            self.files_lw.item(i).setData(QtCore.Qt.ItemDataRole.UserRole, file_path)
 
         if files:
             self.last_file = files[-1]
@@ -291,7 +291,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def refresh_lw_items(self):
         lw_items = [self.files_lw.item(i) for i in range(self.files_lw.count())]
         for item in lw_items:
-            f = item.data(Qt.Qt.UserRole)
+            f = item.data(QtCore.Qt.ItemDataRole.UserRole)
             if Path(f).is_file():
                 item.setText(sample_to_name(f))
             else:
@@ -300,39 +300,39 @@ class BaseToolUi(QtWidgets.QMainWindow):
 
     def play_lw_item(self, *args):
         self.player.stop()
-        audio_file = args[0].data(Qt.Qt.UserRole)
+        audio_file = args[0].data(QtCore.Qt.ItemDataRole.UserRole)
         if os.path.isfile(audio_file):
             data, sr = sf.read(audio_file)
             self.playback_thread = threading.Thread(target=self.player.play, args=(data, sr, None, None), daemon=True)
             self.playback_thread.start()
 
     def key_lw_items_event(self, event):
-        if event.key() == Qt.Qt.Key_Delete:
+        if event.key() == QtCore.Qt.Key.Key_Delete:
             items = self.files_lw.selectedItems()
             for item in items:
                 self.files_lw.takeItem(self.files_lw.row(item))
 
-        if event.key() == Qt.Qt.Key_W:
+        if event.key() == QtCore.Qt.Key.Key_W:
             self.waveform_dlg()
-        if event.key() == Qt.Qt.Key_L:
+        if event.key() == QtCore.Qt.Key.Key_L:
             self.loop_point_dlg()
 
-        if event.key() == Qt.Qt.Key_Down:
+        if event.key() == QtCore.Qt.Key.Key_Down:
             mx = self.files_lw.count() - 1
             sel_indices = [a.row() + 1 if a.row() < mx else mx for a in self.files_lw.selectedIndexes()]
             self.files_lw.clearSelection()
             for idx in sel_indices:
                 self.files_lw.item(idx).setSelected(True)
-        elif event.key() == Qt.Qt.Key_Up:
+        elif event.key() == QtCore.Qt.Key.Key_Up:
             sel_indices = [a.row() - 1 if a.row() > 0 else 0 for a in self.files_lw.selectedIndexes()]
             self.files_lw.clearSelection()
             for idx in sel_indices:
                 self.files_lw.item(idx).setSelected(True)
 
-        elif event.modifiers() & Qt.Qt.ControlModifier:
-            if event.key() == Qt.Qt.Key_A:
+        elif event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
+            if event.key() == QtCore.Qt.Key.Key_A:
                 self.files_lw.selectAll()
-            elif event.key() == Qt.Qt.Key_I:
+            elif event.key() == QtCore.Qt.Key.Key_I:
                 items = self.files_lw.selectedItems()
                 self.files_lw.selectAll()
                 for item in items:
@@ -346,7 +346,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
         else:
             items = self.files_lw.selectedItems()
             if items:
-                audio_file = items[0].data(Qt.Qt.UserRole)
+                audio_file = items[0].data(QtCore.Qt.ItemDataRole.UserRole)
                 if os.path.isfile(audio_file):
                     data, sr = sf.read(audio_file)
                     info = Sample(audio_file)
@@ -395,7 +395,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
     def disable_focus(self):
         for widget in self.findChildren(QtWidgets.QWidget):
             if type(widget) in [QtWidgets.QPushButton, QtWidgets.QCheckBox, QtWidgets.QComboBox]:
-                widget.setFocusPolicy(Qt.Qt.NoFocus)
+                widget.setFocusPolicy(QtCore.Qt.FocusPolicy.NoFocus)
 
     def run(self):
         key_press_handler = KeyPressHandler(self)
