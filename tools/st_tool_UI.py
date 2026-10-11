@@ -355,7 +355,7 @@ class StToolUi(gui.Ui_st_tool_mw, BaseToolUi):
         menu = QtWidgets.QMenu(self)
         names = [menu.addAction(name) for name in names]
         cmds = [partial(self.ir_path_l.setFullPath, val) for val in values]
-        action = menu.exec_(QtGui.QCursor.pos())
+        action = menu.exec(QtGui.QCursor.pos())
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()

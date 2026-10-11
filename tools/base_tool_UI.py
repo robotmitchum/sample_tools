@@ -235,7 +235,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                  ['Display Waveform\tW', 'Display Loop Point\tL', 'Remove item(s) from list\tDel', 'Clear list']]
         menu.insertSeparator(menu.actions()[2])
         cmds = [self.waveform_dlg, self.loop_point_dlg, self.del_lw_items, self.files_lw.clear]
-        action = menu.exec_(QtGui.QCursor.pos())
+        action = menu.exec(QtGui.QCursor.pos())
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()
@@ -249,7 +249,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
             info = Sample(item)
             dialog = WaveformDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                     cues=info.cues, parent=self)
-            dialog.exec_()
+            dialog.exec()
             dialog.deleteLater()
 
     def loop_point_dlg(self):
@@ -261,7 +261,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                 data, sr = sf.read(items[0])
                 dialog = LoopPointDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                          disp_len=200, parent=self)
-                dialog.exec_()
+                dialog.exec()
                 dialog.deleteLater()
 
     def get_lw_items(self):
@@ -480,7 +480,7 @@ class BaseToolUi(QtWidgets.QMainWindow):
                     f"Copyright © 2024 Michel 'Mitch' Pecqueur\n\n")
             about_dlg.set_text(text)
             about_dlg.append_url('https://github.com/robotmitchum/sample_tools')
-            about_dlg.exec_()
+            about_dlg.exec()
         except Exception as e:
             print(e)
             pass
@@ -519,4 +519,4 @@ def launch(mw, app_id=''):
     key_press_handler = KeyPressHandler(window)
     app.installEventFilter(key_press_handler)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

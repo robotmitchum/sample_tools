@@ -348,7 +348,7 @@ def add_ctx(widget, values=(), names=None, default_idx=None, trigger=None, align
 
         pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
         menu.setMinimumWidth(widget.width())
-        menu.exec_(pos)
+        menu.exec(pos)
         menu.deleteLater()
 
     widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
@@ -374,7 +374,7 @@ def add_insert_ctx(widget, values=(), names=None):
         for name, value in zip(names, values):
             action = menu.addAction(f'{name}')
             action.triggered.connect(lambda _, v=value: widget.insert(v))
-        menu.exec_(QtGui.QCursor.pos())
+        menu.exec(QtGui.QCursor.pos())
         menu.deleteLater()
 
     widget.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
@@ -411,7 +411,7 @@ def popup_menu(content, parent=None):
     cur_pos = QtGui.QCursor.pos()
     pos = parent.mapToGlobal(parent.rect().bottomLeft())
     pos.setX(cur_pos.x() - menu.width() // 4)
-    menu.exec_(pos)
+    menu.exec(pos)
     menu.deleteLater()
 
 

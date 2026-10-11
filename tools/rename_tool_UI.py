@@ -334,7 +334,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
         result = []
         try:
             self.as_worker(partial(self.batch_rename, files=files, test_run=True))
-            self.event_loop.exec_()  # Wait for result
+            self.event_loop.exec()  # Wait for result
             result = self.worker_result
             self.event_loop.quit()
         except Exception as e:
@@ -352,7 +352,7 @@ class RenameToolUi(gui.Ui_rename_tool_mw, BaseToolUi):
 
         dialog = InfoDialog(info_list=report, parent=self)
         dialog.accept_cmd = partial(self.as_worker, partial(self.batch_rename, files=files, test_run=False))
-        dialog.exec_()
+        dialog.exec()
 
 
 class InfoDialog(QtWidgets.QDialog):

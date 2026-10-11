@@ -745,7 +745,7 @@ class DrDsUi(QMainWindow):
 
         try:
             self.as_worker(self.create_preset_process)
-            self.event_loop.exec_()  # Wait for result
+            self.event_loop.exec()  # Wait for result
             result = self.worker_result
             self.event_loop.quit()
 
@@ -1010,7 +1010,7 @@ class DrDsUi(QMainWindow):
 
             pos = widget.mapToGlobal(widget.contentsRect().bottomLeft())
             menu.setMinimumWidth(widget.width())
-            menu.exec_(pos)
+            menu.exec(pos)
             menu.deleteLater()
 
         widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -1062,7 +1062,7 @@ class DrDsUi(QMainWindow):
                     f"Copyright © 2024 Michel 'Mitch' Pecqueur\n\n")
             about_dlg.set_text(text)
             about_dlg.append_url('https://github.com/robotmitchum/sample_tools')
-            about_dlg.exec_()
+            about_dlg.exec()
         except Exception as e:
             print(e)
             pass
@@ -1130,7 +1130,7 @@ class AudioFilesLw(QListWidget):
                  ['Display Waveform\tW', 'Remove item(s) from list\tDel', 'Clear list']]
         menu.insertSeparator(menu.actions()[2])
         cmds = [self.waveform_dlg, self.del_lw_items, self.clear]
-        action = menu.exec_(QCursor.pos())
+        action = menu.exec(QCursor.pos())
         for name, cmd in zip(names, cmds):
             if action == name:
                 cmd()
@@ -1144,7 +1144,7 @@ class AudioFilesLw(QListWidget):
             info = Sample(item)
             dialog = WaveformDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                     cues=info.cues, parent=self)
-            dialog.exec_()
+            dialog.exec()
 
     def loop_point_dlg(self):
         items = self.get_sel_lw_items()
@@ -1155,7 +1155,7 @@ class AudioFilesLw(QListWidget):
                 data, sr = sf.read(items[0])
                 dialog = LoopPointDialog(data=data, loop_start=info.loopStart, loop_end=info.loopEnd, title=info.name,
                                          disp_len=200, parent=self)
-                dialog.exec_()
+                dialog.exec()
 
     def get_lw_items(self):
         items = [self.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.count())]
@@ -1759,7 +1759,7 @@ class CheckPullDown(QPushButton):
 
             pos = self.mapToGlobal(self.contentsRect().bottomLeft())
             menu.setMinimumWidth(self.width())
-            menu.exec_(pos)
+            menu.exec(pos)
 
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(show_context_menu)
@@ -1920,7 +1920,7 @@ class DrumpadButton(QWidget):
                 menu.addAction(action)
 
             pos = QCursor.pos()
-            menu.exec_(pos)
+            menu.exec(pos)
 
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(show_context_menu)
