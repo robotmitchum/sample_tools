@@ -1513,21 +1513,24 @@ class DrumpadProperties(QWidget):
         self.auto_aux_out_cb.stateChanged.connect(lambda state: self.aux_out_cpd.setEnabled(not state))
         self.auto_aux_out_cb.setChecked(True)
 
-        self.files_lw.model().dataChanged.connect(partial(self.update_pad, clear_pad=False))
-        self.files_lw.model().rowsRemoved.connect(partial(self.update_pad, clear_pad=False))
-        self.files_lw.model().modelReset.connect(partial(self.update_pad, clear_pad=True))
-        self.name_le.textChanged.connect(partial(self.update_pad, clear_pad=False))
-        self.label_le.textChanged.connect(partial(self.update_pad, clear_pad=False))
+        # Update pad from properties
+        self.files_lw.model().rowsRemoved.connect(self.update_pad)
+        self.files_lw.model().dataChanged.connect(self.update_pad)
+        self.files_lw.model().modelReset.connect(self.update_pad)
+        self.name_le.textChanged.connect(self.update_label)
+        self.label_le.textChanged.connect(self.update_label)
 
     def cleanup_lw(self):
         self.files_lw = None
 
-    def update_pad(self, clear_pad=False):
+    def update_pad(self):
         if self.files_lw is None:
             return
-        if clear_pad or self.name() == '':
+        if self.name() == '':
             self.set_name_from_samples()
-        if clear_pad or self.label() == '':
+
+    def update_label(self):
+        if self.label() == '':
             self.set_label_from_name()
         self.drum_pad.update_pad(self.label())
 
@@ -1600,6 +1603,18 @@ class DrumpadProperties(QWidget):
 
     def clear_pad(self):
         self.files_lw.clear()
+        self.reset_properties()
+
+    def reset_properties(self):
+        self.set_name('')
+        self.set_label('')
+        self.tuning_dsb.setValue(0)
+        self.volume_dsb.setValue(1)
+        self.pan_dsb.setValue(0)
+        self.choke_cpd.clear_items()
+        self.self_choke_cb.setChecked(True)
+        self.aux_out_cpd.clear_items()
+        self.auto_aux_out_cb.setChecked(True)
 
     def refresh_lw(self):
         self.root_dir = self.parent_window.output_path_l.fullPath()
