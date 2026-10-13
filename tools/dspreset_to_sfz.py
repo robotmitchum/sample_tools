@@ -176,6 +176,7 @@ def dspreset_to_sfz(input_file: Path | str | None,
 
     # - tags -
     group_tags = [item.get('tags', '').split(',') for item in root.iter('group')]
+    group_tags = list(filter(None, [list(filter(None, item)) for item in group_tags]))  # Filter empty items
     # Replace names in tags by their numbered equivalents when applicable
     for i, tags in enumerate(group_tags):
         group_tags[i] = [group_name_num[i] if tag == group_name[i] else tag for tag in tags]
@@ -192,6 +193,7 @@ def dspreset_to_sfz(input_file: Path | str | None,
 
     # - silencedByTags -
     sil_tags = [item.get('silencedByTags', '').split(',') for i, item in enumerate(root.iter('group'))]
+    sil_tags = list(filter(None, [list(filter(None, item)) for item in sil_tags]))  # Filter empty items
     # Replace names in tags by their numbered equivalents when applicable
     for i, tags in enumerate(sil_tags):
         sil_tags[i] = [group_name_num[i] if tag == group_name[i] else tag for tag in tags]
@@ -479,8 +481,10 @@ def dspreset_to_sfz(input_file: Path | str | None,
 
                 # Patch source attributes with numbered equivalent when applicable
                 src_attr['name'] = idx_to_group[grp_idx]
-                src_attr['tags'] = ','.join(group_tags[idx_to_group[grp_idx]])
-                src_attr['silencedByTags'] = ','.join(sil_tags[idx_to_group[grp_idx]])
+                if group_tags:
+                    src_attr['tags'] = ','.join(group_tags[idx_to_group[grp_idx]])
+                if sil_tags:
+                    src_attr['silencedByTags'] = ','.join(sil_tags[idx_to_group[grp_idx]])
 
                 # Envelope duration
                 if grp_idx not in env_duration:
