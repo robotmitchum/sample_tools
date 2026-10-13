@@ -24,7 +24,7 @@ import soundfile as sf
 from common_audio_utils import lin_to_db
 from common_ui_utils import beautify_str, shorten_str
 
-__version__ = '1.0.2'
+__version__ = '1.1'
 
 
 def dspreset_to_sfz(input_file: Path | str | None,
@@ -165,11 +165,20 @@ def dspreset_to_sfz(input_file: Path | str | None,
     params = ['ENV_' + key.upper() for key in keys]
     adsr = tuple(knob_value.get(k, v) for k, v in zip(params, adsr))
 
-    # Gather group info
-    group_to_idx = {item.get('name', i): i for i, item in enumerate(root.iter('group'))}
-    idx_to_group = {v: k for k, v in group_to_idx.items()}
+    # -- Gather group info --
 
+    # Deal with duplicate groups by adding an increment, unique names are unchanged
+    group_name = [item.get('name', i) for i, item in enumerate(root.iter('group'))]
+    group_name_num = number_list(group_name)  # Number duplicates
+
+    group_to_idx = {item: i for i, item in enumerate(group_name_num)}
+    idx_to_group = {v: k for k, v in group_to_idx.items()}  # Reversed dict
+
+    # - tags -
     group_tags = [item.get('tags', '').split(',') for item in root.iter('group')]
+    # Replace names in tags by their numbered equivalents when applicable
+    for i, tags in enumerate(group_tags):
+        group_tags[i] = [group_name_num[i] if tag == group_name[i] else tag for tag in tags]
     group_tags = dict(zip(group_to_idx.keys(), group_tags))
 
     tag_groups = {}
@@ -181,11 +190,18 @@ def dspreset_to_sfz(input_file: Path | str | None,
             else:
                 tag_groups[tag].append(idx)
 
-    # Triggers
+    # - silencedByTags -
+    sil_tags = [item.get('silencedByTags', '').split(',') for i, item in enumerate(root.iter('group'))]
+    # Replace names in tags by their numbered equivalents when applicable
+    for i, tags in enumerate(sil_tags):
+        sil_tags[i] = [group_name_num[i] if tag == group_name[i] else tag for tag in tags]
+    sil_tags = dict(zip(group_to_idx.keys(), sil_tags))
+
+    # - Triggers -
     group_triggers = {i: item.get('trigger', None) for i, item in enumerate(root.iter('group'))}
     has_release = 'release' in group_triggers.values()
 
-    # Group mute
+    # - Group mute -
     group_mute = {}
     for item in root.iter('button'):
         val = item.get('value', None)
@@ -198,7 +214,7 @@ def dspreset_to_sfz(input_file: Path | str | None,
                     if pos is not None:
                         group_mute[int(pos)] = int(val)
 
-    # Group Volume CCs
+    # - Group Volume CCs -
     start_cc = 102
     slider_idx = 0
     ctrl_group_cc_str = ''
@@ -457,8 +473,14 @@ def dspreset_to_sfz(input_file: Path | str | None,
             if header == 'group':
                 grp_idx = list(root.iter('group')).index(elem)
                 grp_name = src_attr.get('name', grp_idx)
+
                 res += f'\n// {grp_name}\n'  # Add comment with group name
                 grp_trg = src_attr.get('trigger', None)
+
+                # Patch source attributes with numbered equivalent when applicable
+                src_attr['name'] = idx_to_group[grp_idx]
+                src_attr['tags'] = ','.join(group_tags[idx_to_group[grp_idx]])
+                src_attr['silencedByTags'] = ','.join(sil_tags[idx_to_group[grp_idx]])
 
                 # Envelope duration
                 if grp_idx not in env_duration:
@@ -699,6 +721,29 @@ def log_curve(mn: float = 33, mx: float = 22000, steps: int = 11, remap: bool = 
     curve = f'<curve> curve_index=7' + ' '.join(f'v{k:03d}={v}' for k, v in xy) + '\n'
 
     return curve
+
+
+def number_list(names: list, pad: int = 2, sep: str = '_') -> list:
+    """
+    Number a list of names based on number of occurrences
+
+    :param list names:
+    :param int pad: Padding length
+    :param str sep: String used as separator between name and digits
+
+    :return: Numbered names
+    :rtype: list
+    """
+    result = []
+    count = dict()
+    for name in names:
+        if name not in count:
+            count[name] = 1
+        else:
+            count[name] += 1
+        result.append(count[name])
+    result = [f'{name}{sep}{str(result[i]).zfill(pad)}' if count[name] > 1 else name for i, name in enumerate(names)]
+    return result
 
 
 def main():
